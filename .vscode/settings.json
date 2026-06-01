@@ -1,11 +1,65 @@
 {
+  // TypeScript
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+
+  // Editor - 完全禁用格式化
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxlint": "explicit"
+  },
+
+  // 禁用所有格式化程序
+  "prettier.enable": false,
+  "eslint.enable": false,
+
+  // 禁用 oxc 格式化，只使用 oxlint
+  "oxc.format.enable": false,
+
+  // 不使用任何格式化程序
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": null
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": null
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": null
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": null
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+
+  // 禁用 TypeScript/JavaScript 内置格式化
+  "js/ts.format.enabled": false,
+
+  // Files
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/out": true,
+    "**/.git": true
+  },
+  "files.associations": {
+    "*.css": "css"
+  },
+
+  // Search
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/out": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // Terminal
+  "terminal.integrated.defaultProfile.windows": "Git Bash"
 }

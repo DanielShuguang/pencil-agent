@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "semi": false,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "endOfLine": "lf",
+  "ignorePatterns": ["node_modules", "dist", "out", "pnpm-lock.yaml"]
+}

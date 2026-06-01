@@ -1,0 +1,49 @@
+schema: spec-driven
+
+context: |
+  # AI Agent Desktop 项目
+
+  ## 技术栈
+  - 桌面框架: Electron ^39.x
+  - 前端: React ^19.x + TypeScript ^6.x
+  - 状态管理: Zustand ^5.x
+  - UI 组件: shadcn/ui + Tailwind CSS ^4.x
+  - 工作流画布: @xyflow/react ^12.x
+  - 代码编辑器: Monaco Editor ^0.5x
+  - Agent 引擎: @earendil-works/pi-coding-agent ^0.78.x
+  - LLM 抽象: @earendil-works/pi-ai ^0.78.x (支持 20+ 模型提供商)
+  - 代码沙箱: Dockerode ^5.x
+  - 向量存储: ChromaDB ^3.x
+  - 构建工具: Vite ^7.x
+  - 打包: electron-builder ^26.x
+  - 包管理: pnpm ^10.x
+
+  ## 项目结构
+  - src/main/ - Electron 主进程
+  - src/preload/ - 预加载脚本
+  - src/renderer/ - React 渲染进程
+  - packages/shared-types/ - 共享类型定义
+
+  ## 命名约定
+  - 组件文件: PascalCase.tsx
+  - 工具/库文件: camelCase.ts
+  - Store 文件: kebab-case.ts
+  - 变量/函数: camelCase
+  - 常量: UPPER_SNAKE_CASE
+
+  ## 提交规范
+  - 使用约定式提交 (Conventional Commits)
+
+  ## 领域
+  - 桌面 AI Agent 平台
+  - 支持对话、工具调用、工作流编排、多 Agent 协作、代码生成执行
+
+rules:
+  proposal:
+    - 明确功能目标和非目标
+    - 评估对现有模块的影响
+    - 考虑安全性和性能影响
+  tasks:
+    - 将任务分解为可独立测试的单元
+    - 每个任务应在一个会话内完成
+    - 标记依赖关系和执行顺序

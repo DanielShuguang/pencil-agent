@@ -36,6 +36,11 @@ context: |
   ## 提交规范
   - 使用约定式提交 (Conventional Commits)
 
+  ## 开发流程
+  - 严格遵守 TDD: Red (写测试) → Green (通过) → Refactor (重构)
+  - 提交前必须运行 `pnpm test:run` 确保全部通过
+  - 先写测试再写实现代码
+
   ## 领域
   - 桌面 AI Agent 平台
   - 支持对话、工具调用、工作流编排、多 Agent 协作、代码生成执行

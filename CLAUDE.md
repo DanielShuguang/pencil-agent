@@ -102,6 +102,15 @@ ipcMain.on('agent:prompt', handler)
 - API Key 使用 `safeStorage` 加密
 - Docker 沙箱: 网络隔离、内存限制、只读文件系统
 
+### 开发流程 (TDD)
+
+严格遵守测试驱动开发：
+
+1. **Red** — 先编写测试，描述期望行为，运行确认失败
+2. **Green** — 编写最简实现代码使测试通过
+3. **Refactor** — 在测试保护下重构，保持测试通过
+4. 提交前运行 `pnpm test:run` 确保全部通过
+
 ### 测试策略
 
 - **单元测试** (vitest): Stores、工具函数、纯逻辑

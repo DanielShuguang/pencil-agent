@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { SessionMeta } from '../../stores/agent-store'
 import { cn } from '../../lib/utils'
 
@@ -8,18 +9,19 @@ interface SessionItemProps {
   onDelete: () => void
 }
 
-function formatTime(timestamp: number): string {
+function formatTime(timestamp: number, lang: string, t: (key: string, options?: Record<string, unknown>) => string): string {
   const date = new Date(timestamp)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
 
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`
-  return date.toLocaleDateString('zh-CN')
+  if (diff < 60000) return t('common.justNow')
+  if (diff < 3600000) return t('common.minutesAgo', { count: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('common.hoursAgo', { count: Math.floor(diff / 3600000) })
+  return date.toLocaleDateString(lang)
 }
 
 export function SessionItem({ meta, isActive, onClick, onDelete }: SessionItemProps) {
+  const { t, i18n } = useTranslation()
   return (
     <div
       className={cn(
@@ -33,7 +35,7 @@ export function SessionItem({ meta, isActive, onClick, onDelete }: SessionItemPr
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{meta.model.provider}/{meta.model.id}</span>
           <span>·</span>
-          <span>{formatTime(meta.updatedAt)}</span>
+          <span>{formatTime(meta.updatedAt, i18n.language, t)}</span>
         </div>
       </div>
       <button

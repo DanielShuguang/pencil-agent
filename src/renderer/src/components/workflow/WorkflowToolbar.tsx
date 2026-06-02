@@ -1,4 +1,5 @@
 import { Play, Save, Upload, Trash2, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWorkflowStore } from '../../stores/workflow-store'
 
 interface WorkflowToolbarProps {
@@ -8,6 +9,7 @@ interface WorkflowToolbarProps {
 
 export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) {
   const { nodes, edges, isExecuting, clearWorkflow, addNode } = useWorkflowStore()
+  const { t } = useTranslation()
 
   const handleAddNode = (type: string) => {
     const newNode = {
@@ -49,7 +51,7 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
           useWorkflowStore.getState().setNodes(workflow.nodes ?? [])
           useWorkflowStore.getState().setEdges(workflow.edges ?? [])
         } catch {
-          alert('无效的工作流文件')
+          alert(t('workflow.invalidFile'))
         }
       }
       reader.readAsText(file)
@@ -63,15 +65,15 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
         <button
           onClick={() => handleAddNode('start')}
           className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted'
-          title='添加开始节点'
+          title={t('workflow.addStart')}
         >
           <Plus className='h-3 w-3' />
-          开始
+          {t('workflow.start')}
         </button>
         <button
           onClick={() => handleAddNode('agent')}
           className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted'
-          title='添加 Agent 节点'
+          title={t('workflow.addAgent')}
         >
           <Plus className='h-3 w-3' />
           Agent
@@ -79,26 +81,26 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
         <button
           onClick={() => handleAddNode('tool')}
           className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted'
-          title='添加工具节点'
+          title={t('workflow.addTool')}
         >
           <Plus className='h-3 w-3' />
-          工具
+          {t('workflow.toolNode')}
         </button>
         <button
           onClick={() => handleAddNode('condition')}
           className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted'
-          title='添加条件节点'
+          title={t('workflow.addCondition')}
         >
           <Plus className='h-3 w-3' />
-          条件
+          {t('workflow.conditionNode')}
         </button>
         <button
           onClick={() => handleAddNode('end')}
           className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted'
-          title='添加结束节点'
+          title={t('workflow.addEnd')}
         >
           <Plus className='h-3 w-3' />
-          结束
+          {t('workflow.end')}
         </button>
       </div>
 
@@ -108,10 +110,10 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
         onClick={onExecute}
         disabled={isExecuting || nodes.length === 0}
         className='flex items-center gap-1 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50'
-        title='执行工作流'
+        title={t('workflow.execute')}
       >
         <Play className='h-3 w-3' />
-        {isExecuting ? '执行中...' : '执行'}
+        {isExecuting ? t('workflow.executing') : t('workflow.execute')}
       </button>
 
       <div className='w-px h-6 bg-border' />
@@ -120,18 +122,18 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
         onClick={handleSave}
         disabled={nodes.length === 0}
         className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted disabled:opacity-50'
-        title='保存工作流'
+        title={t('workflow.saveWorkflow')}
       >
         <Save className='h-3 w-3' />
-        保存
+        {t('common.save')}
       </button>
       <button
         onClick={handleLoad}
         className='flex items-center gap-1 px-2 py-1.5 text-xs bg-background border rounded hover:bg-muted'
-        title='加载工作流'
+        title={t('workflow.loadWorkflow')}
       >
         <Upload className='h-3 w-3' />
-        加载
+        {t('common.load')}
       </button>
 
       <div className='flex-1' />
@@ -140,10 +142,10 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
         onClick={clearWorkflow}
         disabled={nodes.length === 0}
         className='flex items-center gap-1 px-2 py-1.5 text-xs text-destructive bg-background border rounded hover:bg-destructive/10 disabled:opacity-50'
-        title='清空画布'
+        title={t('workflow.clearCanvas')}
       >
         <Trash2 className='h-3 w-3' />
-        清空
+        {t('common.clear')}
       </button>
     </div>
   )

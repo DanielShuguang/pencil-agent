@@ -1,5 +1,6 @@
 import { useWorkflowStore } from '../../../stores/workflow-store'
 import { useToolStore } from '../../../stores/tool-store'
+import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 
 interface NodeConfigPanelProps {
@@ -9,6 +10,7 @@ interface NodeConfigPanelProps {
 export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
   const { nodes, selectedNodeId, updateNodeData, selectNode } = useWorkflowStore()
   const { tools } = useToolStore()
+  const { t } = useTranslation()
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
 
@@ -27,7 +29,7 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
   return (
     <div className={`border-l bg-background p-4 overflow-auto ${className}`}>
       <div className='flex items-center justify-between mb-4'>
-        <h3 className='font-medium text-sm'>节点配置</h3>
+        <h3 className='font-medium text-sm'>{t('workflow.nodeConfig')}</h3>
         <button
           onClick={() => selectNode(null)}
           className='p-1 hover:bg-muted rounded'
@@ -38,19 +40,19 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
 
       <div className='space-y-4'>
         <div>
-          <label className='text-xs font-medium text-muted-foreground'>节点 ID</label>
+          <label className='text-xs font-medium text-muted-foreground'>{t('workflow.nodeId')}</label>
           <p className='text-sm mt-1'>{selectedNode.id}</p>
         </div>
 
         <div>
-          <label className='text-xs font-medium text-muted-foreground'>节点类型</label>
+          <label className='text-xs font-medium text-muted-foreground'>{t('workflow.nodeType')}</label>
           <p className='text-sm mt-1'>{selectedNode.type}</p>
         </div>
 
         {selectedNode.type === 'agent' && (
           <>
             <div>
-              <label className='text-xs font-medium text-muted-foreground'>模型</label>
+              <label className='text-xs font-medium text-muted-foreground'>{t('workflow.model')}</label>
               <select
                 className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm'
                 value={JSON.stringify(config.model ?? { id: 'claude-sonnet-4-20250514', provider: 'anthropic' })}
@@ -71,7 +73,7 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
                 className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm min-h-[100px]'
                 value={(config.systemPrompt as string) ?? ''}
                 onChange={(e) => handleChange('systemPrompt', e.target.value)}
-                placeholder='输入系统提示词...'
+                placeholder={t('workflow.systemPrompt')}
               />
             </div>
 
@@ -96,13 +98,13 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
         {selectedNode.type === 'tool' && (
           <>
             <div>
-              <label className='text-xs font-medium text-muted-foreground'>工具</label>
+              <label className='text-xs font-medium text-muted-foreground'>{t('workflow.tool')}</label>
               <select
                 className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm'
                 value={(config.toolName as string) ?? ''}
                 onChange={(e) => handleChange('toolName', e.target.value)}
               >
-                <option value=''>选择工具...</option>
+                <option value=''>{t('workflow.selectTool')}</option>
                 {tools.map((tool) => (
                   <option key={tool.name} value={tool.name}>
                     {tool.name} - {tool.description}
@@ -115,7 +117,7 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
 
         {selectedNode.type === 'condition' && (
           <div>
-            <label className='text-xs font-medium text-muted-foreground'>条件表达式</label>
+            <label className='text-xs font-medium text-muted-foreground'>{t('workflow.condition')}</label>
             <textarea
               className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm font-mono min-h-[80px]'
               value={(config.expression as string) ?? ''}
@@ -123,7 +125,7 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
               placeholder='$input !== null'
             />
             <p className='text-xs text-muted-foreground mt-1'>
-              使用 $input 引用输入值
+              {t('workflow.conditionHint')}
             </p>
           </div>
         )}

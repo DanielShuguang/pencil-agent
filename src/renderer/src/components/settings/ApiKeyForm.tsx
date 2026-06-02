@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSettingsStore } from '../../stores/settings-store'
 
 const PROVIDERS = [
@@ -11,6 +12,7 @@ export function ApiKeyForm() {
   const [keys, setKeys] = useState<Record<string, string>>({})
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
   const [saving, setSaving] = useState<string | null>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     for (const provider of PROVIDERS) {
@@ -49,18 +51,18 @@ export function ApiKeyForm() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium">API 密钥</h3>
+      <h3 className="text-sm font-medium">{t('settings.apiKeys')}</h3>
       {PROVIDERS.map((provider) => (
         <div key={provider.id} className="space-y-2">
           <label className="text-sm text-muted-foreground">{provider.name}</label>
           {savedKeys[provider.id] ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">密钥已保存</span>
+              <span className="text-sm text-muted-foreground">{t('common.saved')}</span>
               <button
                 className="text-xs text-destructive hover:underline"
                 onClick={() => handleDelete(provider.id)}
               >
-                删除
+                {t('common.delete')}
               </button>
             </div>
           ) : (
@@ -77,7 +79,7 @@ export function ApiKeyForm() {
                 onClick={() => handleSave(provider.id)}
                 disabled={!keys[provider.id] || saving === provider.id}
               >
-                {saving === provider.id ? '保存中...' : '保存'}
+                {saving === provider.id ? t('common.saving') : t('common.save')}
               </button>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { ModelConfig } from '@shared/ipc'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -16,6 +17,7 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
   const [name, setName] = useState(model?.name || '')
   const [maxTokens, setMaxTokens] = useState(model?.maxTokens?.toString() || '')
   const [temperature, setTemperature] = useState(model?.temperature?.toString() || '')
+  const { t } = useTranslation()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +33,7 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
   return (
     <form onSubmit={handleSubmit} className='space-y-4'>
       <div className='space-y-2'>
-        <Label htmlFor='model-id'>模型 ID</Label>
+        <Label htmlFor='model-id'>{t('settings.modelId')}</Label>
         <Input
           id='model-id'
           value={id}
@@ -42,7 +44,7 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='model-name'>显示名称</Label>
+        <Label htmlFor='model-name'>{t('settings.modelName')}</Label>
         <Input
           id='model-name'
           value={name}
@@ -54,7 +56,7 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
 
       <div className='grid grid-cols-2 gap-4'>
         <div className='space-y-2'>
-          <Label htmlFor='max-tokens'>最大 Token</Label>
+          <Label htmlFor='max-tokens'>{t('settings.maxTokens')}</Label>
           <Input
             id='max-tokens'
             type='number'
@@ -65,7 +67,7 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='temperature'>温度</Label>
+          <Label htmlFor='temperature'>{t('settings.temperature')}</Label>
           <Input
             id='temperature'
             type='number'
@@ -81,9 +83,9 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
 
       <div className='flex justify-end gap-2'>
         <Button type='button' variant='outline' onClick={onCancel}>
-          取消
+          {t('common.cancel')}
         </Button>
-        <Button type='submit'>保存</Button>
+        <Button type='submit'>{t('common.save')}</Button>
       </div>
     </form>
   )

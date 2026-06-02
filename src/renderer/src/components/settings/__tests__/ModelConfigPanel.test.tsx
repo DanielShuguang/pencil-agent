@@ -24,6 +24,39 @@ vi.mock('../../../stores/model-config-store', () => ({
   })),
 }))
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) => {
+      if (key === 'settings.modelsCount' && options?.count !== undefined) {
+        return `（${options.count} 个模型）`
+      }
+      const translations: Record<string, string> = {
+        'common.loading': '加载中...',
+        'common.save': '保存',
+        'common.cancel': '取消',
+        'common.saving': '保存中...',
+        'common.saved': '已保存',
+        'common.delete': '删除',
+        'common.edit': '编辑',
+        'common.create': '创建',
+        'settings.models': '模型',
+        'settings.addProvider': '添加供应商',
+        'settings.editProvider': '编辑供应商',
+        'settings.addModel': '添加模型',
+        'settings.editModel': '编辑模型',
+        'settings.modelList': '模型列表',
+        'settings.noProviders': '暂无供应商',
+        'settings.noModels': '暂无模型',
+        'settings.connected': '已连接',
+        'settings.deleteProviderConfirm': '确定删除此供应商？',
+        'settings.deleteModelConfirm': '确定删除此模型？',
+      }
+      return translations[key] || key
+    },
+    i18n: { language: 'zh' },
+  }),
+}))
+
 vi.mock('../ProviderForm', () => ({
   ProviderForm: ({ onSave, onCancel }: { onSave: (...args: unknown[]) => void; onCancel: () => void }) => (
     <div data-testid='provider-form'>

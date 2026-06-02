@@ -1,13 +1,15 @@
+import { useTranslation } from 'react-i18next'
 import { useAgentStore } from '../../stores/agent-store'
 import { SessionItem } from './SessionItem'
 
 export function SessionList() {
   const { sessionMetas, activeSessionId, switchSession, deleteSession } = useAgentStore()
+  const { t } = useTranslation()
 
   const sortedSessions = Array.from(sessionMetas.values()).sort((a, b) => b.updatedAt - a.updatedAt)
 
   if (sortedSessions.length === 0) {
-    return <div className="p-4 text-sm text-muted-foreground text-center">暂无会话</div>
+    return <div className="p-4 text-sm text-muted-foreground text-center">{t('sidebar.noSessions')}</div>
   }
 
   return (

@@ -23,3 +23,15 @@ The input bar SHALL send messages using the currently selected model.
 #### Scenario: Model change during generation
 - **WHEN** user changes the model while a response is being generated
 - **THEN** the change takes effect for the next message, not the current one
+
+### Requirement: UI text must use translation keys
+
+All UI text must use translation keys, hardcoded text is prohibited.
+
+#### Scenario: Input placeholder
+- **WHEN** user views the input field
+- **THEN** the placeholder text displays the translation for the current language
+
+#### Scenario: Button text
+- **WHEN** user views buttons
+- **THEN** the button text displays the translation for the current language

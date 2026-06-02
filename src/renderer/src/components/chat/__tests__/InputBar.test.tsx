@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { InputBar } from '../InputBar'
+import '../../../i18n'
 
 describe('InputBar', () => {
   it('renders input and send button', () => {

@@ -14,6 +14,7 @@
 - **LLM**: @earendil-works/pi-ai ^0.78.x
 - **沙箱**: Dockerode ^5.x
 - **向量存储**: ChromaDB ^3.x
+- **国际化**: react-i18next ^17.x + i18next ^26.x
 - **构建**: Vite ^7.x + electron-builder ^26.x
 - **包管理**: pnpm ^10.x
 - **测试**: vitest ^4.x + testing-library + Playwright ^1.x
@@ -37,6 +38,10 @@ src/
         ├── hooks/       # 自定义 hooks
         ├── lib/         # 工具函数
         │   └── __tests__/  # 单元测试
+        ├── locales/     # 国际化翻译文件
+        │   ├── zh.json  # 中文翻译
+        │   └── en.json  # 英文翻译
+        ├── i18n.ts      # i18n 配置
         └── test-setup.ts   # 测试环境初始化
 packages/
 └── shared-types/   # IPC 和工作流类型定义
@@ -101,6 +106,37 @@ ipcMain.on('agent:prompt', handler)
 - `nodeIntegration: false`, `contextIsolation: true`
 - API Key 使用 `safeStorage` 加密
 - Docker 沙箱: 网络隔离、内存限制、只读文件系统
+
+### 国际化 (i18n)
+
+使用 react-i18next 实现多语言支持：
+
+```typescript
+// 翻译文件结构
+src/renderer/src/locales/
+├── zh.json    # 中文翻译
+└── en.json    # 英文翻译
+
+// 组件中使用
+import { useTranslation } from 'react-i18next'
+
+function MyComponent() {
+  const { t } = useTranslation()
+  return <button>{t('common.save')}</button>
+}
+
+// 语言切换
+import { useAgentStore } from '../stores/agent-store'
+const { setLanguage } = useAgentStore()
+setLanguage('en') // 切换到英文
+```
+
+翻译键按模块组织：
+- `common.*` - 通用文本（保存、取消、删除等）
+- `chat.*` - 聊天界面相关
+- `settings.*` - 设置界面相关
+- `workflow.*` - 工作流相关
+- `role.*` - 角色管理相关
 
 ### 开发流程 (TDD)
 

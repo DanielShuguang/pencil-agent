@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, TestTube, ChevronDown, ChevronRight } from 'lucide-react'
 import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 import { useModelConfigStore } from '../../stores/model-config-store'
@@ -9,6 +10,7 @@ import { ModelForm } from './ModelForm'
 export function ModelConfigPanel() {
   const { providers, isLoading, error, fetchProviders, saveProvider, deleteProvider, saveModel, deleteModel, testConnection } =
     useModelConfigStore()
+  const { t } = useTranslation()
 
   const [editingProvider, setEditingProvider] = useState<ModelProviderInfo | null>(null)
   const [isAddingProvider, setIsAddingProvider] = useState(false)
@@ -27,7 +29,7 @@ export function ModelConfigPanel() {
   }
 
   const handleDeleteProvider = async (providerId: string) => {
-    if (confirm('确定删除此供应商？')) {
+    if (confirm(t('settings.deleteProviderConfirm'))) {
       await deleteProvider(providerId)
     }
   }
@@ -40,7 +42,7 @@ export function ModelConfigPanel() {
   }
 
   const handleDeleteModel = async (providerId: string, modelId: string) => {
-    if (confirm('确定删除此模型？')) {
+    if (confirm(t('settings.deleteModelConfirm'))) {
       await deleteModel(providerId, modelId)
     }
   }
@@ -66,7 +68,7 @@ export function ModelConfigPanel() {
   if (editingProvider || isAddingProvider) {
     return (
       <div className='space-y-4'>
-        <h3 className='text-lg font-medium'>{editingProvider ? '编辑供应商' : '添加供应商'}</h3>
+        <h3 className='text-lg font-medium'>{editingProvider ? t('settings.editProvider') : t('settings.addProvider')}</h3>
         <ProviderForm
           provider={editingProvider || undefined}
           onSave={handleSaveProvider}
@@ -82,7 +84,7 @@ export function ModelConfigPanel() {
   if (editingModel) {
     return (
       <div className='space-y-4'>
-        <h3 className='text-lg font-medium'>{editingModel.model ? '编辑模型' : '添加模型'}</h3>
+        <h3 className='text-lg font-medium'>{editingModel.model ? t('settings.editModel') : t('settings.addModel')}</h3>
         <ModelForm
           model={editingModel.model}
           providerId={editingModel.providerId}
@@ -96,19 +98,19 @@ export function ModelConfigPanel() {
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-lg font-medium'>模型供应商</h3>
+        <h3 className='text-lg font-medium'>{t('settings.models')}</h3>
         <Button size='sm' onClick={() => setIsAddingProvider(true)}>
           <Plus className='mr-2 h-4 w-4' />
-          添加供应商
+          {t('settings.addProvider')}
         </Button>
       </div>
 
       {error && <div className='text-sm text-destructive'>{error}</div>}
 
       {isLoading ? (
-        <div className='text-sm text-muted-foreground'>加载中...</div>
+        <div className='text-sm text-muted-foreground'>{t('common.loading')}</div>
       ) : providers.length === 0 ? (
-        <div className='text-sm text-muted-foreground'>暂无供应商</div>
+        <div className='text-sm text-muted-foreground'>{t('settings.noProviders')}</div>
       ) : (
         <div className='space-y-2'>
           {providers.map((provider) => (
@@ -124,7 +126,7 @@ export function ModelConfigPanel() {
                     <ChevronRight className='h-4 w-4' />
                   )}
                   <span className='font-medium'>{provider.name}</span>
-                  <span className='text-sm text-muted-foreground'>（{provider.models.length} 个模型）</span>
+                  <span className='text-sm text-muted-foreground'>{t('settings.modelsCount', { count: provider.models.length })}</span>
                 </button>
 
                 <div className='flex items-center gap-1'>
@@ -134,7 +136,7 @@ export function ModelConfigPanel() {
                         testResults[provider.id].success ? 'text-green-500' : 'text-destructive'
                       }`}
                     >
-                      {testResults[provider.id].success ? '已连接' : testResults[provider.id].error}
+                      {testResults[provider.id].success ? t('settings.connected') : testResults[provider.id].error}
                     </span>
                   )}
 
@@ -155,19 +157,19 @@ export function ModelConfigPanel() {
               {expandedProviders.has(provider.id) && (
                 <div className='border-t p-3'>
                   <div className='mb-2 flex items-center justify-between'>
-                    <span className='text-sm text-muted-foreground'>模型列表</span>
+                    <span className='text-sm text-muted-foreground'>{t('settings.modelList')}</span>
                     <Button
                       size='sm'
                       variant='outline'
                       onClick={() => setEditingModel({ providerId: provider.id })}
                     >
                       <Plus className='mr-2 h-3 w-3' />
-                      添加模型
+                      {t('settings.addModel')}
                     </Button>
                   </div>
 
                   {provider.models.length === 0 ? (
-                    <div className='text-sm text-muted-foreground'>暂无模型</div>
+                    <div className='text-sm text-muted-foreground'>{t('settings.noModels')}</div>
                   ) : (
                     <div className='space-y-1'>
                       {provider.models.map((model) => (

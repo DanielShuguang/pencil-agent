@@ -14,6 +14,7 @@
 - **LLM**: @earendil-works/pi-ai ^0.78.x
 - **沙箱**: Dockerode ^5.x
 - **向量存储**: ChromaDB ^3.x
+- **国际化**: react-i18next ^17.x + i18next ^26.x
 - **构建**: Vite ^7.x + electron-builder ^26.x
 - **包管理**: pnpm ^10.x
 - **代码检查**: oxlint
@@ -39,6 +40,10 @@ src/
         ├── hooks/       # 自定义 hooks
         ├── lib/         # 工具函数
         │   └── __tests__/  # 单元测试
+        ├── locales/     # 国际化翻译文件
+        │   ├── zh.json  # 中文翻译
+        │   └── en.json  # 英文翻译
+        ├── i18n.ts      # i18n 配置
         └── test-setup.ts   # 测试环境初始化
 packages/
 └── shared-types/   # IPC 和工作流类型定义
@@ -135,6 +140,13 @@ pnpm build:linux   # Linux
 ### 向量记忆
 - ChromaDB 本地向量检索
 - 短期会话记忆、长期向量存储
+
+### 国际化 (i18n)
+- **多语言支持**: 支持中文和英文双语切换
+- **翻译文件**: 按模块组织翻译键 (common, chat, settings, workflow, role)
+- **语言切换**: 设置界面中可即时切换语言，无需重启
+- **持久化**: 用户语言偏好自动保存到 electron-store
+- **组件集成**: 所有 UI 组件使用 useTranslation hook 获取翻译文本
 
 ## 许可证
 

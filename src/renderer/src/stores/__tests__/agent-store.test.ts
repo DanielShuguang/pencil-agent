@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useAgentStore } from '../agent-store'
+import i18n from '../../i18n'
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
@@ -250,5 +251,22 @@ describe('agent-store', () => {
     useAgentStore.getState().sendMessage('Hello this is a test message')
     const meta = useAgentStore.getState().sessionMetas.get(id)
     expect(meta?.title).toBe('Hello this is a test message')
+  })
+
+  it('setLanguage changes language and persists', () => {
+    expect(useAgentStore.getState().language).toBe('zh')
+    useAgentStore.getState().setLanguage('en')
+    expect(useAgentStore.getState().language).toBe('en')
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'pencil-agent:language',
+      JSON.stringify('en')
+    )
+  })
+
+  it('setLanguage changes i18n language', () => {
+    useAgentStore.getState().setLanguage('en')
+    expect(i18n.language).toBe('en')
+    useAgentStore.getState().setLanguage('zh')
+    expect(i18n.language).toBe('zh')
   })
 })

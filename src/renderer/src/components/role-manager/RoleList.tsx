@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRoleStore } from '../../stores/role-store'
 import { cn } from '../../lib/utils'
 
@@ -9,17 +10,18 @@ interface RoleListProps {
 
 export function RoleList({ onSelect, selectedRoleId }: RoleListProps) {
   const { roles, isLoading, fetchRoles, deleteRole } = useRoleStore()
+  const { t } = useTranslation()
 
   useEffect(() => {
     fetchRoles()
   }, [fetchRoles])
 
   if (isLoading) {
-    return <div className="p-4 text-sm text-muted-foreground">加载角色中...</div>
+    return <div className="p-4 text-sm text-muted-foreground">{t('role.loading')}</div>
   }
 
   if (roles.length === 0) {
-    return <div className="p-4 text-sm text-muted-foreground">暂无角色</div>
+    return <div className="p-4 text-sm text-muted-foreground">{t('role.noRoles')}</div>
   }
 
   return (
@@ -41,7 +43,7 @@ export function RoleList({ onSelect, selectedRoleId }: RoleListProps) {
                 {role.model.provider}/{role.model.id}
               </span>
               <span className="text-xs text-muted-foreground">
-                {role.tools.length} 个工具
+                {t('role.toolsCount', { count: role.tools.length })}
               </span>
             </div>
           </div>

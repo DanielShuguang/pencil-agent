@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { SessionList } from './SessionList'
 import { useAgentStore } from '../../stores/agent-store'
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { createSession } = useAgentStore()
+  const { t } = useTranslation()
 
   if (isCollapsed) {
     return (
@@ -58,7 +60,7 @@ export function Sidebar() {
           className="p-2 hover:bg-accent rounded-lg transition-colors text-sm font-medium"
           onClick={() => setIsCollapsed(true)}
         >
-          会话
+          {t('sidebar.sessions')}
         </button>
         <button
           className="p-2 hover:bg-accent rounded-lg transition-colors"

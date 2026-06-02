@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
@@ -11,6 +12,7 @@ interface InputBarProps {
 
 export function InputBar({ onSend, onStop, isGenerating, disabled }: InputBarProps) {
   const [value, setValue] = useState('')
+  const { t } = useTranslation()
 
   const handleSend = () => {
     const trimmed = value.trim()
@@ -34,17 +36,17 @@ export function InputBar({ onSend, onStop, isGenerating, disabled }: InputBarPro
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder='输入消息...'
+          placeholder={t('chat.inputPlaceholder')}
           disabled={disabled || isGenerating}
           className='flex-1'
         />
         {isGenerating ? (
           <Button onClick={onStop} variant='destructive'>
-            停止
+            {t('chat.stop')}
           </Button>
         ) : (
           <Button onClick={handleSend} disabled={disabled || !value.trim()}>
-            发送
+            {t('chat.send')}
           </Button>
         )}
       </div>

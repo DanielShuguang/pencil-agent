@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { ModelProvider, ModelProviderInfo } from '@shared/ipc'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -15,6 +16,7 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
   const [name, setName] = useState(provider?.name || '')
   const [baseUrl, setBaseUrl] = useState(provider?.baseUrl || '')
   const [apiKey, setApiKey] = useState('')
+  const { t } = useTranslation()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +32,7 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
   return (
     <form onSubmit={handleSubmit} className='space-y-4'>
       <div className='space-y-2'>
-        <Label htmlFor='provider-id'>供应商 ID</Label>
+        <Label htmlFor='provider-id'>{t('settings.providerId')}</Label>
         <Input
           id='provider-id'
           value={id}
@@ -42,7 +44,7 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='provider-name'>供应商名称</Label>
+        <Label htmlFor='provider-name'>{t('settings.providerName')}</Label>
         <Input
           id='provider-name'
           value={name}
@@ -53,7 +55,7 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='base-url'>接口地址</Label>
+        <Label htmlFor='base-url'>{t('settings.baseUrl')}</Label>
         <Input
           id='base-url'
           value={baseUrl}
@@ -64,7 +66,7 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='api-key'>API 密钥</Label>
+        <Label htmlFor='api-key'>{t('settings.apiKey')}</Label>
         <Input
           id='api-key'
           type='password'
@@ -77,9 +79,9 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
 
       <div className='flex justify-end gap-2'>
         <Button type='button' variant='outline' onClick={onCancel}>
-          取消
+          {t('common.cancel')}
         </Button>
-        <Button type='submit'>保存</Button>
+        <Button type='submit'>{t('common.save')}</Button>
       </div>
     </form>
   )

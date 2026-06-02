@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AgentRole } from '@shared/ipc'
 
 interface RoleEditorProps {
@@ -32,6 +33,7 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
   const [provider, setProvider] = useState(role?.model.provider || 'anthropic')
   const [modelId, setModelId] = useState(role?.model.id || 'claude-sonnet-4-20250514')
   const [tools, setTools] = useState<string[]>(role?.tools || ['read', 'write', 'bash'])
+  const { t } = useTranslation()
 
   const handleSave = () => {
     if (!name.trim() || !systemPrompt.trim()) return
@@ -53,40 +55,40 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
   return (
     <div className="space-y-4 p-4">
       <div>
-        <label className="text-sm font-medium">名称</label>
+        <label className="text-sm font-medium">{t('role.name')}</label>
         <input
           type="text"
           className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="例如：研究员"
+          placeholder={t('role.namePlaceholder')}
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">描述</label>
+        <label className="text-sm font-medium">{t('role.description')}</label>
         <input
           type="text"
           className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="例如：负责研究任务"
+          placeholder={t('role.descriptionPlaceholder')}
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">系统提示词</label>
+        <label className="text-sm font-medium">{t('role.systemPrompt')}</label>
         <textarea
           className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background min-h-[100px]"
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
-          placeholder="定义角色的行为和能力..."
+          placeholder={t('role.systemPromptPlaceholder')}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">供应商</label>
+          <label className="text-sm font-medium">{t('settings.providerName')}</label>
           <select
             className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
             value={provider}
@@ -101,7 +103,7 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium">模型</label>
+          <label className="text-sm font-medium">{t('workflow.model')}</label>
           <select
             className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
             value={modelId}
@@ -117,7 +119,7 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium">工具</label>
+        <label className="text-sm font-medium">{t('workflow.tool')}</label>
         <div className="flex flex-wrap gap-2 mt-2">
           {AVAILABLE_TOOLS.map((tool) => (
             <button
@@ -138,14 +140,14 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
           className="px-4 py-2 text-sm border rounded-md hover:bg-accent transition-colors"
           onClick={onCancel}
         >
-          取消
+          {t('common.cancel')}
         </button>
         <button
           className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
           onClick={handleSave}
           disabled={!name.trim() || !systemPrompt.trim()}
         >
-          {role ? '更新' : '创建'}
+          {role ? t('common.edit') : t('common.create')}
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { AgentChunk, AgentToolCall, TokenUsage } from '@shared/ipc'
 import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/storage'
 import { useStatusStore } from './status-store'
+import i18n from '../i18n'
 
 const MAX_MESSAGES_PER_SESSION = 100
 
@@ -30,6 +31,7 @@ interface AgentState {
   activeSessionId: string | null
   isGenerating: boolean
   currentModel: { id: string; provider: string }
+  language: 'zh' | 'en'
 
   initFromStorage: () => void
   createSession: () => Promise<string>
@@ -41,6 +43,7 @@ interface AgentState {
   switchModel: (model: { id: string; provider: string }) => void
   createBranch: (messageId: string) => Promise<string | null>
   getBranches: () => SessionMeta[]
+  setLanguage: (lang: 'zh' | 'en') => void
 }
 
 function persistSession(meta: SessionMeta, messages: Message[]): void {
@@ -123,6 +126,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     id: 'claude-sonnet-4-20250514',
     provider: 'anthropic',
   }),
+  language: getStorageItem<'zh' | 'en'>('language', 'zh'),
 
   initFromStorage: () => {
     const savedSessions = getStorageItem<string[]>('sessionIds', [])
@@ -331,5 +335,11 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     return Array.from(sessionMetas.values()).filter(
       (meta) => meta.parentSessionId === activeSessionId
     )
+  },
+
+  setLanguage: (lang: 'zh' | 'en') => {
+    setStorageItem('language', lang)
+    i18n.changeLanguage(lang)
+    set({ language: lang })
   },
 }))

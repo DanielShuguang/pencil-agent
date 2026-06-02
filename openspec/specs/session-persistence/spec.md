@@ -35,3 +35,15 @@ The system SHALL manage localStorage capacity to prevent quota exceeded errors.
 #### Scenario: Storage quota exceeded
 - **WHEN** localStorage quota is exceeded
 - **THEN** the system removes oldest sessions and shows a warning notification
+
+### Requirement: Language preference persistence
+
+The system SHALL persist user language preference settings.
+
+#### Scenario: Save language preference
+- **WHEN** user switches language
+- **THEN** the language preference is immediately saved to electron-store
+
+#### Scenario: Restore language preference
+- **WHEN** user opens the application
+- **THEN** the system uses the last saved language setting

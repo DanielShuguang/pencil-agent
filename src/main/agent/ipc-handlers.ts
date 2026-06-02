@@ -1,6 +1,9 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { ipcMain, safeStorage, type BrowserWindow } from 'electron'
+import Store from 'electron-store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
+
+const store = new Store()
 
 export function registerAgentHandlers(
   manager: AgentSessionManager,
@@ -42,5 +45,43 @@ export function registerAgentHandlers(
 
   ipcMain.handle('tool:get', (_, name: string) => {
     return toolRegistry.get(name)
+  })
+
+  // 设置相关 handlers
+  ipcMain.handle('settings:save-key', (_, { provider, key }: { provider: string; key: string }) => {
+    try {
+      if (safeStorage.isEncryptionAvailable()) {
+        const encrypted = safeStorage.encryptString(key).toString('base64')
+        store.set(`api-keys.${provider}`, encrypted)
+      } else {
+        store.set(`api-keys.${provider}`, key)
+      }
+    } catch (error) {
+      throw new Error(`Failed to save API key: ${error}`)
+    }
+  })
+
+  ipcMain.handle('settings:get-key', (_, { provider }: { provider: string }) => {
+    try {
+      const stored = store.get(`api-keys.${provider}`) as string | undefined
+      if (!stored) return null
+
+      if (safeStorage.isEncryptionAvailable()) {
+        const buffer = Buffer.from(stored, 'base64')
+        return safeStorage.decryptString(buffer)
+      }
+      return stored
+    } catch (error) {
+      console.error(`Failed to get API key for ${provider}:`, error)
+      return null
+    }
+  })
+
+  ipcMain.handle('settings:delete-key', (_, { provider }: { provider: string }) => {
+    try {
+      store.delete(`api-keys.${provider}`)
+    } catch (error) {
+      throw new Error(`Failed to delete API key: ${error}`)
+    }
   })
 }

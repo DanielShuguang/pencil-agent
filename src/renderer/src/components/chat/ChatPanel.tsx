@@ -1,12 +1,20 @@
 import { useAgentStore } from '../../stores/agent-store'
 import { MessageList } from './MessageList'
 import { InputBar } from './InputBar'
+import { ModelSelector } from './ModelSelector'
 
 export function ChatPanel() {
-  const { activeSessionId, isGenerating, stopGeneration } = useAgentStore()
+  const { activeSessionId, isGenerating, stopGeneration, sessionMetas } = useAgentStore()
+  const activeMeta = activeSessionId ? sessionMetas.get(activeSessionId) : null
 
   return (
     <div className='flex h-full flex-col'>
+      <div className='flex items-center justify-between px-4 py-2 border-b'>
+        <div className='text-sm font-medium truncate'>
+          {activeMeta?.title || 'Pencil Agent'}
+        </div>
+        <ModelSelector />
+      </div>
       <MessageList />
       <InputBar
         onSend={(content) => {

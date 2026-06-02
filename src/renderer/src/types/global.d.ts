@@ -1,10 +1,12 @@
 import type {
   AgentChunk,
   AgentToolCall,
+  ToolDefinition,
   WorkflowDefinition,
   WorkflowProgress,
   SandboxExecuteRequest,
   SandboxOutput,
+  SandboxResult,
 } from '@shared/ipc'
 
 interface AgentAPI {
@@ -28,22 +30,35 @@ interface WindowAPI {
   onMaximizedChanged: (cb: (maximized: boolean) => void) => () => void
 }
 
+interface ToolAPI {
+  list: () => Promise<ToolDefinition[]>
+  get: (name: string) => Promise<ToolDefinition | undefined>
+}
+
 interface WorkflowAPI {
-  create: (def: WorkflowDefinition) => Promise<string>
-  execute: (id: string, input: Record<string, unknown>) => Promise<void>
+  execute: (workflow: WorkflowDefinition, input: Record<string, unknown>) => Promise<Record<string, unknown>>
   onProgress: (cb: (progress: WorkflowProgress) => void) => () => void
 }
 
 interface SandboxAPI {
-  execute: (req: SandboxExecuteRequest) => Promise<void>
+  execute: (req: SandboxExecuteRequest) => Promise<SandboxResult>
+  stop: (executionId: string) => void
   onOutput: (cb: (output: SandboxOutput) => void) => () => void
+}
+
+interface SettingsAPI {
+  saveKey: (provider: string, key: string) => Promise<void>
+  getKey: (provider: string) => Promise<string | null>
+  deleteKey: (provider: string) => Promise<void>
 }
 
 interface ElectronAPI {
   agent: AgentAPI
+  tool: ToolAPI
   window: WindowAPI
   workflow: WorkflowAPI
   sandbox: SandboxAPI
+  settings: SettingsAPI
 }
 
 declare global {

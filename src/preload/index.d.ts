@@ -88,6 +88,12 @@ interface WorkflowAPI {
   onProgress: (cb: (progress: WorkflowProgress) => void) => () => void
 }
 
+interface SettingsAPI {
+  saveKey: (provider: string, key: string) => Promise<void>
+  getKey: (provider: string) => Promise<string | null>
+  deleteKey: (provider: string) => Promise<void>
+}
+
 interface WindowAPI {
   minimize: () => void
   maximize: () => void
@@ -96,11 +102,12 @@ interface WindowAPI {
   onMaximizedChanged: (cb: (maximized: boolean) => void) => () => void
 }
 
-interface ElectronAPIExposed {
+export interface ElectronAPIExposed {
   agent: AgentAPI
   tool: ToolAPI
   sandbox: SandboxAPI
   workflow: WorkflowAPI
+  settings: SettingsAPI
   window: WindowAPI
 }
 

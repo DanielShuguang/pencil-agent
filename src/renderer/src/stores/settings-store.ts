@@ -1,22 +1,52 @@
 import { create } from 'zustand'
 
 interface SettingsState {
-  theme: 'light' | 'dark' | 'system'
-  language: string
   apiKeys: Record<string, string>
 
-  setTheme: (theme: 'light' | 'dark' | 'system') => void
-  setLanguage: (language: string) => void
-  setApiKey: (provider: string, key: string) => void
+  loadApiKey: (provider: string) => Promise<string | null>
+  saveApiKey: (provider: string, key: string) => Promise<void>
+  deleteApiKey: (provider: string) => Promise<void>
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  theme: 'system',
-  language: 'zh-CN',
   apiKeys: {},
 
-  setTheme: (theme) => set({ theme }),
-  setLanguage: (language) => set({ language }),
-  setApiKey: (provider, key) =>
-    set((state) => ({ apiKeys: { ...state.apiKeys, [provider]: key } })),
+  loadApiKey: async (provider: string) => {
+    try {
+      const key = await window.api.settings.getKey(provider)
+      set((state) => ({
+        apiKeys: { ...state.apiKeys, [provider]: key || '' },
+      }))
+      return key
+    } catch (error) {
+      console.error('Failed to load API key:', error)
+      return null
+    }
+  },
+
+  saveApiKey: async (provider: string, key: string) => {
+    try {
+      await window.api.settings.saveKey(provider, key)
+      set((state) => ({
+        apiKeys: { ...state.apiKeys, [provider]: key },
+      }))
+    } catch (error) {
+      console.error('Failed to save API key:', error)
+      throw error
+    }
+  },
+
+  deleteApiKey: async (provider: string) => {
+    try {
+      await window.api.settings.deleteKey(provider)
+      set((state) => {
+        const apiKeys = { ...state.apiKeys }
+        delete apiKeys[provider]
+        return { apiKeys }
+      })
+    } catch (error) {
+      console.error('Failed to delete API key:', error)
+      throw error
+    }
+  },
 }))

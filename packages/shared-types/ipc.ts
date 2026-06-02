@@ -176,3 +176,19 @@ export interface SandboxResult {
   exitCode: number
   executionId: string
 }
+
+// 设置相关
+export interface SaveKeyRequest {
+  provider: string
+  key: string
+}
+
+export interface GetKeyRequest {
+  provider: string
+}
+
+export interface ModelInfo {
+  id: string
+  name: string
+  provider: string
+}

@@ -1,45 +1,50 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useSettingsStore } from '../settings-store'
 
 beforeEach(() => {
-  useSettingsStore.setState({ theme: 'system', language: 'zh-CN', apiKeys: {} })
+  vi.stubGlobal('console', { error: vi.fn() })
+  vi.stubGlobal('window', {
+    api: {
+      settings: {
+        saveKey: vi.fn().mockResolvedValue(undefined),
+        getKey: vi.fn().mockResolvedValue(null),
+        deleteKey: vi.fn().mockResolvedValue(undefined),
+      },
+    },
+  })
+  useSettingsStore.setState({
+    apiKeys: {},
+  })
 })
 
 describe('settings-store', () => {
-  it('defaults to system theme and zh-CN', () => {
+  it('defaults to empty keys', () => {
     const state = useSettingsStore.getState()
-    expect(state.theme).toBe('system')
-    expect(state.language).toBe('zh-CN')
     expect(state.apiKeys).toEqual({})
   })
 
-  it('setTheme updates the theme', () => {
-    useSettingsStore.getState().setTheme('dark')
-    expect(useSettingsStore.getState().theme).toBe('dark')
+  it('loadApiKey returns null for unknown provider', async () => {
+    const key = await useSettingsStore.getState().loadApiKey('anthropic')
+    expect(key).toBeNull()
   })
 
-  it('setLanguage updates the language', () => {
-    useSettingsStore.getState().setLanguage('en-US')
-    expect(useSettingsStore.getState().language).toBe('en-US')
-  })
-
-  it('setApiKey stores a key for a provider', () => {
-    useSettingsStore.getState().setApiKey('anthropic', 'sk-ant-xxx')
+  it('saveApiKey stores a key for a provider', async () => {
+    await useSettingsStore.getState().saveApiKey('anthropic', 'sk-ant-xxx')
     expect(useSettingsStore.getState().apiKeys.anthropic).toBe('sk-ant-xxx')
   })
 
-  it('setApiKey merges with existing keys', () => {
-    useSettingsStore.getState().setApiKey('anthropic', 'sk-ant-xxx')
-    useSettingsStore.getState().setApiKey('openai', 'sk-openai-xxx')
+  it('saveApiKey merges with existing keys', async () => {
+    await useSettingsStore.getState().saveApiKey('anthropic', 'sk-ant-xxx')
+    await useSettingsStore.getState().saveApiKey('openai', 'sk-openai-xxx')
     expect(useSettingsStore.getState().apiKeys).toEqual({
       anthropic: 'sk-ant-xxx',
-      openai: 'sk-openai-xxx'
+      openai: 'sk-openai-xxx',
     })
   })
 
-  it('setApiKey overwrites existing key for same provider', () => {
-    useSettingsStore.getState().setApiKey('anthropic', 'old-key')
-    useSettingsStore.getState().setApiKey('anthropic', 'new-key')
-    expect(useSettingsStore.getState().apiKeys.anthropic).toBe('new-key')
+  it('deleteApiKey removes a key', async () => {
+    await useSettingsStore.getState().saveApiKey('anthropic', 'sk-ant-xxx')
+    await useSettingsStore.getState().deleteApiKey('anthropic')
+    expect(useSettingsStore.getState().apiKeys.anthropic).toBeUndefined()
   })
 })

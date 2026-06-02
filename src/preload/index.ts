@@ -1,6 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+interface ElectronAPIExposed {
+  agent: any
+  tool: any
+  sandbox: any
+  workflow: any
+  settings: any
+  window: any
+}
+
 const agentAPI = {
   create: (config: {
     sessionId: string
@@ -62,13 +71,24 @@ const workflowAPI = {
     name: string
     nodes: Array<{ id: string; type: string; data: Record<string, unknown>; position: { x: number; y: number } }>
     edges: Array<{ id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string }>
-  }, input: Record<string, unknown>) => ipcRenderer.invoke('workflow:execute', workflow, input),
+  }, input: Record<string, unknown>): Promise<Record<string, unknown>> => ipcRenderer.invoke('workflow:execute', workflow, input),
 
   onProgress: (cb: (progress: { nodeId: string; status: string; result?: unknown; error?: string }) => void) => {
     const handler = (_: unknown, progress: any) => cb(progress)
     ipcRenderer.on('workflow:progress', handler)
     return () => ipcRenderer.removeListener('workflow:progress', handler)
   },
+}
+
+const settingsAPI = {
+  saveKey: (provider: string, key: string) =>
+    ipcRenderer.invoke('settings:save-key', { provider, key }),
+
+  getKey: (provider: string) =>
+    ipcRenderer.invoke('settings:get-key', { provider }),
+
+  deleteKey: (provider: string) =>
+    ipcRenderer.invoke('settings:delete-key', { provider }),
 }
 
 const windowAPI = {
@@ -84,11 +104,12 @@ const windowAPI = {
 }
 
 // Custom APIs for renderer
-const api = {
+const api: ElectronAPIExposed = {
   agent: agentAPI,
   tool: toolAPI,
   sandbox: sandboxAPI,
   workflow: workflowAPI,
+  settings: settingsAPI,
   window: windowAPI,
 }
 

@@ -110,12 +110,12 @@ describe('WorkflowEngine', () => {
 
     expect(result).toEqual({ value: 42 })
 
-    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0])
+    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0]) as { nodeId: string; status: string; result?: unknown }[]
     const trueTargetProgress = progressCalls.findLast(
-      (p: { nodeId: string }) => p.nodeId === 'true-target',
+      (p) => p.nodeId === 'true-target',
     )
     const falseTargetProgress = progressCalls.findLast(
-      (p: { nodeId: string }) => p.nodeId === 'false-target',
+      (p) => p.nodeId === 'false-target',
     )
     expect(trueTargetProgress).toMatchObject({ status: 'success', result: { value: 42 } })
     expect(falseTargetProgress).toMatchObject({ status: 'success', result: {} })
@@ -146,12 +146,12 @@ describe('WorkflowEngine', () => {
 
     expect(result).toEqual({ value: 42 })
 
-    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0])
+    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0]) as { nodeId: string; status: string; result?: unknown }[]
     const falseBranchProgress = progressCalls.findLast(
-      (p: { nodeId: string }) => p.nodeId === 'false-branch',
+      (p) => p.nodeId === 'false-branch',
     )
     const trueBranchProgress = progressCalls.findLast(
-      (p: { nodeId: string }) => p.nodeId === 'true-branch',
+      (p) => p.nodeId === 'true-branch',
     )
     expect(falseBranchProgress).toMatchObject({ status: 'success', result: { value: 42 } })
     expect(trueBranchProgress).toMatchObject({ status: 'success', result: {} })

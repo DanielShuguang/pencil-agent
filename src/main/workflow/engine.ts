@@ -3,6 +3,9 @@ import type { AgentSessionManager } from '../agent/session-manager'
 import type { ToolRegistry } from '../agent/tool-registry'
 import { topologicalSort } from './topological-sort'
 
+const MAX_AGENT_OUTPUT_LENGTH = 100_000
+const CONDITION_TYPES = new Set(['condition'])
+
 interface ExecutionContext {
   workflowId: string
   nodeOutputs: Map<string, unknown>
@@ -35,6 +38,11 @@ export class WorkflowEngine {
 
     for (const nodeId of executionOrder) {
       const node = workflow.nodes.find((n) => n.id === nodeId)!
+
+      if (node.type === 'agent') {
+        agentSessionIds.push(`${context.workflowId}-${node.id}`)
+      }
+
       context.status.set(nodeId, 'running')
       onProgress({ nodeId, status: 'running' })
 
@@ -50,10 +58,6 @@ export class WorkflowEngine {
           this.agents.destroy(sid)
         }
         throw error
-      }
-
-      if (node.type === 'agent') {
-        agentSessionIds.push(`${context.workflowId}-${node.id}`)
       }
     }
 
@@ -74,8 +78,7 @@ export class WorkflowEngine {
       const sourceOutput = context.nodeOutputs.get(e.source)
       const sourceNode = nodes.find((n) => n.id === e.source)
 
-      // Route condition node outputs based on sourceHandle
-      if (sourceNode?.type === 'condition' && e.sourceHandle) {
+      if (sourceNode?.type && CONDITION_TYPES.has(sourceNode.type) && e.sourceHandle) {
         const conditionOutput = sourceOutput as { trueOutput: unknown; falseOutput: unknown } | undefined
         return e.sourceHandle === 'true' ? conditionOutput?.trueOutput : conditionOutput?.falseOutput
       }
@@ -120,7 +123,10 @@ export class WorkflowEngine {
 
     let result = ''
     for await (const chunk of this.agents.prompt(sessionId, String(inputs[0] ?? ''))) {
-      if (chunk.type === 'text') result += chunk.content
+      if (chunk.type === 'text') {
+        result += chunk.content
+        if (result.length > MAX_AGENT_OUTPUT_LENGTH) break
+      }
     }
     return result
   }

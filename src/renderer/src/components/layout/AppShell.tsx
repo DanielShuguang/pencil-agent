@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { Minus, Square, X, Maximize2, MessageSquare, Code2, Workflow, Settings } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '../../lib/utils'
 import { EditorPanel } from '../code-editor/EditorPanel'
 import { FileTree } from '../code-editor/FileTree'
@@ -26,6 +27,7 @@ export function AppShell({ children }: AppShellProps) {
   const [isTerminalCollapsed, setIsTerminalCollapsed] = useState(true)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const { selectedNodeId, setExecuting, updateNodeStatus } = useWorkflowStore()
+  const { t } = useTranslation()
 
   const handleExecute = useCallback(async () => {
     const { nodes: currentNodes, edges: currentEdges } = useWorkflowStore.getState()
@@ -98,7 +100,7 @@ export function AppShell({ children }: AppShellProps) {
             )}
           >
             <MessageSquare className='h-3.5 w-3.5' />
-            对话
+            {t('app.chat')}
           </button>
           <button
             onClick={() => setActiveTab('editor')}
@@ -110,7 +112,7 @@ export function AppShell({ children }: AppShellProps) {
             )}
           >
             <Code2 className='h-3.5 w-3.5' />
-            编辑器
+            {t('app.editor')}
           </button>
           <button
             onClick={() => setActiveTab('workflow')}
@@ -122,7 +124,7 @@ export function AppShell({ children }: AppShellProps) {
             )}
           >
             <Workflow className='h-3.5 w-3.5' />
-            工作流
+            {t('app.workflow')}
           </button>
           <div className='w-px h-6 bg-border mx-2' />
           <button
@@ -165,7 +167,7 @@ export function AppShell({ children }: AppShellProps) {
               <div className='w-48 border-r bg-muted/20 overflow-auto'>
                 <div className='p-2'>
                   <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
-                    文件
+                    {t('app.file')}
                   </h3>
                   <FileTree />
                 </div>

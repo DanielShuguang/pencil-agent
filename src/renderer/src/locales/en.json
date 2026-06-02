@@ -22,6 +22,15 @@
     "minutesAgo": "{{count}} minutes ago",
     "hoursAgo": "{{count}} hours ago"
   },
+  "app": {
+    "chat": "Chat",
+    "editor": "Editor",
+    "workflow": "Workflow",
+    "file": "File",
+    "newConversation": "New Conversation",
+    "branchTitle": "Branch - {{title}}",
+    "startNewConversation": "Start a new conversation"
+  },
   "chat": {
     "inputPlaceholder": "Type a message...",
     "send": "Send",
@@ -29,7 +38,8 @@
     "thinking": "Thinking...",
     "generating": "Generating...",
     "noMessages": "No messages yet",
-    "sendToStart": "Send a message to start conversation"
+    "sendToStart": "Send a message to start conversation",
+    "startConversation": "Start conversation..."
   },
   "sidebar": {
     "sessions": "Sessions",

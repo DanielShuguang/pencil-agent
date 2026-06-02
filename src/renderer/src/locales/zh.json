@@ -22,6 +22,15 @@
     "minutesAgo": "{{count}} 分钟前",
     "hoursAgo": "{{count}} 小时前"
   },
+  "app": {
+    "chat": "对话",
+    "editor": "编辑器",
+    "workflow": "工作流",
+    "file": "文件",
+    "newConversation": "新对话",
+    "branchTitle": "分支 - {{title}}",
+    "startNewConversation": "开始一个新的对话"
+  },
   "chat": {
     "inputPlaceholder": "输入消息...",
     "send": "发送",
@@ -29,7 +38,8 @@
     "thinking": "思考中...",
     "generating": "生成中...",
     "noMessages": "暂无消息",
-    "sendToStart": "发送消息开始对话"
+    "sendToStart": "发送消息开始对话",
+    "startConversation": "开始对话..."
   },
   "sidebar": {
     "sessions": "会话",

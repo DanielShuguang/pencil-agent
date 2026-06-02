@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronRight, ChevronDown, File, Folder, FolderOpen } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useEditorStore } from '../../stores/editor-store'
@@ -124,6 +125,7 @@ function FileTreeNode({
 export function FileTree({ className }: FileTreeProps) {
   const { files, openFile } = useEditorStore()
   const tree = buildTree(files)
+  const { t } = useTranslation()
 
   const handleSelect = (path: string) => {
     const file = files.get(path)
@@ -135,7 +137,7 @@ export function FileTree({ className }: FileTreeProps) {
   if (files.size === 0) {
     return (
       <div className={cn('flex items-center justify-center text-muted-foreground p-4', className)}>
-        <p className='text-xs'>暂无打开的文件</p>
+        <p className='text-xs'>{t('editor.noOpenFiles')}</p>
       </div>
     )
   }

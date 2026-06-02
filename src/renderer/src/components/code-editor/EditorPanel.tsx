@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import { useEditorStore } from '../../stores/editor-store'
 
@@ -9,6 +10,7 @@ interface EditorPanelProps {
 export function EditorPanel({ className }: EditorPanelProps) {
   const { files, activeFilePath, updateFileContent } = useEditorStore()
   const editorRef = useRef<any>(null)
+  const { t } = useTranslation()
 
   const activeFile = activeFilePath ? files.get(activeFilePath) : null
 
@@ -31,7 +33,7 @@ export function EditorPanel({ className }: EditorPanelProps) {
   if (!activeFile) {
     return (
       <div className={`flex items-center justify-center text-muted-foreground ${className}`}>
-        <p className='text-sm'>打开文件开始编辑</p>
+        <p className='text-sm'>{t('editor.openFileToEdit')}</p>
       </div>
     )
   }

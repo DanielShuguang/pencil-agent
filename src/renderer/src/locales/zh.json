@@ -31,6 +31,10 @@
     "branchTitle": "分支 - {{title}}",
     "startNewConversation": "开始一个新的对话"
   },
+  "editor": {
+    "noOpenFiles": "暂无打开的文件",
+    "openFileToEdit": "打开文件开始编辑"
+  },
   "chat": {
     "inputPlaceholder": "输入消息...",
     "send": "发送",

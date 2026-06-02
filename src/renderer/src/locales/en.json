@@ -31,6 +31,10 @@
     "branchTitle": "Branch - {{title}}",
     "startNewConversation": "Start a new conversation"
   },
+  "editor": {
+    "noOpenFiles": "No open files",
+    "openFileToEdit": "Open a file to start editing"
+  },
   "chat": {
     "inputPlaceholder": "Type a message...",
     "send": "Send",

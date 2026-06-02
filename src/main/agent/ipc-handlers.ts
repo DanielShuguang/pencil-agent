@@ -2,8 +2,17 @@ import { ipcMain, safeStorage, type BrowserWindow } from 'electron'
 import Store from 'electron-store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
+import { RoleManager } from './role-manager'
 
 const store = new Store()
+
+let roleManager: RoleManager | null = null
+function getRoleManager(): RoleManager {
+  if (!roleManager) {
+    roleManager = new RoleManager()
+  }
+  return roleManager
+}
 
 export function registerAgentHandlers(
   manager: AgentSessionManager,
@@ -83,5 +92,26 @@ export function registerAgentHandlers(
     } catch (error) {
       throw new Error(`Failed to delete API key: ${error}`)
     }
+  })
+
+  // 角色相关 handlers
+  ipcMain.handle('role:list', () => {
+    return getRoleManager().list()
+  })
+
+  ipcMain.handle('role:get', (_, id: string) => {
+    return getRoleManager().get(id)
+  })
+
+  ipcMain.handle('role:create', (_, role) => {
+    return getRoleManager().create(role)
+  })
+
+  ipcMain.handle('role:update', (_, { id, updates }: { id: string; updates: Partial<any> }) => {
+    return getRoleManager().update(id, updates)
+  })
+
+  ipcMain.handle('role:delete', (_, id: string) => {
+    return getRoleManager().delete(id)
   })
 }

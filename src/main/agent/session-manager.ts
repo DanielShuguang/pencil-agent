@@ -17,6 +17,7 @@ interface SessionConfig {
   sessionId: string
   model: { id: string; provider: string }
   systemPrompt?: string
+  tools?: string[]
 }
 
 export class AgentSessionManager {

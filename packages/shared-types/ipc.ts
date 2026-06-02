@@ -40,7 +40,7 @@ export interface AgentToolCall {
 }
 
 // 工作流相关
-export type NodeType = 'start' | 'end' | 'agent' | 'tool' | 'condition'
+export type NodeType = 'start' | 'end' | 'agent' | 'tool' | 'condition' | 'multi-agent'
 
 export interface PortDefinition {
   id: string
@@ -124,6 +124,22 @@ export const NODE_REGISTRY: Record<NodeType, NodeDefinition> = {
       },
     },
   },
+  'multi-agent': {
+    type: 'multi-agent',
+    label: '多Agent',
+    icon: 'Users',
+    inputs: [{ id: 'input', name: '输入', type: 'string', required: true }],
+    outputs: [{ id: 'output', name: '输出', type: 'string', required: true }],
+    configSchema: {
+      type: 'object',
+      properties: {
+        mode: { type: 'string', enum: ['sequential', 'parallel', 'debate', 'hierarchical'] },
+        roleIds: { type: 'array', items: { type: 'string' } },
+        maxRounds: { type: 'number' },
+        mergerRoleId: { type: 'string' },
+      },
+    },
+  },
 }
 
 export interface WorkflowDefinition {
@@ -191,4 +207,39 @@ export interface ModelInfo {
   id: string
   name: string
   provider: string
+}
+
+// 角色相关
+export interface AgentRole {
+  id: string
+  name: string
+  description: string
+  systemPrompt: string
+  model: { id: string; provider: string }
+  tools: string[]
+  createdAt: number
+  updatedAt: number
+}
+
+// 多 Agent 编排相关
+export type OrchestrationMode = 'sequential' | 'parallel' | 'debate' | 'hierarchical'
+
+export interface OrchestrationConfig {
+  mode: OrchestrationMode
+  roles: string[] // Role IDs
+  maxRounds?: number // For debate mode
+  mergerRoleId?: string // For parallel mode
+}
+
+// 记忆相关
+export interface MemoryEntry {
+  id: string
+  content: string
+  metadata: {
+    sessionId: string
+    role: string
+    timestamp: number
+    tags: string[]
+  }
+  score?: number
 }

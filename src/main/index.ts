@@ -10,6 +10,7 @@ import { registerSandboxHandlers } from './sandbox/ipc-handlers'
 import type { SandboxExecutor } from './sandbox/executor'
 import { WorkflowEngine } from './workflow/engine'
 import { registerWorkflowHandlers } from './workflow/ipc-handlers'
+import { registerMemoryHandlers } from './memory/ipc-handlers'
 
 let mainWindow: BrowserWindow | null = null
 const agentManager = new AgentSessionManager()
@@ -47,6 +48,9 @@ function createWindow(): void {
 
   // Register workflow IPC handlers
   registerWorkflowHandlers(workflowEngine, mainWindow)
+
+  // Register memory IPC handlers
+  registerMemoryHandlers()
 
   // Register window control IPC handlers
   registerWindowHandlers(mainWindow)

@@ -19,6 +19,8 @@ export interface SessionMeta {
   createdAt: number
   updatedAt: number
   messageCount: number
+  parentSessionId?: string
+  branchPointMessageId?: string
 }
 
 interface AgentState {
@@ -36,6 +38,8 @@ interface AgentState {
   switchSession: (id: string) => void
   appendChunk: (chunk: AgentChunk) => void
   switchModel: (model: { id: string; provider: string }) => void
+  createBranch: (messageId: string) => Promise<string | null>
+  getBranches: () => SessionMeta[]
 }
 
 function persistSession(meta: SessionMeta, messages: Message[]): void {
@@ -272,5 +276,54 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   switchModel: (model: { id: string; provider: string }) => {
     setStorageItem('currentModel', model)
     set({ currentModel: model })
+  },
+
+  createBranch: async (messageId: string) => {
+    const { activeSessionId, sessions, sessionMetas, currentModel } = get()
+    if (!activeSessionId) return null
+
+    const messages = sessions.get(activeSessionId) || []
+    const branchIndex = messages.findIndex((m) => m.id === messageId)
+    if (branchIndex === -1) return null
+
+    const branchMessages = messages.slice(0, branchIndex + 1)
+    const branchId = `branch-${Date.now()}`
+
+    await window.api.agent.create({
+      sessionId: branchId,
+      model: currentModel,
+    })
+
+    const meta: SessionMeta = {
+      id: branchId,
+      title: `Branch from ${sessionMetas.get(activeSessionId)?.title || 'session'}`,
+      model: currentModel,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messageCount: branchMessages.length,
+      parentSessionId: activeSessionId,
+      branchPointMessageId: messageId,
+    }
+
+    const newSessions = new Map(sessions)
+    const newMetas = new Map(sessionMetas)
+    newSessions.set(branchId, branchMessages)
+    newMetas.set(branchId, meta)
+
+    setStorageItem('sessionIds', Array.from(newSessions.keys()))
+    setStorageItem('activeSessionId', branchId)
+    persistSession(meta, branchMessages)
+
+    set({ sessions: newSessions, sessionMetas: newMetas, activeSessionId: branchId })
+    return branchId
+  },
+
+  getBranches: () => {
+    const { activeSessionId, sessionMetas } = get()
+    if (!activeSessionId) return []
+
+    return Array.from(sessionMetas.values()).filter(
+      (meta) => meta.parentSessionId === activeSessionId
+    )
   },
 }))

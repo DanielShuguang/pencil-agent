@@ -1,6 +1,8 @@
 import type {
   AgentChunk,
   AgentToolCall,
+  AgentRole,
+  MemoryEntry,
   ToolDefinition,
   WorkflowDefinition,
   WorkflowProgress,
@@ -52,9 +54,27 @@ interface SettingsAPI {
   deleteKey: (provider: string) => Promise<void>
 }
 
+interface RoleAPI {
+  list: () => Promise<AgentRole[]>
+  get: (id: string) => Promise<AgentRole | undefined>
+  create: (role: Omit<AgentRole, 'createdAt' | 'updatedAt'>) => Promise<AgentRole>
+  update: (id: string, updates: Partial<AgentRole>) => Promise<AgentRole | undefined>
+  delete: (id: string) => Promise<boolean>
+}
+
+interface MemoryAPI {
+  store: (content: string, metadata: MemoryEntry['metadata']) => Promise<string>
+  recall: (query: string, topK?: number) => Promise<MemoryEntry[]>
+  search: (query: string, filters?: { tags?: string[]; sessionId?: string }) => Promise<MemoryEntry[]>
+  delete: (id: string) => Promise<void>
+  clearAll: () => Promise<void>
+}
+
 interface ElectronAPI {
   agent: AgentAPI
   tool: ToolAPI
+  role: RoleAPI
+  memory: MemoryAPI
   window: WindowAPI
   workflow: WorkflowAPI
   sandbox: SandboxAPI

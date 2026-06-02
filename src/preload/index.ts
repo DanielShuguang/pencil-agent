@@ -6,6 +6,8 @@ interface ElectronAPIExposed {
   tool: any
   sandbox: any
   workflow: any
+  role: any
+  memory: any
   settings: any
   window: any
 }
@@ -80,6 +82,27 @@ const workflowAPI = {
   },
 }
 
+const roleAPI = {
+  list: () => ipcRenderer.invoke('role:list'),
+  get: (id: string) => ipcRenderer.invoke('role:get', id),
+  create: (role: any) => ipcRenderer.invoke('role:create', role),
+  update: (id: string, updates: any) => ipcRenderer.invoke('role:update', { id, updates }),
+  delete: (id: string) => ipcRenderer.invoke('role:delete', id),
+}
+
+const memoryAPI = {
+  store: (content: string, metadata: any) =>
+    ipcRenderer.invoke('memory:store', { content, metadata }),
+  recall: (query: string, topK?: number) =>
+    ipcRenderer.invoke('memory:recall', { query, topK }),
+  search: (query: string, filters?: any) =>
+    ipcRenderer.invoke('memory:search', { query, filters }),
+  delete: (id: string) =>
+    ipcRenderer.invoke('memory:delete', id),
+  clearAll: () =>
+    ipcRenderer.invoke('memory:clear-all'),
+}
+
 const settingsAPI = {
   saveKey: (provider: string, key: string) =>
     ipcRenderer.invoke('settings:save-key', { provider, key }),
@@ -109,6 +132,8 @@ const api: ElectronAPIExposed = {
   tool: toolAPI,
   sandbox: sandboxAPI,
   workflow: workflowAPI,
+  role: roleAPI,
+  memory: memoryAPI,
   settings: settingsAPI,
   window: windowAPI,
 }

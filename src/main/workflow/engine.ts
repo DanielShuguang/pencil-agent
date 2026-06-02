@@ -2,6 +2,8 @@ import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, WorkflowProgress }
 import type { AgentSessionManager } from '../agent/session-manager'
 import type { ToolRegistry } from '../agent/tool-registry'
 import { topologicalSort } from './topological-sort'
+import { MultiAgentOrchestrator } from '../agent/multi-agent'
+import { RoleManager } from '../agent/role-manager'
 
 const MAX_AGENT_OUTPUT_LENGTH = 100_000
 const CONDITION_TYPES = new Set(['condition'])
@@ -14,10 +16,17 @@ interface ExecutionContext {
 }
 
 export class WorkflowEngine {
+  private orchestrator: MultiAgentOrchestrator | null = null
+
   constructor(
     private agents: AgentSessionManager,
     private tools: ToolRegistry,
-  ) {}
+    roleManager?: RoleManager,
+  ) {
+    if (roleManager) {
+      this.orchestrator = new MultiAgentOrchestrator(agents, roleManager)
+    }
+  }
 
   async execute(
     workflow: WorkflowDefinition,
@@ -97,6 +106,8 @@ export class WorkflowEngine {
         return this.executeToolNode(node, inputs)
       case 'condition':
         return this.evaluateCondition(node, inputs, context)
+      case 'multi-agent':
+        return this.executeMultiAgentNode(node, inputs, context)
       default:
         throw new Error(`Unknown node type: ${node.type}`)
     }
@@ -149,6 +160,34 @@ export class WorkflowEngine {
     // For now, return the input as tool output
     // Real tool execution would use the sandbox or tool registry
     return inputs[0]
+  }
+
+  private async executeMultiAgentNode(
+    node: WorkflowNode,
+    inputs: unknown[],
+    _context: ExecutionContext,
+  ): Promise<string> {
+    if (!this.orchestrator) {
+      throw new Error('Multi-agent orchestration requires a RoleManager')
+    }
+
+    const config = node.data.config as {
+      mode?: 'sequential' | 'parallel' | 'debate' | 'hierarchical'
+      roleIds?: string[]
+      maxRounds?: number
+      mergerRoleId?: string
+    } | undefined
+
+    const mode = config?.mode || 'sequential'
+    const roleIds = config?.roleIds || []
+    const input = String(inputs[0] ?? '')
+
+    const result = await this.orchestrator.execute(mode, roleIds, input, {
+      maxRounds: config?.maxRounds,
+      mergerRoleId: config?.mergerRoleId,
+    })
+
+    return result.finalOutput
   }
 
   private evaluateCondition(

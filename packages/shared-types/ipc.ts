@@ -262,3 +262,42 @@ export interface AppAPI {
 export interface CheckConnectionRequest {
   provider: string
 }
+
+// 模型配置相关
+export interface ModelProvider {
+  id: string
+  name: string
+  baseUrl: string
+  apiKey: string
+  models: ModelConfig[]
+  createdAt: number
+  updatedAt: number
+}
+
+export interface ModelConfig {
+  id: string
+  name: string
+  providerId: string
+  maxTokens?: number
+  temperature?: number
+}
+
+export interface TestConnectionRequest {
+  providerId: string
+}
+
+export interface TestConnectionResponse {
+  success: boolean
+  error?: string
+}
+
+export type ModelProviderInfo = Omit<ModelProvider, 'apiKey'>
+
+export interface ModelConfigAPI {
+  list: () => Promise<ModelProviderInfo[]>
+  save: (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) => Promise<ModelProvider>
+  delete: (providerId: string) => Promise<void>
+  saveModel: (providerId: string, model: ModelConfig) => Promise<void>
+  deleteModel: (providerId: string, modelId: string) => Promise<void>
+  testConnection: (request: TestConnectionRequest) => Promise<TestConnectionResponse>
+}

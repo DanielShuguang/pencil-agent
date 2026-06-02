@@ -11,6 +11,7 @@ interface ElectronAPIExposed {
   settings: any
   window: any
   app: any
+  modelConfig: any
 }
 
 const agentAPI = {
@@ -108,6 +109,15 @@ const appAPI = {
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
 }
 
+const modelConfigAPI = {
+  list: () => ipcRenderer.invoke('model-config:list'),
+  save: (provider: any) => ipcRenderer.invoke('model-config:save', provider),
+  delete: (providerId: string) => ipcRenderer.invoke('model-config:delete', providerId),
+  saveModel: (providerId: string, model: any) => ipcRenderer.invoke('model-config:save-model', { providerId, model }),
+  deleteModel: (providerId: string, modelId: string) => ipcRenderer.invoke('model-config:delete-model', { providerId, modelId }),
+  testConnection: (request: any) => ipcRenderer.invoke('model-config:test-connection', request),
+}
+
 const settingsAPI = {
   saveKey: (provider: string, key: string) =>
     ipcRenderer.invoke('settings:save-key', { provider, key }),
@@ -145,6 +155,7 @@ const api: ElectronAPIExposed = {
   settings: settingsAPI,
   window: windowAPI,
   app: appAPI,
+  modelConfig: modelConfigAPI,
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

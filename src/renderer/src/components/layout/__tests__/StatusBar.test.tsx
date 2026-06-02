@@ -52,7 +52,7 @@ describe('StatusBar', () => {
 
     expect(screen.getByText('claude-sonnet-4-20250514')).toBeInTheDocument()
     expect(screen.getByText('1.5K')).toBeInTheDocument()
-    expect(screen.getByText('Connected')).toBeInTheDocument()
+    expect(screen.getByText('已连接')).toBeInTheDocument()
     expect(screen.getByText('v1.0.0')).toBeInTheDocument()
   })
 
@@ -79,7 +79,7 @@ describe('StatusBar', () => {
 
     fireEvent.click(screen.getByText('1.5K'))
 
-    expect(screen.getByText('Token Usage')).toBeInTheDocument()
+    expect(screen.getByText('Token 用量')).toBeInTheDocument()
     expect(screen.getByText('1.0K')).toBeInTheDocument()
     expect(screen.getByText('500')).toBeInTheDocument()
   })
@@ -87,7 +87,7 @@ describe('StatusBar', () => {
   it('should trigger connection check on click', () => {
     render(<StatusBar />)
 
-    fireEvent.click(screen.getByText('Connected'))
+    fireEvent.click(screen.getByText('已连接'))
 
     expect(mockCheckConnection).toHaveBeenCalled()
   })
@@ -109,7 +109,7 @@ describe('StatusBar', () => {
 
     render(<StatusBar />)
 
-    expect(screen.getByText('Disconnected')).toBeInTheDocument()
+    expect(screen.getByText('已断开')).toBeInTheDocument()
   })
 
   it('should show checking status with spinner', () => {
@@ -129,7 +129,7 @@ describe('StatusBar', () => {
 
     render(<StatusBar />)
 
-    expect(screen.getByText('Checking...')).toBeInTheDocument()
+    expect(screen.getByText('检查中...')).toBeInTheDocument()
   })
 
   it('should show generating state', () => {

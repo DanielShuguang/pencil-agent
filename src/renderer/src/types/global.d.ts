@@ -1,14 +1,9 @@
 import type {
-  AgentChunk,
-  AgentToolCall,
-  AgentRole,
-  MemoryEntry,
-  ToolDefinition,
-  WorkflowDefinition,
-  WorkflowProgress,
-  SandboxExecuteRequest,
-  SandboxOutput,
-  SandboxResult,
+  ModelProvider,
+  ModelProviderInfo,
+  ModelConfig,
+  TestConnectionRequest,
+  TestConnectionResponse,
 } from '@shared/ipc'
 
 interface AgentAPI {
@@ -59,6 +54,15 @@ interface AppAPI {
   getVersion: () => Promise<string>
 }
 
+interface ModelConfigAPI {
+  list: () => Promise<ModelProviderInfo[]>
+  save: (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) => Promise<ModelProvider>
+  delete: (providerId: string) => Promise<void>
+  saveModel: (providerId: string, model: ModelConfig) => Promise<void>
+  deleteModel: (providerId: string, modelId: string) => Promise<void>
+  testConnection: (request: TestConnectionRequest) => Promise<TestConnectionResponse>
+}
+
 interface RoleAPI {
   list: () => Promise<AgentRole[]>
   get: (id: string) => Promise<AgentRole | undefined>
@@ -85,6 +89,7 @@ interface ElectronAPI {
   sandbox: SandboxAPI
   settings: SettingsAPI
   app: AppAPI
+  modelConfig: ModelConfigAPI
 }
 
 declare global {

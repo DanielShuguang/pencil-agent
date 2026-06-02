@@ -3,6 +3,7 @@ import Store from 'electron-store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
 import { RoleManager } from './role-manager'
+import { ModelConfigManager } from './model-config'
 
 const store = new Store()
 
@@ -12,6 +13,14 @@ function getRoleManager(): RoleManager {
     roleManager = new RoleManager()
   }
   return roleManager
+}
+
+let modelConfigManager: ModelConfigManager | null = null
+function getModelConfigManager(): ModelConfigManager {
+  if (!modelConfigManager) {
+    modelConfigManager = new ModelConfigManager()
+  }
+  return modelConfigManager
 }
 
 export function registerAgentHandlers(
@@ -164,5 +173,30 @@ export function registerAgentHandlers(
 
   ipcMain.handle('role:delete', (_, id: string) => {
     return getRoleManager().delete(id)
+  })
+
+  // 模型配置相关 handlers
+  ipcMain.handle('model-config:list', () => {
+    return getModelConfigManager().list()
+  })
+
+  ipcMain.handle('model-config:save', (_, provider) => {
+    return getModelConfigManager().save(provider)
+  })
+
+  ipcMain.handle('model-config:delete', (_, providerId: string) => {
+    getModelConfigManager().delete(providerId)
+  })
+
+  ipcMain.handle('model-config:test-connection', async (_, { providerId }) => {
+    return getModelConfigManager().testConnection(providerId)
+  })
+
+  ipcMain.handle('model-config:save-model', (_, { providerId, model }) => {
+    getModelConfigManager().saveModel(providerId, model)
+  })
+
+  ipcMain.handle('model-config:delete-model', (_, { providerId, modelId }) => {
+    getModelConfigManager().deleteModel(providerId, modelId)
   })
 }

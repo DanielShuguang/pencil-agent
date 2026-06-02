@@ -15,11 +15,11 @@ export function RoleList({ onSelect, selectedRoleId }: RoleListProps) {
   }, [fetchRoles])
 
   if (isLoading) {
-    return <div className="p-4 text-sm text-muted-foreground">Loading roles...</div>
+    return <div className="p-4 text-sm text-muted-foreground">加载角色中...</div>
   }
 
   if (roles.length === 0) {
-    return <div className="p-4 text-sm text-muted-foreground">No roles defined</div>
+    return <div className="p-4 text-sm text-muted-foreground">暂无角色</div>
   }
 
   return (
@@ -41,7 +41,7 @@ export function RoleList({ onSelect, selectedRoleId }: RoleListProps) {
                 {role.model.provider}/{role.model.id}
               </span>
               <span className="text-xs text-muted-foreground">
-                {role.tools.length} tools
+                {role.tools.length} 个工具
               </span>
             </div>
           </div>

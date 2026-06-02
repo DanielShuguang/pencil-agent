@@ -7,7 +7,7 @@ export function SessionList() {
   const sortedSessions = Array.from(sessionMetas.values()).sort((a, b) => b.updatedAt - a.updatedAt)
 
   if (sortedSessions.length === 0) {
-    return <div className="p-4 text-sm text-muted-foreground text-center">No sessions yet</div>
+    return <div className="p-4 text-sm text-muted-foreground text-center">暂无会话</div>
   }
 
   return (

@@ -13,7 +13,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Settings</h2>
+          <h2 className="text-lg font-semibold">设置</h2>
           <button
             className="p-1 hover:bg-accent rounded-md transition-colors"
             onClick={onClose}

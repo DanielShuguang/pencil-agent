@@ -48,11 +48,11 @@ export function StatusBar() {
   const getConnectionText = () => {
     switch (connectionStatus) {
       case 'connected':
-        return 'Connected'
+        return '已连接'
       case 'disconnected':
-        return 'Disconnected'
+        return '已断开'
       case 'checking':
-        return 'Checking...'
+        return '检查中...'
     }
   }
 
@@ -99,19 +99,19 @@ export function StatusBar() {
             <div className='absolute bottom-full left-0 mb-1 rounded-md border bg-popover p-2 shadow-md'>
               <div className='flex items-center gap-1.5 mb-1'>
                 <Info className='h-3 w-3' />
-                <span className='font-medium'>Token Usage</span>
+                <span className='font-medium'>Token 用量</span>
               </div>
               <div className='space-y-1'>
                 <div className='flex justify-between gap-4'>
-                  <span>Prompt:</span>
+                  <span>提示：</span>
                   <span>{formatTokenCount(tokenUsage.prompt)}</span>
                 </div>
                 <div className='flex justify-between gap-4'>
-                  <span>Completion:</span>
+                  <span>补全：</span>
                   <span>{formatTokenCount(tokenUsage.completion)}</span>
                 </div>
                 <div className='flex justify-between gap-4 border-t pt-1'>
-                  <span>Total:</span>
+                  <span>总计：</span>
                   <span>{formatTokenCount(tokenUsage.total)}</span>
                 </div>
               </div>

@@ -16,7 +16,7 @@ export function BranchSelector() {
           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => switchSession(parentId)}
         >
-          ← Back to parent
+          ← 返回父会话
         </button>
       )}
       {branches.length > 0 && (

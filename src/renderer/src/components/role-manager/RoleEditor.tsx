@@ -53,40 +53,40 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
   return (
     <div className="space-y-4 p-4">
       <div>
-        <label className="text-sm font-medium">Name</label>
+        <label className="text-sm font-medium">名称</label>
         <input
           type="text"
           className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g., Researcher"
+          placeholder="例如：研究员"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">Description</label>
+        <label className="text-sm font-medium">描述</label>
         <input
           type="text"
           className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="e.g., Responsible for research tasks"
+          placeholder="例如：负责研究任务"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">System Prompt</label>
+        <label className="text-sm font-medium">系统提示词</label>
         <textarea
           className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background min-h-[100px]"
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
-          placeholder="Define the agent's behavior and capabilities..."
+          placeholder="定义角色的行为和能力..."
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Provider</label>
+          <label className="text-sm font-medium">供应商</label>
           <select
             className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
             value={provider}
@@ -101,7 +101,7 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium">Model</label>
+          <label className="text-sm font-medium">模型</label>
           <select
             className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
             value={modelId}
@@ -117,7 +117,7 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium">Tools</label>
+        <label className="text-sm font-medium">工具</label>
         <div className="flex flex-wrap gap-2 mt-2">
           {AVAILABLE_TOOLS.map((tool) => (
             <button
@@ -138,14 +138,14 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
           className="px-4 py-2 text-sm border rounded-md hover:bg-accent transition-colors"
           onClick={onCancel}
         >
-          Cancel
+          取消
         </button>
         <button
           className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
           onClick={handleSave}
           disabled={!name.trim() || !systemPrompt.trim()}
         >
-          {role ? 'Update' : 'Create'}
+          {role ? '更新' : '创建'}
         </button>
       </div>
     </div>

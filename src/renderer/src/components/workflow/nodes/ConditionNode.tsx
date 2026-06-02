@@ -30,8 +30,8 @@ export function ConditionNode({ id, data }: ConditionNodeProps) {
         </p>
       )}
       <div className='flex justify-between mt-2 text-xs'>
-        <span className='text-green-500'>True</span>
-        <span className='text-red-500'>False</span>
+        <span className='text-green-500'>是</span>
+        <span className='text-red-500'>否</span>
       </div>
     </BaseNode>
   )

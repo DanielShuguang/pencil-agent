@@ -58,7 +58,7 @@ export function Sidebar() {
           className="p-2 hover:bg-accent rounded-lg transition-colors text-sm font-medium"
           onClick={() => setIsCollapsed(true)}
         >
-          Sessions
+          会话
         </button>
         <button
           className="p-2 hover:bg-accent rounded-lg transition-colors"

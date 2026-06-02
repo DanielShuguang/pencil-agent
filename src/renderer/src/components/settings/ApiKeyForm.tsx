@@ -49,18 +49,18 @@ export function ApiKeyForm() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium">API Keys</h3>
+      <h3 className="text-sm font-medium">API 密钥</h3>
       {PROVIDERS.map((provider) => (
         <div key={provider.id} className="space-y-2">
           <label className="text-sm text-muted-foreground">{provider.name}</label>
           {savedKeys[provider.id] ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Key saved (masked)</span>
+              <span className="text-sm text-muted-foreground">密钥已保存</span>
               <button
                 className="text-xs text-destructive hover:underline"
                 onClick={() => handleDelete(provider.id)}
               >
-                Delete
+                删除
               </button>
             </div>
           ) : (
@@ -77,7 +77,7 @@ export function ApiKeyForm() {
                 onClick={() => handleSave(provider.id)}
                 disabled={!keys[provider.id] || saving === provider.id}
               >
-                {saving === provider.id ? 'Saving...' : 'Save'}
+                {saving === provider.id ? '保存中...' : '保存'}
               </button>
             </div>
           )}

@@ -94,8 +94,8 @@ export class DockerSandbox implements SandboxExecutor {
         if (this.running.has(executionId)) {
           container.kill().catch(() => {})
           this.running.delete(executionId)
-          stderr += '\n[Timeout] Execution timed out'
-          onOutput?.({ type: 'stderr', content: '\n[Timeout] Execution timed out' })
+          stderr += '\n[超时] 执行超时'
+          onOutput?.({ type: 'stderr', content: '\n[超时] 执行超时' })
           onOutput?.({ type: 'exit', content: '', exitCode: 124 })
           resolve({ stdout, stderr, exitCode: 124, executionId })
         }

@@ -153,7 +153,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     const meta: SessionMeta = {
       id,
-      title: 'New Chat',
+      title: '新对话',
       model: currentModel,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -302,7 +302,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     const meta: SessionMeta = {
       id: branchId,
-      title: `Branch from ${sessionMetas.get(activeSessionId)?.title || 'session'}`,
+      title: `分支 - ${sessionMetas.get(activeSessionId)?.title || '新对话'}`,
       model: currentModel,
       createdAt: Date.now(),
       updatedAt: Date.now(),

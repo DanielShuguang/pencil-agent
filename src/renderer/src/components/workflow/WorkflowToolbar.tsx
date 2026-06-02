@@ -49,7 +49,7 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
           useWorkflowStore.getState().setNodes(workflow.nodes ?? [])
           useWorkflowStore.getState().setEdges(workflow.edges ?? [])
         } catch {
-          alert('Invalid workflow file')
+          alert('无效的工作流文件')
         }
       }
       reader.readAsText(file)

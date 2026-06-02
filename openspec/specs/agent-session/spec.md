@@ -1,48 +1,37 @@
-## ADDED Requirements
-
-### Requirement: Create Agent session
-The system SHALL create an Agent session with the specified model configuration.
-
-#### Scenario: Successful session creation
-- **WHEN** user requests to create a session with model `{ id: 'claude-sonnet-4-20250514', provider: 'anthropic' }`
-- **THEN** system creates a new session and returns a unique session ID
-
-#### Scenario: Session creation with invalid model
-- **WHEN** user requests to create a session with an unsupported model
-- **THEN** system throws an error indicating the model is not supported
-
-### Requirement: Send message to Agent
-The system SHALL send a user message to an existing Agent session and receive a streaming response.
-
-#### Scenario: Successful message sending
-- **WHEN** user sends a message "你好" to an active session
-- **THEN** system forwards the message to the LLM and streams the response back
-
-#### Scenario: Message to non-existent session
-- **WHEN** user sends a message to a session ID that does not exist
-- **THEN** system throws an error indicating the session was not found
+## MODIFIED Requirements
 
 ### Requirement: Stream Agent response
-The system SHALL stream Agent responses in real-time using AsyncGenerator.
+The system SHALL stream Agent responses in real-time using AsyncGenerator, including tool call events.
 
 #### Scenario: Streaming text response
 - **WHEN** LLM generates a response
 - **THEN** system yields `AgentChunk` objects with `type: 'text'` and incremental content
 
+#### Scenario: Streaming tool call
+- **WHEN** LLM requests a tool call
+- **THEN** system yields `AgentChunk` objects with `type: 'tool_call'`, tool name, and parameters
+
+#### Scenario: Streaming tool result
+- **WHEN** tool execution completes
+- **THEN** system yields `AgentChunk` objects with `type: 'tool_result'`, result content, and status
+
 #### Scenario: Streaming completes
-- **WHEN** LLM finishes generating
+- **WHEN** LLM finishes generating (all tool calls resolved)
 - **THEN** system yields a final chunk and completes the generator
 
-### Requirement: Stop Agent generation
-The system SHALL allow stopping an ongoing Agent generation.
+## ADDED Requirements
 
-#### Scenario: Stop active generation
-- **WHEN** user requests to stop generation for an active session
-- **THEN** system aborts the LLM request and stops yielding chunks
+### Requirement: Agent session tracks tool call state
+The system SHALL maintain tool call state for each agent session.
 
-### Requirement: Destroy Agent session
-The system SHALL destroy an Agent session and free resources.
+#### Scenario: Tool call pending
+- **WHEN** agent initiates tool call
+- **THEN** session tracks tool call as 'pending' status
 
-#### Scenario: Destroy active session
-- **WHEN** user requests to destroy an active session
-- **THEN** system removes the session and releases associated resources
+#### Scenario: Tool call success
+- **WHEN** tool returns result
+- **THEN** session updates tool call to 'success' status with result
+
+#### Scenario: Tool call error
+- **WHEN** tool throws error
+- **THEN** session updates tool call to 'error' status with error message

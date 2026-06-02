@@ -1,14 +1,7 @@
-## ADDED Requirements
-
-### Requirement: Display chat panel
-The system SHALL display a chat panel with message list and input bar.
-
-#### Scenario: Chat panel layout
-- **WHEN** user opens the application
-- **THEN** system displays a chat panel with message area on top and input bar on bottom
+## MODIFIED Requirements
 
 ### Requirement: Display message list
-The system SHALL display a list of messages with different styles for user and assistant.
+The system SHALL display a list of messages with different styles for user and assistant, including tool call cards.
 
 #### Scenario: User message display
 - **WHEN** user sends a message
@@ -18,53 +11,45 @@ The system SHALL display a list of messages with different styles for user and a
 - **WHEN** assistant responds
 - **THEN** system displays the message left-aligned with assistant-specific styling
 
-### Requirement: Stream assistant response in real-time
-The system SHALL display assistant responses with a typewriter effect as chunks arrive.
+#### Scenario: Tool call display in message
+- **WHEN** assistant message contains tool_call chunks
+- **THEN** system renders ToolCallCard components inline showing tool name, parameters, and status
 
-#### Scenario: Streaming text display
-- **WHEN** assistant chunks arrive via IPC
-- **THEN** system appends text to the current assistant message in real-time
+#### Scenario: Tool result display
+- **WHEN** assistant message contains tool_result chunks
+- **THEN** ToolCallCard updates to show result content with syntax highlighting if applicable
 
-### Requirement: Auto-scroll to bottom
-The system SHALL automatically scroll to the latest message.
+## ADDED Requirements
 
-#### Scenario: New message scroll
-- **WHEN** a new message is added (user or assistant)
-- **THEN** system scrolls the message list to the bottom
+### Requirement: ToolCallCard component displays tool invocation
+The system SHALL render tool calls as interactive cards within messages.
 
-### Requirement: Input bar with send functionality
-The system SHALL provide an input bar for users to type and send messages.
+#### Scenario: Pending tool call
+- **WHEN** tool call chunk arrives with status 'pending'
+- **THEN** ToolCallCard shows tool name, parameters, and loading indicator
 
-#### Scenario: Send message with Enter
-- **WHEN** user presses Enter in the input bar
-- **THEN** system sends the message and clears the input
+#### Scenario: Successful tool call
+- **WHEN** tool result chunk arrives with status 'success'
+- **THEN** ToolCallCard shows result content with success styling
 
-#### Scenario: New line with Shift+Enter
-- **WHEN** user presses Shift+Enter in the input bar
-- **THEN** system adds a new line without sending
+#### Scenario: Failed tool call
+- **WHEN** tool result chunk arrives with status 'error'
+- **THEN** ToolCallCard shows error message with error styling
 
-#### Scenario: Send button click
-- **WHEN** user clicks the send button
-- **THEN** system sends the message and clears the input
+### Requirement: CodeBlock component renders code with syntax highlighting
+The system SHALL display code content with language-specific syntax highlighting.
 
-### Requirement: Disable input during generation
-The system SHALL disable the input bar while the assistant is generating a response.
+#### Scenario: Code block with language
+- **WHEN** content contains fenced code block with language specifier
+- **THEN** CodeBlock renders with syntax highlighting for that language
 
-#### Scenario: Input disabled during generation
-- **WHEN** assistant is generating a response
-- **THEN** system disables the input bar and send button
+#### Scenario: Code block without language
+- **WHEN** content contains fenced code block without language
+- **THEN** CodeBlock renders with plain text styling
 
-#### Scenario: Input enabled after generation
-- **WHEN** assistant finishes generating
-- **THEN** system enables the input bar and send button
+### Requirement: Message list supports tool role messages
+The system SHALL display tool result messages with distinct styling.
 
-### Requirement: Stop generation button
-The system SHALL provide a button to stop ongoing generation.
-
-#### Scenario: Stop button visible during generation
-- **WHEN** assistant is generating a response
-- **THEN** system displays a stop button
-
-#### Scenario: Stop button click
-- **WHEN** user clicks the stop button
-- **THEN** system stops the generation and re-enables the input bar
+#### Scenario: Tool role message
+- **WHEN** message has role 'tool'
+- **THEN** system displays with tool-specific styling (different from user/assistant)

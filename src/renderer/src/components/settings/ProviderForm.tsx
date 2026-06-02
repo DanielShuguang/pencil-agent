@@ -37,7 +37,7 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
           onChange={(e) => setId(e.target.value)}
           placeholder='deepseek'
           required
-          disabled={!!provider}
+          disabled={Boolean(provider)}
         />
       </div>
 

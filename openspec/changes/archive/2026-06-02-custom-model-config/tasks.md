@@ -32,9 +32,9 @@
 
 ## 5. 测试
 
-- [ ] 5.1 创建 `src/main/agent/__tests__/model-config.test.ts`
+- [x] 5.1 创建 `src/main/agent/__tests__/model-config.test.ts`
 - [x] 5.2 创建 `src/renderer/src/stores/__tests__/model-config-store.test.ts`
-- [ ] 5.3 创建 `src/renderer/src/components/settings/__tests__/ModelConfigPanel.test.tsx`
+- [x] 5.3 创建 `src/renderer/src/components/settings/__tests__/ModelConfigPanel.test.tsx`
 
 ## 6. 集成测试和收尾
 

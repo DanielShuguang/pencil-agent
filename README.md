@@ -94,12 +94,43 @@ pnpm build:linux   # Linux
 
 ## 核心功能
 
-- **对话交互** - 多轮对话、流式输出
-- **工具调用** - 文件读写、Shell、HTTP、自定义工具
-- **工作流编排** - 可视化 DAG 画布
-- **多 Agent 协作** - 顺序/并行/辩论/层级模式
-- **代码沙箱** - Docker 容器隔离执行
-- **向量记忆** - ChromaDB 本地向量检索
+### 对话交互
+- 多轮对话、流式输出
+- 消息列表、自动滚动
+- 停止生成功能
+
+### 工具调用
+- **内置工具**: read（文件读取）、write（文件写入）、edit（精确编辑）、bash（Shell 执行）
+- **工具注册**: ToolRegistry 管理工具定义，支持动态注册
+- **UI 展示**: ToolCallCard 组件展示工具调用过程（参数、状态、结果）
+- **代码高亮**: CodeBlock 组件使用 highlight.js 实现语法高亮
+
+### 代码编辑器
+- **Monaco Editor**: 集成 VS Code 编辑器，支持 30+ 语言语法高亮
+- **文件树**: 层级展示打开的文件，支持目录展开/折叠
+- **多标签**: TabBar 管理多个打开的文件，支持切换和关闭
+- **脏标记**: 指示未保存的修改
+
+### 代码沙箱
+- **child_process 模式**: 低隔离快速执行，支持 JS/TS/Python/Bash
+- **Docker 模式**: 高隔离安全执行，网络隔离、内存限制、只读文件系统
+- **自动降级**: Docker 不可用时自动降级到 child_process 模式
+- **实时输出**: TerminalPanel 实时展示 stdout/stderr 输出
+- **超时控制**: 默认 30 秒超时，防止长时间运行
+
+### 工作流编排
+- 可视化 DAG 画布 (@xyflow/react)
+- 节点类型: Agent、Tool、Condition、Start、End
+- 拓扑排序执行引擎
+
+### 多 Agent 协作
+- 顺序/并行/辩论/层级模式
+- Agent 角色管理器
+- 会话分支 (Tree of Thoughts)
+
+### 向量记忆
+- ChromaDB 本地向量检索
+- 短期会话记忆、长期向量存储
 
 ## 许可证
 

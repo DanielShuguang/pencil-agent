@@ -4,9 +4,15 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { AgentSessionManager } from './agent/session-manager'
 import { registerAgentHandlers } from './agent/ipc-handlers'
+import { createToolRegistry } from './agent/tool-registry'
+import { createSandboxExecutor } from './sandbox/factory'
+import { registerSandboxHandlers } from './sandbox/ipc-handlers'
+import type { SandboxExecutor } from './sandbox/executor'
 
 let mainWindow: BrowserWindow | null = null
 const agentManager = new AgentSessionManager()
+const toolRegistry = createToolRegistry()
+let sandbox: SandboxExecutor
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -31,7 +37,10 @@ function createWindow(): void {
   })
 
   // Register agent IPC handlers
-  registerAgentHandlers(agentManager, mainWindow)
+  registerAgentHandlers(agentManager, mainWindow, toolRegistry)
+
+  // Register sandbox IPC handlers
+  registerSandboxHandlers(sandbox, mainWindow)
 
   // Register window control IPC handlers
   registerWindowHandlers(mainWindow)
@@ -78,7 +87,7 @@ function registerWindowHandlers(window: BrowserWindow): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -91,6 +100,9 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // Initialize sandbox executor (with Docker auto-detection)
+  sandbox = await createSandboxExecutor()
 
   createWindow()
 

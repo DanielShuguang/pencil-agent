@@ -6,6 +6,25 @@ interface AgentChunk {
   metadata?: Record<string, unknown>
 }
 
+interface ToolDefinition {
+  name: string
+  description: string
+  parameters: Record<string, unknown>
+}
+
+interface SandboxOutput {
+  type: 'stdout' | 'stderr' | 'exit'
+  content: string
+  exitCode?: number
+}
+
+interface SandboxResult {
+  stdout: string
+  stderr: string
+  exitCode: number
+  executionId: string
+}
+
 interface AgentAPI {
   create: (config: {
     sessionId: string
@@ -19,6 +38,22 @@ interface AgentAPI {
   onError: (cb: (error: string) => void) => () => void
 }
 
+interface ToolAPI {
+  list: () => Promise<ToolDefinition[]>
+  get: (name: string) => Promise<ToolDefinition | undefined>
+}
+
+interface SandboxAPI {
+  execute: (req: {
+    code: string
+    language: 'javascript' | 'typescript' | 'python' | 'bash'
+    timeout?: number
+    env?: Record<string, string>
+  }) => Promise<SandboxResult>
+  stop: (executionId: string) => void
+  onOutput: (cb: (output: SandboxOutput) => void) => () => void
+}
+
 interface WindowAPI {
   minimize: () => void
   maximize: () => void
@@ -29,6 +64,8 @@ interface WindowAPI {
 
 interface ElectronAPIExposed {
   agent: AgentAPI
+  tool: ToolAPI
+  sandbox: SandboxAPI
   window: WindowAPI
 }
 

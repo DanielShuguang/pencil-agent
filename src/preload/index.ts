@@ -34,6 +34,28 @@ const agentAPI = {
   },
 }
 
+const toolAPI = {
+  list: () => ipcRenderer.invoke('tool:list'),
+  get: (name: string) => ipcRenderer.invoke('tool:get', name),
+}
+
+const sandboxAPI = {
+  execute: (req: {
+    code: string
+    language: 'javascript' | 'typescript' | 'python' | 'bash'
+    timeout?: number
+    env?: Record<string, string>
+  }) => ipcRenderer.invoke('sandbox:execute', req),
+
+  stop: (executionId: string) => ipcRenderer.send('sandbox:stop', executionId),
+
+  onOutput: (cb: (output: { type: 'stdout' | 'stderr' | 'exit'; content: string; exitCode?: number }) => void) => {
+    const handler = (_: unknown, output: any) => cb(output)
+    ipcRenderer.on('sandbox:output', handler)
+    return () => ipcRenderer.removeListener('sandbox:output', handler)
+  },
+}
+
 const windowAPI = {
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
@@ -49,6 +71,8 @@ const windowAPI = {
 // Custom APIs for renderer
 const api = {
   agent: agentAPI,
+  tool: toolAPI,
+  sandbox: sandboxAPI,
   window: windowAPI,
 }
 

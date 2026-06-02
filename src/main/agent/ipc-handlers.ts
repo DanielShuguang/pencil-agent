@@ -1,9 +1,11 @@
 import { ipcMain, type BrowserWindow } from 'electron'
 import type { AgentSessionManager } from './session-manager'
+import type { ToolRegistry } from './tool-registry'
 
 export function registerAgentHandlers(
   manager: AgentSessionManager,
   mainWindow: BrowserWindow,
+  toolRegistry: ToolRegistry,
 ): void {
   ipcMain.handle('agent:create', async (_, config) => {
     try {
@@ -31,5 +33,14 @@ export function registerAgentHandlers(
     } catch (error) {
       console.error('Failed to stop agent:', error)
     }
+  })
+
+  // 工具相关 handlers
+  ipcMain.handle('tool:list', () => {
+    return toolRegistry.list()
+  })
+
+  ipcMain.handle('tool:get', (_, name: string) => {
+    return toolRegistry.get(name)
   })
 }

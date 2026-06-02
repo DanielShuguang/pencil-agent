@@ -1,8 +1,28 @@
+// 工具相关
+export interface ToolDefinition {
+  name: string
+  description: string
+  parameters: Record<string, unknown> // JSON Schema
+}
+
+export interface ToolCallRequest {
+  toolName: string
+  parameters: Record<string, unknown>
+}
+
+export interface ToolCallResult {
+  toolName: string
+  status: 'success' | 'error'
+  result?: unknown
+  error?: string
+}
+
 // Agent 相关
 export interface AgentCreateRequest {
   sessionId: string
   model: { id: string; provider: string }
   systemPrompt?: string
+  tools?: string[] // 可用工具名称列表
 }
 
 export interface AgentChunk {
@@ -16,6 +36,7 @@ export interface AgentToolCall {
   parameters: Record<string, unknown>
   status: 'pending' | 'running' | 'success' | 'error'
   result?: unknown
+  error?: string
 }
 
 // 工作流相关
@@ -61,4 +82,11 @@ export interface SandboxOutput {
   type: 'stdout' | 'stderr' | 'exit'
   content: string
   exitCode?: number
+}
+
+export interface SandboxResult {
+  stdout: string
+  stderr: string
+  exitCode: number
+  executionId: string
 }

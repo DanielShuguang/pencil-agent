@@ -1,6 +1,16 @@
+import { useState } from 'react'
 import { Play, Save, Upload, Trash2, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useWorkflowStore } from '../../stores/workflow-store'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 
 interface WorkflowToolbarProps {
   className?: string
@@ -10,6 +20,7 @@ interface WorkflowToolbarProps {
 export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) {
   const { nodes, edges, isExecuting, clearWorkflow, addNode } = useWorkflowStore()
   const { t } = useTranslation()
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleAddNode = (type: string) => {
     const newNode = {
@@ -51,7 +62,7 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
           useWorkflowStore.getState().setNodes(workflow.nodes ?? [])
           useWorkflowStore.getState().setEdges(workflow.edges ?? [])
         } catch {
-          alert(t('workflow.invalidFile'))
+          setErrorMessage(t('workflow.invalidFile'))
         }
       }
       reader.readAsText(file)
@@ -147,6 +158,18 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
         <Trash2 className='h-3 w-3' />
         {t('common.clear')}
       </button>
+
+      <AlertDialog open={Boolean(errorMessage)} onOpenChange={() => setErrorMessage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common.error')}</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>{t('common.ok')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

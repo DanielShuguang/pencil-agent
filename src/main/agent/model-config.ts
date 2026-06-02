@@ -1,12 +1,13 @@
 import { safeStorage } from 'electron'
 import Store from 'electron-store'
-import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
+import type { ApiFormat, ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 
 interface StoredProvider {
   id: string
   name: string
   baseUrl: string
   encryptedApiKey: string
+  apiFormat?: ApiFormat
   models: ModelConfig[]
   createdAt: number
   updatedAt: number
@@ -38,6 +39,7 @@ export class ModelConfigManager {
         name: item.name,
         baseUrl: item.baseUrl,
         apiKey,
+        apiFormat: (item.apiFormat === 'openai' || item.apiFormat === 'anthropic') ? item.apiFormat : 'openai',
         models: item.models,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
@@ -60,6 +62,7 @@ export class ModelConfigManager {
         name: provider.name,
         baseUrl: provider.baseUrl,
         encryptedApiKey,
+        apiFormat: provider.apiFormat,
         models: provider.models,
         createdAt: provider.createdAt,
         updatedAt: provider.updatedAt,
@@ -132,12 +135,21 @@ export class ModelConfigManager {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000)
 
-      const response = await fetch(`${provider.baseUrl}/models`, {
+      const isOpenAI = provider.apiFormat === 'openai'
+      const url = isOpenAI ? `${provider.baseUrl}/models` : `${provider.baseUrl}/v1/models`
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (isOpenAI) {
+        headers['Authorization'] = `Bearer ${provider.apiKey}`
+      } else {
+        headers['x-api-key'] = provider.apiKey
+      }
+
+      const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${provider.apiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         signal: controller.signal,
       })
 

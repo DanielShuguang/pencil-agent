@@ -264,11 +264,14 @@ export interface CheckConnectionRequest {
 }
 
 // 模型配置相关
+export type ApiFormat = 'openai' | 'anthropic'
+
 export interface ModelProvider {
   id: string
   name: string
   baseUrl: string
   apiKey: string
+  apiFormat: ApiFormat
   models: ModelConfig[]
   createdAt: number
   updatedAt: number

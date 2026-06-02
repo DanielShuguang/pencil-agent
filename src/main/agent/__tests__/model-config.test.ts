@@ -46,6 +46,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -63,6 +64,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -77,6 +79,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -85,6 +88,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI Updated',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-new',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -98,6 +102,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -112,6 +117,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -131,6 +137,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -151,6 +158,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -189,6 +197,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [
           { id: 'gpt-4o', name: 'GPT-4o', providerId: 'openai' },
           { id: 'gpt-3.5', name: 'GPT-3.5', providerId: 'openai' },
@@ -210,12 +219,13 @@ describe('ModelConfigManager', () => {
   })
 
   describe('testConnection', () => {
-    it('should return success for valid connection', async () => {
+    it('should return success for valid OpenAI connection', async () => {
       manager.save({
         id: 'openai',
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -241,12 +251,13 @@ describe('ModelConfigManager', () => {
       expect(result.error).toBe('Provider not found')
     })
 
-    it('should return error for failed connection', async () => {
+    it('should return error for failed OpenAI connection', async () => {
       manager.save({
         id: 'openai',
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -269,6 +280,7 @@ describe('ModelConfigManager', () => {
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 
@@ -277,6 +289,55 @@ describe('ModelConfigManager', () => {
       const result = await manager.testConnection('openai')
       expect(result.success).toBe(false)
       expect(result.error).toBe('Network error')
+    })
+
+    it('should return success for valid Anthropic connection', async () => {
+      manager.save({
+        id: 'anthropic',
+        name: 'Anthropic',
+        baseUrl: 'https://api.anthropic.com',
+        apiKey: 'sk-ant-test',
+        apiFormat: 'anthropic',
+        models: [],
+      })
+
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const result = await manager.testConnection('anthropic')
+      expect(result.success).toBe(true)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.anthropic.com/v1/models',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'x-api-key': 'sk-ant-test',
+          }),
+        }),
+      )
+    })
+
+    it('should return error for failed Anthropic connection', async () => {
+      manager.save({
+        id: 'anthropic',
+        name: 'Anthropic',
+        baseUrl: 'https://api.anthropic.com',
+        apiKey: 'sk-ant-invalid',
+        apiFormat: 'anthropic',
+        models: [],
+      })
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          json: vi.fn().mockResolvedValue({ error: { message: 'Invalid API key' } }),
+        }),
+      )
+
+      const result = await manager.testConnection('anthropic')
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Invalid API key')
     })
   })
 

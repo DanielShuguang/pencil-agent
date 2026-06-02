@@ -30,6 +30,7 @@ describe('model-config-store', () => {
           id: 'test',
           name: 'Test',
           baseUrl: 'https://api.test.com/v1',
+          apiFormat: 'openai' as const,
           models: [],
           createdAt: Date.now(),
           updatedAt: Date.now(),
@@ -65,6 +66,7 @@ describe('model-config-store', () => {
         name: 'Test',
         baseUrl: 'https://api.test.com/v1',
         apiKey: 'sk-test',
+        apiFormat: 'openai',
         models: [],
       })
 

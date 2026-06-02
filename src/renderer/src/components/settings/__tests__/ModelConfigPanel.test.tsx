@@ -34,6 +34,8 @@ vi.mock('react-i18next', () => ({
         'common.loading': '加载中...',
         'common.save': '保存',
         'common.cancel': '取消',
+        'common.ok': '确定',
+        'common.confirm': '确认',
         'common.saving': '保存中...',
         'common.saved': '已保存',
         'common.delete': '删除',
@@ -322,5 +324,107 @@ describe('ModelConfigPanel', () => {
     if (testButton) await user.click(testButton)
 
     expect(mockTestConnection).toHaveBeenCalledWith('openai')
+  })
+
+  it('should show confirmation dialog when deleting provider', async () => {
+    vi.mocked(useModelConfigStore).mockReturnValue({
+      providers: [
+        {
+          id: 'openai',
+          name: 'OpenAI',
+          baseUrl: 'https://api.openai.com/v1',
+          models: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ],
+      isLoading: false,
+      error: null,
+      fetchProviders: mockFetchProviders,
+      saveProvider: mockSaveProvider,
+      deleteProvider: mockDeleteProvider,
+      saveModel: mockSaveModel,
+      deleteModel: mockDeleteModel,
+      testConnection: mockTestConnection,
+    })
+
+    const user = userEvent.setup()
+    render(<ModelConfigPanel />)
+
+    const deleteButtons = screen.getAllByRole('button')
+    const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
+    if (deleteButton) await user.click(deleteButton)
+
+    expect(screen.getByText('确定删除此供应商？')).toBeInTheDocument()
+  })
+
+  it('should delete provider when confirming', async () => {
+    vi.mocked(useModelConfigStore).mockReturnValue({
+      providers: [
+        {
+          id: 'openai',
+          name: 'OpenAI',
+          baseUrl: 'https://api.openai.com/v1',
+          models: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ],
+      isLoading: false,
+      error: null,
+      fetchProviders: mockFetchProviders,
+      saveProvider: mockSaveProvider,
+      deleteProvider: mockDeleteProvider,
+      saveModel: mockSaveModel,
+      deleteModel: mockDeleteModel,
+      testConnection: mockTestConnection,
+    })
+
+    const user = userEvent.setup()
+    render(<ModelConfigPanel />)
+
+    const deleteButtons = screen.getAllByRole('button')
+    const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
+    if (deleteButton) await user.click(deleteButton)
+
+    const confirmButton = screen.getByText('确定')
+    await user.click(confirmButton)
+
+    expect(mockDeleteProvider).toHaveBeenCalledWith('openai')
+  })
+
+  it('should not delete provider when cancelling', async () => {
+    vi.mocked(useModelConfigStore).mockReturnValue({
+      providers: [
+        {
+          id: 'openai',
+          name: 'OpenAI',
+          baseUrl: 'https://api.openai.com/v1',
+          models: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ],
+      isLoading: false,
+      error: null,
+      fetchProviders: mockFetchProviders,
+      saveProvider: mockSaveProvider,
+      deleteProvider: mockDeleteProvider,
+      saveModel: mockSaveModel,
+      deleteModel: mockDeleteModel,
+      testConnection: mockTestConnection,
+    })
+
+    const user = userEvent.setup()
+    render(<ModelConfigPanel />)
+
+    const deleteButtons = screen.getAllByRole('button')
+    const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
+    if (deleteButton) await user.click(deleteButton)
+
+    const cancelButton = screen.getByText('取消')
+    await user.click(cancelButton)
+
+    expect(mockDeleteProvider).not.toHaveBeenCalled()
   })
 })

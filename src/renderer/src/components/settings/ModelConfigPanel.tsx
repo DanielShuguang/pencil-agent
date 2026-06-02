@@ -4,6 +4,16 @@ import { Plus, Pencil, Trash2, TestTube, ChevronDown, ChevronRight } from 'lucid
 import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 import { useModelConfigStore } from '../../stores/model-config-store'
 import { Button } from '../ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 import { ProviderForm } from './ProviderForm'
 import { ModelForm } from './ModelForm'
 
@@ -17,6 +27,8 @@ export function ModelConfigPanel() {
   const [editingModel, setEditingModel] = useState<{ providerId: string; model?: ModelConfig } | null>(null)
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set())
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; error?: string }>>({})
+  const [deleteProviderConfirm, setDeleteProviderConfirm] = useState<string | null>(null)
+  const [deleteModelConfirm, setDeleteModelConfirm] = useState<{ providerId: string; modelId: string } | null>(null)
 
   useEffect(() => {
     fetchProviders()
@@ -29,8 +41,13 @@ export function ModelConfigPanel() {
   }
 
   const handleDeleteProvider = async (providerId: string) => {
-    if (confirm(t('settings.deleteProviderConfirm'))) {
-      await deleteProvider(providerId)
+    setDeleteProviderConfirm(providerId)
+  }
+
+  const confirmDeleteProvider = async () => {
+    if (deleteProviderConfirm) {
+      await deleteProvider(deleteProviderConfirm)
+      setDeleteProviderConfirm(null)
     }
   }
 
@@ -42,8 +59,13 @@ export function ModelConfigPanel() {
   }
 
   const handleDeleteModel = async (providerId: string, modelId: string) => {
-    if (confirm(t('settings.deleteModelConfirm'))) {
-      await deleteModel(providerId, modelId)
+    setDeleteModelConfirm({ providerId, modelId })
+  }
+
+  const confirmDeleteModel = async () => {
+    if (deleteModelConfirm) {
+      await deleteModel(deleteModelConfirm.providerId, deleteModelConfirm.modelId)
+      setDeleteModelConfirm(null)
     }
   }
 
@@ -206,6 +228,32 @@ export function ModelConfigPanel() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={Boolean(deleteProviderConfirm)} onOpenChange={() => setDeleteProviderConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common.confirm')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.deleteProviderConfirm')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteProvider}>{t('common.ok')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={Boolean(deleteModelConfirm)} onOpenChange={() => setDeleteModelConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common.confirm')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.deleteModelConfirm')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteModel}>{t('common.ok')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

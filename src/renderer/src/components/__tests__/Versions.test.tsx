@@ -1,13 +1,9 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Versions from '@renderer/components/Versions'
 
-beforeAll(() => {
-  window.electron = {
-    process: {
-      versions: { electron: '39.0.0', chrome: '130.0.0', node: '22.0.0' },
-    },
-  } as never
+vi.stubGlobal('electron', {
+  process: { versions: { electron: '39.0.0', chrome: '130.0.0', node: '22.0.0' } },
 })
 
 describe('Versions', () => {

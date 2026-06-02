@@ -52,8 +52,8 @@ pnpm build         # 构建前端 + 主进程
 pnpm build:app     # 打包应用 (electron-builder)
 pnpm lint          # 代码检查 (oxlint --fix)
 pnpm fmt           # 代码格式化 (oxfmt)
-pnpm test          # 监视模式运行单元/组件测试 (vitest)
-pnpm test:run      # 单次运行所有 vitest 测试
+pnpm test          # 监视模式运行 vitest（单元 + 组件测试）
+pnpm test:run      # 单次运行所有 vitest 测试（CI 使用）
 pnpm test:e2e      # 运行 Playwright E2E 测试 (需先 build)
 pnpm typecheck     # 类型检查
 ```

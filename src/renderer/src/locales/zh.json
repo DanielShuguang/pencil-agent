@@ -19,8 +19,8 @@
     "saving": "保存中...",
     "saved": "已保存",
     "justNow": "刚刚",
-    "minutesAgo": "{count} 分钟前",
-    "hoursAgo": "{count} 小时前"
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前"
   },
   "chat": {
     "inputPlaceholder": "输入消息...",
@@ -92,7 +92,7 @@
     "modelList": "模型列表",
     "noProviders": "暂无供应商",
     "noModels": "暂无模型",
-    "modelsCount": "（{count} 个模型）",
+    "modelsCount": "（{{count}} 个模型）",
     "connected": "已连接",
     "deleteProviderConfirm": "确定删除此供应商？",
     "deleteModelConfirm": "确定删除此模型？"
@@ -106,6 +106,6 @@
     "systemPromptPlaceholder": "定义角色的行为和能力...",
     "loading": "加载角色中...",
     "noRoles": "暂无角色",
-    "toolsCount": "{count} 个工具"
+    "toolsCount": "{{count}} 个工具"
   }
 }

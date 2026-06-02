@@ -31,6 +31,32 @@ The system SHALL provide a reusable Dialog component for general-purpose modals.
 - **THEN** the `onOpenChange(false)` callback is triggered
 - **AND** the dialog closes
 
+### Requirement: Select component
+
+The system SHALL provide a reusable Select component for dropdown selections.
+
+#### Scenario: Show options
+- **WHEN** user clicks on a Select trigger
+- **THEN** a dropdown menu appears with available options
+
+#### Scenario: Select option
+- **WHEN** user clicks on an option
+- **THEN** the `onValueChange` callback is triggered with the selected value
+- **AND** the dropdown closes
+- **AND** the trigger displays the selected value
+
+### Requirement: Popover component
+
+The system SHALL provide a reusable Popover component for floating content.
+
+#### Scenario: Show popover
+- **WHEN** developer renders `<Popover>` with a trigger
+- **THEN** clicking the trigger shows floating content
+
+#### Scenario: Close popover
+- **WHEN** user clicks outside the popover or presses Escape
+- **THEN** the popover closes automatically
+
 ### Requirement: Replace native confirm in ModelConfigPanel
 
 The system SHALL replace all native `confirm()` calls in ModelConfigPanel with AlertDialog.
@@ -55,3 +81,13 @@ The system SHALL replace all native `alert()` calls in WorkflowToolbar with Aler
 - **WHEN** user imports a workflow file that fails to parse
 - **THEN** an AlertDialog appears showing the error message
 - **AND** clicking confirm closes the dialog
+
+### Requirement: Replace native select elements
+
+The system SHALL replace all native `<select>` elements with Radix UI Select component.
+
+#### Scenario: Native select replacement
+- **WHEN** a form requires a dropdown selection
+- **THEN** the system uses `<Select>` from `src/renderer/src/components/ui/select.tsx`
+- **AND** provides consistent styling with other UI components
+- **AND** supports keyboard navigation and accessibility

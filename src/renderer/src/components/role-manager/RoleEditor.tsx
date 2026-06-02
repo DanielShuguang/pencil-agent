@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AgentRole } from '@shared/ipc'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
 interface RoleEditorProps {
   role?: AgentRole | null
@@ -89,32 +90,34 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium">{t('settings.providerName')}</label>
-          <select
-            className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-          >
-            {PROVIDERS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          <Select value={provider} onValueChange={setProvider}>
+            <SelectTrigger className="w-full mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PROVIDERS.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <label className="text-sm font-medium">{t('workflow.model')}</label>
-          <select
-            className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
-            value={modelId}
-            onChange={(e) => setModelId(e.target.value)}
-          >
-            {MODELS[provider]?.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+          <Select value={modelId} onValueChange={setModelId}>
+            <SelectTrigger className="w-full mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MODELS[provider]?.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

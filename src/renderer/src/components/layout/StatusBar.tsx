@@ -1,16 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Bot, Coins, Wifi, WifiOff, Loader2, Info } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useStatusStore } from '../../stores/status-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { ModelSelector } from '../chat/ModelSelector'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 
 export function StatusBar() {
-  const [showModelSelector, setShowModelSelector] = useState(false)
-  const [showTokenDetails, setShowTokenDetails] = useState(false)
-  const modelRef = useRef<HTMLDivElement>(null)
-  const tokenRef = useRef<HTMLDivElement>(null)
-
   const { currentModel, tokenUsage, connectionStatus, version, isGenerating, checkConnection, syncFromAgentStore } =
     useStatusStore()
 
@@ -19,20 +15,6 @@ export function StatusBar() {
   useEffect(() => {
     syncFromAgentStore(agentModel, agentIsGenerating)
   }, [agentModel, agentIsGenerating, syncFromAgentStore])
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modelRef.current && !modelRef.current.contains(e.target as Node)) {
-        setShowModelSelector(false)
-      }
-      if (tokenRef.current && !tokenRef.current.contains(e.target as Node)) {
-        setShowTokenDetails(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   const getConnectionIcon = () => {
     switch (connectionStatus) {
@@ -69,55 +51,51 @@ export function StatusBar() {
   return (
     <footer className='flex h-6 shrink-0 items-center justify-between border-t border-border bg-muted/50 px-4 text-xs text-muted-foreground'>
       <div className='flex items-center gap-4'>
-        <div ref={modelRef} className='relative'>
-          <button
-            onClick={() => setShowModelSelector(!showModelSelector)}
-            className={cn(
-              'flex items-center gap-1.5 hover:text-foreground transition-colors',
-              isGenerating && 'text-primary',
-            )}
-          >
-            <Bot className='h-3 w-3' />
-            <span>{currentModel.id}</span>
-          </button>
-          {showModelSelector && (
-            <div className='absolute bottom-full left-0 mb-1'>
-              <ModelSelector onClose={() => setShowModelSelector(false)} />
-            </div>
-          )}
-        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className={cn(
+                'flex items-center gap-1.5 hover:text-foreground transition-colors',
+                isGenerating && 'text-primary',
+              )}
+            >
+              <Bot className='h-3 w-3' />
+              <span>{currentModel.id}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side='top' align='start' className='w-auto p-0'>
+            <ModelSelector showTrigger={false} />
+          </PopoverContent>
+        </Popover>
 
-        <div ref={tokenRef} className='relative'>
-          <button
-            onClick={() => setShowTokenDetails(!showTokenDetails)}
-            className='flex items-center gap-1.5 hover:text-foreground transition-colors'
-          >
-            <Coins className='h-3 w-3' />
-            <span>{formatTokenCount(tokenUsage.total)}</span>
-          </button>
-          {showTokenDetails && (
-            <div className='absolute bottom-full left-0 mb-1 rounded-md border bg-popover p-2 shadow-md'>
-              <div className='flex items-center gap-1.5 mb-1'>
-                <Info className='h-3 w-3' />
-                <span className='font-medium'>Token 用量</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className='flex items-center gap-1.5 hover:text-foreground transition-colors'>
+              <Coins className='h-3 w-3' />
+              <span>{formatTokenCount(tokenUsage.total)}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side='top' align='start' className='w-48'>
+            <div className='flex items-center gap-1.5 mb-2'>
+              <Info className='h-3 w-3' />
+              <span className='font-medium'>Token 用量</span>
+            </div>
+            <div className='space-y-1'>
+              <div className='flex justify-between gap-4'>
+                <span>提示：</span>
+                <span>{formatTokenCount(tokenUsage.prompt)}</span>
               </div>
-              <div className='space-y-1'>
-                <div className='flex justify-between gap-4'>
-                  <span>提示：</span>
-                  <span>{formatTokenCount(tokenUsage.prompt)}</span>
-                </div>
-                <div className='flex justify-between gap-4'>
-                  <span>补全：</span>
-                  <span>{formatTokenCount(tokenUsage.completion)}</span>
-                </div>
-                <div className='flex justify-between gap-4 border-t pt-1'>
-                  <span>总计：</span>
-                  <span>{formatTokenCount(tokenUsage.total)}</span>
-                </div>
+              <div className='flex justify-between gap-4'>
+                <span>补全：</span>
+                <span>{formatTokenCount(tokenUsage.completion)}</span>
+              </div>
+              <div className='flex justify-between gap-4 border-t pt-1'>
+                <span>总计：</span>
+                <span>{formatTokenCount(tokenUsage.total)}</span>
               </div>
             </div>
-          )}
-        </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className='flex items-center gap-4'>

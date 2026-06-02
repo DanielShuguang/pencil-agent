@@ -13,11 +13,7 @@ vi.mock('../../../stores/agent-store', () => ({
 }))
 
 vi.mock('../../chat/ModelSelector', () => ({
-  ModelSelector: ({ onClose }: { onClose: () => void }) => (
-    <div data-testid='model-selector'>
-      <button onClick={onClose}>Close</button>
-    </div>
-  ),
+  ModelSelector: () => <div data-testid='model-selector'>Model Selector</div>,
 }))
 
 describe('StatusBar', () => {
@@ -64,13 +60,13 @@ describe('StatusBar', () => {
     expect(screen.getByTestId('model-selector')).toBeInTheDocument()
   })
 
-  it('should close model selector on outside click', () => {
+  it('should close model selector on Escape key', () => {
     render(<StatusBar />)
 
     fireEvent.click(screen.getByText('claude-sonnet-4-20250514'))
     expect(screen.getByTestId('model-selector')).toBeInTheDocument()
 
-    fireEvent.mouseDown(document.body)
+    fireEvent.keyDown(document.body, { key: 'Escape' })
     expect(screen.queryByTestId('model-selector')).not.toBeInTheDocument()
   })
 

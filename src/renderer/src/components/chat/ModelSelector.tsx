@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useAgentStore } from '../../stores/agent-store'
 import { useModelConfigStore } from '../../stores/model-config-store'
+import { ChevronDown } from 'lucide-react'
 
 interface ModelSelectorProps {
-  onClose?: () => void
+  showTrigger?: boolean
 }
 
-export function ModelSelector({ onClose }: ModelSelectorProps) {
+export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
   const { currentModel, switchModel } = useAgentStore()
   const { providers, fetchProviders } = useModelConfigStore()
   const [isOpen, setIsOpen] = useState(false)
@@ -31,6 +32,53 @@ export function ModelSelector({ onClose }: ModelSelectorProps) {
     }))
     .filter((provider) => provider.models.length > 0)
 
+  const handleSelect = (providerId: string, modelId: string) => {
+    switchModel({ id: modelId, provider: providerId })
+    setIsOpen(false)
+    setSearchQuery('')
+  }
+
+  if (!showTrigger) {
+    return (
+      <div className='w-80'>
+        <div className='p-2'>
+          <input
+            type='text'
+            placeholder='搜索模型...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className='w-full px-3 py-1.5 text-sm border rounded-md bg-background'
+          />
+        </div>
+
+        <div className='max-h-64 overflow-y-auto'>
+          {filteredProviders.length === 0 ? (
+            <div className='p-4 text-sm text-muted-foreground text-center'>未找到模型</div>
+          ) : (
+            filteredProviders.map((provider) => (
+              <div key={provider.id} className='p-2'>
+                <div className='px-2 py-1 text-xs font-medium text-muted-foreground'>{provider.name}</div>
+                {provider.models.map((model) => (
+                  <button
+                    key={model.id}
+                    className={`w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors ${
+                      currentModel.provider === provider.id && currentModel.id === model.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-accent'
+                    }`}
+                    onClick={() => handleSelect(provider.id, model.id)}
+                  >
+                    {model.name}
+                  </button>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='relative'>
       <button
@@ -39,20 +87,7 @@ export function ModelSelector({ onClose }: ModelSelectorProps) {
       >
         <span className='text-muted-foreground'>{currentProvider?.name || currentModel.provider}</span>
         <span className='font-medium'>{currentModelInfo?.name || currentModel.id}</span>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          width='12'
-          height='12'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        >
-          <path d='m6 9 6 6 6-6' />
-        </svg>
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -82,11 +117,7 @@ export function ModelSelector({ onClose }: ModelSelectorProps) {
                           ? 'bg-primary text-primary-foreground'
                           : 'hover:bg-accent'
                       }`}
-                      onClick={() => {
-                        switchModel({ id: model.id, provider: provider.id })
-                        setIsOpen(false)
-                        onClose?.()
-                      }}
+                      onClick={() => handleSelect(provider.id, model.id)}
                     >
                       {model.name}
                     </button>

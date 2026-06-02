@@ -1,4 +1,5 @@
 import { useAgentStore } from '../../stores/agent-store'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
 export function BranchSelector() {
   const { activeSessionId, sessionMetas, getBranches, switchSession } = useAgentStore()
@@ -20,21 +21,18 @@ export function BranchSelector() {
         </button>
       )}
       {branches.length > 0 && (
-        <select
-          className="text-xs bg-background border rounded px-2 py-1"
-          value={activeSessionId}
-          onChange={(e) => {
-            if (e.target.value) {
-              switchSession(e.target.value)
-            }
-          }}
-        >
-          {branches.map((branch) => (
-            <option key={branch.id} value={branch.id}>
-              {branch.title}
-            </option>
-          ))}
-        </select>
+        <Select value={activeSessionId} onValueChange={(value) => switchSession(value)}>
+          <SelectTrigger className="text-xs bg-background border rounded px-2 py-1 h-7 w-auto">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {branches.map((branch) => (
+              <SelectItem key={branch.id} value={branch.id}>
+                {branch.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   )

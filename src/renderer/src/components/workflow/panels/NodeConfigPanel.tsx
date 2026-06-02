@@ -2,6 +2,7 @@ import { useWorkflowStore } from '../../../stores/workflow-store'
 import { useToolStore } from '../../../stores/tool-store'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select'
 
 interface NodeConfigPanelProps {
   className?: string
@@ -53,18 +54,22 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
           <>
             <div>
               <label className='text-xs font-medium text-muted-foreground'>{t('workflow.model')}</label>
-              <select
-                className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm'
+              <Select
                 value={JSON.stringify(config.model ?? { id: 'claude-sonnet-4-20250514', provider: 'anthropic' })}
-                onChange={(e) => handleChange('model', JSON.parse(e.target.value))}
+                onValueChange={(value) => handleChange('model', JSON.parse(value))}
               >
-                <option value={JSON.stringify({ id: 'claude-sonnet-4-20250514', provider: 'anthropic' })}>
-                  Claude Sonnet 4
-                </option>
-                <option value={JSON.stringify({ id: 'gpt-4o', provider: 'openai' })}>
-                  GPT-4o
-                </option>
-              </select>
+                <SelectTrigger className='w-full mt-1'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={JSON.stringify({ id: 'claude-sonnet-4-20250514', provider: 'anthropic' })}>
+                    Claude Sonnet 4
+                  </SelectItem>
+                  <SelectItem value={JSON.stringify({ id: 'gpt-4o', provider: 'openai' })}>
+                    GPT-4o
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -99,18 +104,21 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
           <>
             <div>
               <label className='text-xs font-medium text-muted-foreground'>{t('workflow.tool')}</label>
-              <select
-                className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm'
+              <Select
                 value={(config.toolName as string) ?? ''}
-                onChange={(e) => handleChange('toolName', e.target.value)}
+                onValueChange={(value) => handleChange('toolName', value)}
               >
-                <option value=''>{t('workflow.selectTool')}</option>
-                {tools.map((tool) => (
-                  <option key={tool.name} value={tool.name}>
-                    {tool.name} - {tool.description}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className='w-full mt-1'>
+                  <SelectValue placeholder={t('workflow.selectTool')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {tools.map((tool) => (
+                    <SelectItem key={tool.name} value={tool.name}>
+                      {tool.name} - {tool.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </>
         )}

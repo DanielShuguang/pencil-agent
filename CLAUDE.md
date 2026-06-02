@@ -7,7 +7,7 @@
 - **桌面框架**: Electron ^39.x
 - **前端**: React ^19.x + TypeScript ^6.x
 - **状态管理**: Zustand ^5.x
-- **UI**: shadcn/ui + Tailwind CSS ^4.x
+- **UI**: shadcn/ui + Radix UI + Tailwind CSS ^4.x
 - **画布**: @xyflow/react ^12.x
 - **编辑器**: Monaco Editor ^0.5x
 - **Agent 引擎**: @earendil-works/pi-coding-agent ^0.78.x
@@ -106,6 +106,47 @@ ipcMain.on('agent:prompt', handler)
 - `nodeIntegration: false`, `contextIsolation: true`
 - API Key 使用 `safeStorage` 加密
 - Docker 沙箱: 网络隔离、内存限制、只读文件系统
+
+### UI 组件规范
+
+项目使用 Radix UI 作为基础组件库，优先使用已封装的组件：
+
+**可用组件 (`src/renderer/src/components/ui/`)：**
+- `button.tsx` - 按钮组件
+- `input.tsx` - 输入框组件
+- `label.tsx` - 标签组件
+- `dialog.tsx` - 模态对话框
+- `alert-dialog.tsx` - 确认对话框
+- `select.tsx` - 下拉选择器
+- `popover.tsx` - 弹出层
+- `scroll-area.tsx` - 滚动区域
+
+**开发规范：**
+1. **禁止使用原生 HTML 组件**：不使用 `<select>`、`<dialog>`、`<input type="dialog">` 等原生组件
+2. **禁止使用浏览器弹窗**：不使用 `alert()`、`confirm()`、`prompt()` 等原生弹窗
+3. **优先使用 Radix UI**：所有交互式 UI 组件必须使用 Radix UI 封装的组件
+4. **组件封装位置**：新组件统一放在 `src/renderer/src/components/ui/` 目录
+5. **样式规范**：使用 Tailwind CSS + `cn()` 工具函数进行样式合并
+
+**示例：**
+```tsx
+// ❌ 错误：使用原生 select
+<select className="..." value={value} onChange={(e) => setValue(e.target.value)}>
+  <option value="a">A</option>
+</select>
+
+// ✅ 正确：使用 Radix UI Select
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+
+<Select value={value} onValueChange={setValue}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="a">A</SelectItem>
+  </SelectContent>
+</Select>
+```
 
 ### 国际化 (i18n)
 

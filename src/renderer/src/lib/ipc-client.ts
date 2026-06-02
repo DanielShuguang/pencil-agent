@@ -1,30 +1,35 @@
-import type { AgentChunk, AgentToolCall } from '@shared/ipc'
+import type { AgentChunk } from '@shared/ipc'
+
+let cleanupFunctions: (() => void)[] = []
 
 export function setupAgentListeners() {
-  const cleanupChunk = window.api.agent.onChunk((chunk: AgentChunk) => {
-    const { useAgentStore } = require('../stores/agent-store')
-    useAgentStore.getState().appendChunk(chunk)
-  })
+  // Clean up any existing listeners
+  cleanup()
 
-  const cleanupToolCall = window.api.agent.onToolCall((_call: AgentToolCall) => {
-    // Handle tool call UI updates
+  const cleanupChunk = window.api.agent.onChunk((chunk: AgentChunk) => {
+    // Dynamic import to avoid circular dependency
+    import('../stores/agent-store').then(({ useAgentStore }) => {
+      useAgentStore.getState().appendChunk(chunk)
+    })
   })
 
   const cleanupDone = window.api.agent.onDone(() => {
-    const { useAgentStore } = require('../stores/agent-store')
-    useAgentStore.setState({ isGenerating: false })
+    import('../stores/agent-store').then(({ useAgentStore }) => {
+      useAgentStore.setState({ isGenerating: false })
+    })
   })
 
   const cleanupError = window.api.agent.onError((error: string) => {
     console.error('Agent error:', error)
-    const { useAgentStore } = require('../stores/agent-store')
-    useAgentStore.setState({ isGenerating: false })
+    import('../stores/agent-store').then(({ useAgentStore }) => {
+      useAgentStore.setState({ isGenerating: false })
+    })
   })
 
-  return () => {
-    cleanupChunk()
-    cleanupToolCall()
-    cleanupDone()
-    cleanupError()
-  }
+  cleanupFunctions = [cleanupChunk, cleanupDone, cleanupError]
+}
+
+export function cleanup() {
+  cleanupFunctions.forEach((fn) => fn())
+  cleanupFunctions = []
 }

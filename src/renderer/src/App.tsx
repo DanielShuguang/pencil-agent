@@ -1,34 +1,27 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import { AppShell } from './components/layout/AppShell'
+import { ChatPanel } from './components/chat/ChatPanel'
+import { useAgentStore } from './stores/agent-store'
+import { Button } from './components/ui/button'
 
 function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+  const { activeSessionId, createSession } = useAgentStore()
+
+  const handleNewSession = async () => {
+    await createSession()
+  }
 
   return (
-    <>
-      <img alt='logo' className='logo' src={electronLogo} />
-      <div className='creator'>Powered by electron-vite</div>
-      <div className='text'>
-        Build an Electron app with <span className='react'>React</span>
-        &nbsp;and <span className='ts'>TypeScript</span>
-      </div>
-      <p className='tip'>
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className='actions'>
-        <div className='action'>
-          <a href='https://electron-vite.org/' target='_blank' rel='noreferrer'>
-            Documentation
-          </a>
+    <AppShell>
+      {!activeSessionId ? (
+        <div className='flex h-full flex-col items-center justify-center gap-4'>
+          <h1 className='text-2xl font-bold'>Pencil Agent</h1>
+          <p className='text-muted-foreground'>开始一个新的对话</p>
+          <Button onClick={handleNewSession}>新建会话</Button>
         </div>
-        <div className='action'>
-          <a target='_blank' rel='noreferrer' onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
-      </div>
-      <Versions></Versions>
-    </>
+      ) : (
+        <ChatPanel />
+      )}
+    </AppShell>
   )
 }
 

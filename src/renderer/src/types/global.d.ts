@@ -1,21 +1,31 @@
 import type {
-  AgentCreateRequest,
   AgentChunk,
   AgentToolCall,
   WorkflowDefinition,
   WorkflowProgress,
   SandboxExecuteRequest,
-  SandboxOutput
+  SandboxOutput,
 } from '@shared/ipc'
 
 interface AgentAPI {
-  create: (config: AgentCreateRequest) => Promise<string>
+  create: (config: {
+    sessionId: string
+    model: { id: string; provider: string }
+    systemPrompt?: string
+  }) => Promise<string>
   prompt: (sessionId: string, message: string) => void
   stop: (sessionId: string) => void
   onChunk: (cb: (chunk: AgentChunk) => void) => () => void
-  onToolCall: (cb: (call: AgentToolCall) => void) => () => void
   onDone: (cb: () => void) => () => void
   onError: (cb: (error: string) => void) => () => void
+}
+
+interface WindowAPI {
+  minimize: () => void
+  maximize: () => void
+  close: () => void
+  isMaximized: () => Promise<boolean>
+  onMaximizedChanged: (cb: (maximized: boolean) => void) => () => void
 }
 
 interface WorkflowAPI {
@@ -31,6 +41,7 @@ interface SandboxAPI {
 
 interface ElectronAPI {
   agent: AgentAPI
+  window: WindowAPI
   workflow: WorkflowAPI
   sandbox: SandboxAPI
 }

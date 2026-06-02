@@ -55,6 +55,9 @@ function createWindow(): void {
   // Register window control IPC handlers
   registerWindowHandlers(mainWindow)
 
+  // Register app info IPC handlers
+  registerAppHandlers()
+
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -91,6 +94,12 @@ function registerWindowHandlers(window: BrowserWindow): void {
 
   window.on('unmaximize', () => {
     window.webContents.send('window:maximized-changed', false)
+  })
+}
+
+function registerAppHandlers(): void {
+  ipcMain.handle('app:getVersion', () => {
+    return app.getVersion()
   })
 }
 

@@ -92,6 +92,11 @@ interface SettingsAPI {
   saveKey: (provider: string, key: string) => Promise<void>
   getKey: (provider: string) => Promise<string | null>
   deleteKey: (provider: string) => Promise<void>
+  checkConnection: (provider: string) => Promise<boolean>
+}
+
+interface AppAPI {
+  getVersion: () => Promise<string>
 }
 
 interface WindowAPI {
@@ -109,6 +114,7 @@ export interface ElectronAPIExposed {
   workflow: WorkflowAPI
   settings: SettingsAPI
   window: WindowAPI
+  app: AppAPI
 }
 
 declare global {

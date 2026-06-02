@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import type { AgentChunk, AgentToolCall } from '@shared/ipc'
+import type { AgentChunk, AgentToolCall, TokenUsage } from '@shared/ipc'
 import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/storage'
+import { useStatusStore } from './status-store'
 
 const MAX_MESSAGES_PER_SESSION = 100
 
@@ -230,6 +231,11 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   appendChunk: (chunk: AgentChunk) => {
     const { activeSessionId } = get()
     if (!activeSessionId) return
+
+    if (chunk.metadata?.tokenUsage) {
+      const usage = chunk.metadata.tokenUsage as Partial<TokenUsage>
+      useStatusStore.getState().incrementTokenUsage(usage)
+    }
 
     const sessions = new Map(get().sessions)
     const metas = new Map(get().sessionMetas)

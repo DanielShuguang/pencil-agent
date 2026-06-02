@@ -10,6 +10,7 @@ interface ElectronAPIExposed {
   memory: any
   settings: any
   window: any
+  app: any
 }
 
 const agentAPI = {
@@ -103,6 +104,10 @@ const memoryAPI = {
     ipcRenderer.invoke('memory:clear-all'),
 }
 
+const appAPI = {
+  getVersion: () => ipcRenderer.invoke('app:getVersion'),
+}
+
 const settingsAPI = {
   saveKey: (provider: string, key: string) =>
     ipcRenderer.invoke('settings:save-key', { provider, key }),
@@ -112,6 +117,9 @@ const settingsAPI = {
 
   deleteKey: (provider: string) =>
     ipcRenderer.invoke('settings:delete-key', { provider }),
+
+  checkConnection: (provider: string) =>
+    ipcRenderer.invoke('settings:checkConnection', { provider }),
 }
 
 const windowAPI = {
@@ -136,6 +144,7 @@ const api: ElectronAPIExposed = {
   memory: memoryAPI,
   settings: settingsAPI,
   window: windowAPI,
+  app: appAPI,
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

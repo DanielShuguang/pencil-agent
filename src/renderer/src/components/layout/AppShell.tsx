@@ -10,6 +10,7 @@ import { WorkflowToolbar } from '../workflow/WorkflowToolbar'
 import { NodeConfigPanel } from '../workflow/panels/NodeConfigPanel'
 import { Sidebar } from '../sidebar/Sidebar'
 import { SettingsDialog } from '../settings/SettingsDialog'
+import { StatusBar } from './StatusBar'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import type { WorkflowNode } from '@shared/ipc'
 
@@ -189,6 +190,7 @@ export function AppShell({ children }: AppShellProps) {
           )}
         </div>
       </main>
+      <StatusBar />
       <SettingsDialog isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   )

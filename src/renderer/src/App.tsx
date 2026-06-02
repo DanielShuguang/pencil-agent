@@ -1,10 +1,18 @@
+import { useEffect } from 'react'
 import { AppShell } from './components/layout/AppShell'
 import { ChatPanel } from './components/chat/ChatPanel'
 import { useAgentStore } from './stores/agent-store'
+import { useStatusStore } from './stores/status-store'
 import { Button } from './components/ui/button'
 
 function App(): React.JSX.Element {
-  const { activeSessionId, createSession } = useAgentStore()
+  const { activeSessionId, createSession, initFromStorage } = useAgentStore()
+  const { init: initStatusStore } = useStatusStore()
+
+  useEffect(() => {
+    initFromStorage()
+    initStatusStore()
+  }, [initFromStorage, initStatusStore])
 
   const handleNewSession = async () => {
     await createSession()

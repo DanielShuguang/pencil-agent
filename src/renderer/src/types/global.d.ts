@@ -52,6 +52,11 @@ interface SettingsAPI {
   saveKey: (provider: string, key: string) => Promise<void>
   getKey: (provider: string) => Promise<string | null>
   deleteKey: (provider: string) => Promise<void>
+  checkConnection: (provider: string) => Promise<boolean>
+}
+
+interface AppAPI {
+  getVersion: () => Promise<string>
 }
 
 interface RoleAPI {
@@ -79,6 +84,7 @@ interface ElectronAPI {
   workflow: WorkflowAPI
   sandbox: SandboxAPI
   settings: SettingsAPI
+  app: AppAPI
 }
 
 declare global {

@@ -94,6 +94,57 @@ export function registerAgentHandlers(
     }
   })
 
+  ipcMain.handle('settings:checkConnection', async (_, { provider }: { provider: string }) => {
+    try {
+      const stored = store.get(`api-keys.${provider}`) as string | undefined
+      if (!stored) return false
+
+      let apiKey: string
+      if (safeStorage.isEncryptionAvailable()) {
+        const buffer = Buffer.from(stored, 'base64')
+        apiKey = safeStorage.decryptString(buffer)
+      } else {
+        apiKey = stored
+      }
+
+      const url = provider === 'openai'
+        ? 'https://api.openai.com/v1/models'
+        : provider === 'anthropic'
+          ? 'https://api.anthropic.com/v1/messages'
+          : null
+
+      if (!url) return false
+
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
+
+      try {
+        const headers: Record<string, string> = {}
+        if (provider === 'openai') {
+          headers['Authorization'] = `Bearer ${apiKey}`
+        } else if (provider === 'anthropic') {
+          headers['x-api-key'] = apiKey
+          headers['anthropic-version'] = '2023-06-01'
+        }
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers,
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeout)
+        return response.ok || response.status === 401
+      } catch {
+        clearTimeout(timeout)
+        return false
+      }
+    } catch (error) {
+      console.error(`Failed to check connection for ${provider}:`, error)
+      return false
+    }
+  })
+
   // 角色相关 handlers
   ipcMain.handle('role:list', () => {
     return getRoleManager().list()

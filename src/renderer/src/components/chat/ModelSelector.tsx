@@ -21,7 +21,11 @@ const MODELS: Record<string, { id: string; name: string }[]> = {
   ],
 }
 
-export function ModelSelector() {
+interface ModelSelectorProps {
+  onClose?: () => void
+}
+
+export function ModelSelector({ onClose }: ModelSelectorProps) {
   const { currentModel, switchModel } = useAgentStore()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -70,6 +74,7 @@ export function ModelSelector() {
                   onClick={() => {
                     switchModel({ id: model.id, provider: provider.id })
                     setIsOpen(false)
+                    onClose?.()
                   }}
                 >
                   {model.name}

@@ -243,3 +243,22 @@ export interface MemoryEntry {
   }
   score?: number
 }
+
+// 状态栏相关
+export interface TokenUsage {
+  prompt: number
+  completion: number
+  total: number
+}
+
+export type ConnectionStatus = 'connected' | 'disconnected' | 'checking'
+
+// App API
+export interface AppAPI {
+  getVersion: () => Promise<string>
+}
+
+// Settings API 扩展
+export interface CheckConnectionRequest {
+  provider: string
+}

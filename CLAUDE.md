@@ -16,6 +16,7 @@
 - **向量存储**: ChromaDB ^3.x
 - **构建**: Vite ^7.x + electron-builder ^26.x
 - **包管理**: pnpm ^10.x
+- **测试**: vitest ^4.x + testing-library + Playwright ^1.x
 
 ## 项目结构
 
@@ -30,23 +31,31 @@ src/
 └── renderer/       # React 渲染进程
     └── src/
         ├── components/  # UI 组件
+        │   └── __tests__/  # 组件测试
         ├── stores/      # Zustand 状态管理
+        │   └── __tests__/  # Store 测试
         ├── hooks/       # 自定义 hooks
-        └── lib/         # 工具函数
+        ├── lib/         # 工具函数
+        │   └── __tests__/  # 单元测试
+        └── test-setup.ts   # 测试环境初始化
 packages/
 └── shared-types/   # IPC 和工作流类型定义
+test/
+└── e2e/            # Playwright E2E 测试
 ```
 
 ## 开发命令
 
 ```bash
-pnpm dev          # 启动开发环境 (Vite + Electron)
-pnpm build        # 构建前端 + 主进程
-pnpm build:app    # 打包应用 (electron-builder)
-pnpm lint         # 代码检查 (oxlint --fix)
-pnpm fmt          # 代码格式化 (oxfmt)
-pnpm test         # 运行测试 (vitest)
-pnpm typecheck    # 类型检查
+pnpm dev           # 启动开发环境 (Vite + Electron)
+pnpm build         # 构建前端 + 主进程
+pnpm build:app     # 打包应用 (electron-builder)
+pnpm lint          # 代码检查 (oxlint --fix)
+pnpm fmt           # 代码格式化 (oxfmt)
+pnpm test          # 监视模式运行单元/组件测试 (vitest)
+pnpm test:run      # 单次运行所有 vitest 测试
+pnpm test:e2e      # 运行 Playwright E2E 测试 (需先 build)
+pnpm typecheck     # 类型检查
 ```
 
 ## 命名约定
@@ -92,6 +101,14 @@ ipcMain.on('agent:prompt', handler)
 - `nodeIntegration: false`, `contextIsolation: true`
 - API Key 使用 `safeStorage` 加密
 - Docker 沙箱: 网络隔离、内存限制、只读文件系统
+
+### 测试策略
+
+- **单元测试** (vitest): Stores、工具函数、纯逻辑
+- **组件测试** (vitest + testing-library): UI 组件交互
+- **E2E 测试** (Playwright Electron): 跨进程关键路径
+- 测试文件与源码 colocate，放在 `__tests__/` 目录下
+- E2E 测试集中在 `test/e2e/` 目录
 
 ## 里程碑
 

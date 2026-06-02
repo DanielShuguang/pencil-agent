@@ -17,12 +17,14 @@ context: |
   - 构建工具: Vite ^7.x
   - 打包: electron-builder ^26.x
   - 包管理: pnpm ^10.x
+  - 测试: vitest ^4.x + @testing-library/react + Playwright ^1.x
 
   ## 项目结构
   - src/main/ - Electron 主进程
   - src/preload/ - 预加载脚本
   - src/renderer/ - React 渲染进程
   - packages/shared-types/ - 共享类型定义
+  - test/e2e/ - Playwright E2E 测试
 
   ## 命名约定
   - 组件文件: PascalCase.tsx

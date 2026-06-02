@@ -40,6 +40,92 @@ export interface AgentToolCall {
 }
 
 // 工作流相关
+export type NodeType = 'start' | 'end' | 'agent' | 'tool' | 'condition'
+
+export interface PortDefinition {
+  id: string
+  name: string
+  type: 'string' | 'object' | 'array' | 'any'
+  required: boolean
+}
+
+export interface NodeDefinition {
+  type: NodeType
+  label: string
+  icon: string
+  inputs: PortDefinition[]
+  outputs: PortDefinition[]
+  configSchema: Record<string, unknown> // JSON Schema
+}
+
+export const NODE_REGISTRY: Record<NodeType, NodeDefinition> = {
+  start: {
+    type: 'start',
+    label: '开始',
+    icon: 'Play',
+    inputs: [],
+    outputs: [{ id: 'output', name: '输出', type: 'any', required: true }],
+    configSchema: { type: 'object', properties: { input: { type: 'object' } } },
+  },
+  end: {
+    type: 'end',
+    label: '结束',
+    icon: 'Square',
+    inputs: [{ id: 'input', name: '输入', type: 'any', required: true }],
+    outputs: [],
+    configSchema: { type: 'object', properties: {} },
+  },
+  agent: {
+    type: 'agent',
+    label: 'Agent',
+    icon: 'Bot',
+    inputs: [{ id: 'input', name: '输入', type: 'string', required: true }],
+    outputs: [
+      { id: 'output', name: '输出', type: 'string', required: true },
+      { id: 'tool_calls', name: '工具调用', type: 'array', required: false },
+    ],
+    configSchema: {
+      type: 'object',
+      properties: {
+        model: { type: 'object', properties: { id: { type: 'string' }, provider: { type: 'string' } } },
+        systemPrompt: { type: 'string' },
+        maxTokens: { type: 'number' },
+        temperature: { type: 'number' },
+      },
+    },
+  },
+  tool: {
+    type: 'tool',
+    label: '工具',
+    icon: 'Wrench',
+    inputs: [{ id: 'input', name: '输入', type: 'any', required: true }],
+    outputs: [{ id: 'output', name: '输出', type: 'any', required: true }],
+    configSchema: {
+      type: 'object',
+      properties: {
+        toolName: { type: 'string' },
+        parameters: { type: 'object' },
+      },
+    },
+  },
+  condition: {
+    type: 'condition',
+    label: '条件',
+    icon: 'GitBranch',
+    inputs: [{ id: 'input', name: '输入', type: 'any', required: true }],
+    outputs: [
+      { id: 'true', name: 'True', type: 'any', required: true },
+      { id: 'false', name: 'False', type: 'any', required: true },
+    ],
+    configSchema: {
+      type: 'object',
+      properties: {
+        expression: { type: 'string' },
+      },
+    },
+  },
+}
+
 export interface WorkflowDefinition {
   id: string
   name: string
@@ -49,7 +135,7 @@ export interface WorkflowDefinition {
 
 export interface WorkflowNode {
   id: string
-  type: 'agent' | 'tool' | 'condition' | 'start' | 'end'
+  type: NodeType
   data: Record<string, unknown>
   position: { x: number; y: number }
 }

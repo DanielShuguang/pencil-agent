@@ -119,9 +119,13 @@ pnpm build:linux   # Linux
 - **超时控制**: 默认 30 秒超时，防止长时间运行
 
 ### 工作流编排
-- 可视化 DAG 画布 (@xyflow/react)
-- 节点类型: Agent、Tool、Condition、Start、End
-- 拓扑排序执行引擎
+- **可视化画布**: 基于 @xyflow/react 的 DAG 画布，支持节点拖拽、连线、缩放
+- **节点类型**: Start（开始）、End（结束）、Agent（LLM 调用）、Tool（工具调用）、Condition（条件分支）
+- **执行引擎**: DAG 拓扑排序执行，支持顺序执行和条件分支
+- **节点配置**: 右侧配置面板，根据节点类型动态渲染表单
+- **运行时状态**: 节点执行状态实时高亮（pending/running/success/error）
+- **导入/导出**: 工作流定义 JSON 导入/导出
+- **工具栏**: 快速添加节点、执行、保存、加载、清空
 
 ### 多 Agent 协作
 - 顺序/并行/辩论/层级模式

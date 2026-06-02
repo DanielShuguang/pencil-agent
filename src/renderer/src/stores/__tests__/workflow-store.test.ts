@@ -6,7 +6,8 @@ beforeEach(() => {
   useWorkflowStore.setState({
     nodes: [],
     edges: [],
-    activeWorkflowId: null,
+    selectedNodeId: null,
+    nodeStatus: new Map(),
     isExecuting: false
   })
 })
@@ -23,7 +24,7 @@ describe('workflow-store', () => {
     const state = useWorkflowStore.getState()
     expect(state.nodes).toEqual([])
     expect(state.edges).toEqual([])
-    expect(state.activeWorkflowId).toBeNull()
+    expect(state.selectedNodeId).toBeNull()
     expect(state.isExecuting).toBe(false)
   })
 
@@ -79,5 +80,39 @@ describe('workflow-store', () => {
     expect(useWorkflowStore.getState().edges).toHaveLength(1)
     expect(useWorkflowStore.getState().edges[0].source).toBe('1')
     expect(useWorkflowStore.getState().edges[0].target).toBe('2')
+  })
+
+  it('selectNode sets selectedNodeId', () => {
+    useWorkflowStore.getState().selectNode('1')
+    expect(useWorkflowStore.getState().selectedNodeId).toBe('1')
+  })
+
+  it('selectNode null clears selection', () => {
+    useWorkflowStore.setState({ selectedNodeId: '1' })
+    useWorkflowStore.getState().selectNode(null)
+    expect(useWorkflowStore.getState().selectedNodeId).toBeNull()
+  })
+
+  it('updateNodeData merges data into node', () => {
+    useWorkflowStore.setState({ nodes: [{ ...mockNode('1'), data: { label: 'Old' } }] })
+    useWorkflowStore.getState().updateNodeData('1', { label: 'New', extra: true })
+    const node = useWorkflowStore.getState().nodes[0]
+    expect(node.data.label).toBe('New')
+    expect(node.data.extra).toBe(true)
+  })
+
+  it('clearWorkflow resets all state', () => {
+    useWorkflowStore.setState({
+      nodes: [mockNode('1')],
+      edges: [{ id: 'e1', source: '1', target: '2' }],
+      selectedNodeId: '1',
+      isExecuting: true
+    })
+    useWorkflowStore.getState().clearWorkflow()
+    const state = useWorkflowStore.getState()
+    expect(state.nodes).toEqual([])
+    expect(state.edges).toEqual([])
+    expect(state.selectedNodeId).toBeNull()
+    expect(state.isExecuting).toBe(false)
   })
 })

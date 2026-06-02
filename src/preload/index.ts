@@ -56,6 +56,21 @@ const sandboxAPI = {
   },
 }
 
+const workflowAPI = {
+  execute: (workflow: {
+    id: string
+    name: string
+    nodes: Array<{ id: string; type: string; data: Record<string, unknown>; position: { x: number; y: number } }>
+    edges: Array<{ id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string }>
+  }, input: Record<string, unknown>) => ipcRenderer.invoke('workflow:execute', workflow, input),
+
+  onProgress: (cb: (progress: { nodeId: string; status: string; result?: unknown; error?: string }) => void) => {
+    const handler = (_: unknown, progress: any) => cb(progress)
+    ipcRenderer.on('workflow:progress', handler)
+    return () => ipcRenderer.removeListener('workflow:progress', handler)
+  },
+}
+
 const windowAPI = {
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
@@ -73,6 +88,7 @@ const api = {
   agent: agentAPI,
   tool: toolAPI,
   sandbox: sandboxAPI,
+  workflow: workflowAPI,
   window: windowAPI,
 }
 

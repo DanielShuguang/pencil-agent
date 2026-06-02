@@ -8,11 +8,14 @@ import { createToolRegistry } from './agent/tool-registry'
 import { createSandboxExecutor } from './sandbox/factory'
 import { registerSandboxHandlers } from './sandbox/ipc-handlers'
 import type { SandboxExecutor } from './sandbox/executor'
+import { WorkflowEngine } from './workflow/engine'
+import { registerWorkflowHandlers } from './workflow/ipc-handlers'
 
 let mainWindow: BrowserWindow | null = null
 const agentManager = new AgentSessionManager()
 const toolRegistry = createToolRegistry()
 let sandbox: SandboxExecutor
+let workflowEngine: WorkflowEngine
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -41,6 +44,9 @@ function createWindow(): void {
 
   // Register sandbox IPC handlers
   registerSandboxHandlers(sandbox, mainWindow)
+
+  // Register workflow IPC handlers
+  registerWorkflowHandlers(workflowEngine, mainWindow)
 
   // Register window control IPC handlers
   registerWindowHandlers(mainWindow)
@@ -103,6 +109,9 @@ app.whenReady().then(async () => {
 
   // Initialize sandbox executor (with Docker auto-detection)
   sandbox = await createSandboxExecutor()
+
+  // Initialize workflow engine
+  workflowEngine = new WorkflowEngine(agentManager, toolRegistry)
 
   createWindow()
 

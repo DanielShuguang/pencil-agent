@@ -54,6 +54,40 @@ interface SandboxAPI {
   onOutput: (cb: (output: SandboxOutput) => void) => () => void
 }
 
+interface WorkflowNode {
+  id: string
+  type: 'start' | 'end' | 'agent' | 'tool' | 'condition'
+  data: Record<string, unknown>
+  position: { x: number; y: number }
+}
+
+interface WorkflowEdge {
+  id: string
+  source: string
+  target: string
+  sourceHandle?: string
+  targetHandle?: string
+}
+
+interface WorkflowDefinition {
+  id: string
+  name: string
+  nodes: WorkflowNode[]
+  edges: WorkflowEdge[]
+}
+
+interface WorkflowProgress {
+  nodeId: string
+  status: 'pending' | 'running' | 'success' | 'error'
+  result?: unknown
+  error?: string
+}
+
+interface WorkflowAPI {
+  execute: (workflow: WorkflowDefinition, input: Record<string, unknown>) => Promise<Record<string, unknown>>
+  onProgress: (cb: (progress: WorkflowProgress) => void) => () => void
+}
+
 interface WindowAPI {
   minimize: () => void
   maximize: () => void
@@ -66,6 +100,7 @@ interface ElectronAPIExposed {
   agent: AgentAPI
   tool: ToolAPI
   sandbox: SandboxAPI
+  workflow: WorkflowAPI
   window: WindowAPI
 }
 

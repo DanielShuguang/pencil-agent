@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { Theme } from '@shared/ipc'
 import { themeRegistry } from '../theme-registry'
-import { darkTheme } from '../dark'
-import { lightTheme } from '../light'
 
 describe('ThemeRegistry', () => {
   beforeEach(() => {

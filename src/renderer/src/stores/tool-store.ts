@@ -19,7 +19,7 @@ export const useToolStore = create<ToolState>((set) => ({
 
   fetchTools: async () => {
     try {
-      const tools = await (window as any).api.tool.list()
+      const tools = await window.api.tool.list()
       set({ tools })
     } catch (error) {
       console.error('Failed to fetch tools:', error)

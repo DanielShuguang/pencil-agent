@@ -1,18 +1,24 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import type { ThemeMode, ThemeState, AgentRole } from '@shared/ipc'
 
-interface ElectronAPIExposed {
-  agent: any
-  tool: any
-  sandbox: any
-  workflow: any
-  role: any
-  memory: any
-  settings: any
-  window: any
-  app: any
-  modelConfig: any
-  theme: any
+interface AgentChunk {
+  type: string
+  content: string
+  metadata?: Record<string, unknown>
+}
+
+interface SandboxOutput {
+  type: 'stdout' | 'stderr' | 'exit'
+  content: string
+  exitCode?: number
+}
+
+interface WorkflowProgress {
+  nodeId: string
+  status: string
+  result?: unknown
+  error?: string
 }
 
 const agentAPI = {
@@ -28,9 +34,9 @@ const agentAPI = {
   stop: (sessionId: string) => ipcRenderer.send('agent:stop', sessionId),
 
   onChunk: (
-    cb: (chunk: { type: string; content: string; metadata?: Record<string, unknown> }) => void,
+    cb: (chunk: AgentChunk) => void,
   ) => {
-    const handler = (_: unknown, chunk: any) => cb(chunk)
+    const handler = (_: unknown, chunk: AgentChunk) => cb(chunk)
     ipcRenderer.on('agent:chunk', handler)
     return () => ipcRenderer.removeListener('agent:chunk', handler)
   },
@@ -48,6 +54,41 @@ const agentAPI = {
   },
 }
 
+interface MemoryEntryMetadata {
+  sessionId: string
+  role: string
+  timestamp: number
+  tags: string[]
+}
+
+interface SearchFilters {
+  tags?: string[]
+  sessionId?: string
+}
+
+interface ModelProvider {
+  id: string
+  name: string
+  baseUrl: string
+  apiKey: string
+  apiFormat: 'openai' | 'anthropic'
+  models: ModelConfig[]
+  createdAt: number
+  updatedAt: number
+}
+
+interface ModelConfig {
+  id: string
+  name: string
+  providerId: string
+  maxTokens?: number
+  temperature?: number
+}
+
+interface TestConnectionRequest {
+  providerId: string
+}
+
 const toolAPI = {
   list: () => ipcRenderer.invoke('tool:list'),
   get: (name: string) => ipcRenderer.invoke('tool:get', name),
@@ -63,8 +104,8 @@ const sandboxAPI = {
 
   stop: (executionId: string) => ipcRenderer.send('sandbox:stop', executionId),
 
-  onOutput: (cb: (output: { type: 'stdout' | 'stderr' | 'exit'; content: string; exitCode?: number }) => void) => {
-    const handler = (_: unknown, output: any) => cb(output)
+  onOutput: (cb: (output: SandboxOutput) => void) => {
+    const handler = (_: unknown, output: SandboxOutput) => cb(output)
     ipcRenderer.on('sandbox:output', handler)
     return () => ipcRenderer.removeListener('sandbox:output', handler)
   },
@@ -78,8 +119,8 @@ const workflowAPI = {
     edges: Array<{ id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string }>
   }, input: Record<string, unknown>): Promise<Record<string, unknown>> => ipcRenderer.invoke('workflow:execute', workflow, input),
 
-  onProgress: (cb: (progress: { nodeId: string; status: string; result?: unknown; error?: string }) => void) => {
-    const handler = (_: unknown, progress: any) => cb(progress)
+  onProgress: (cb: (progress: WorkflowProgress) => void) => {
+    const handler = (_: unknown, progress: WorkflowProgress) => cb(progress)
     ipcRenderer.on('workflow:progress', handler)
     return () => ipcRenderer.removeListener('workflow:progress', handler)
   },
@@ -88,17 +129,17 @@ const workflowAPI = {
 const roleAPI = {
   list: () => ipcRenderer.invoke('role:list'),
   get: (id: string) => ipcRenderer.invoke('role:get', id),
-  create: (role: any) => ipcRenderer.invoke('role:create', role),
-  update: (id: string, updates: any) => ipcRenderer.invoke('role:update', { id, updates }),
+  create: (role: Omit<AgentRole, 'createdAt' | 'updatedAt'>) => ipcRenderer.invoke('role:create', role),
+  update: (id: string, updates: Partial<AgentRole>) => ipcRenderer.invoke('role:update', { id, updates }),
   delete: (id: string) => ipcRenderer.invoke('role:delete', id),
 }
 
 const memoryAPI = {
-  store: (content: string, metadata: any) =>
+  store: (content: string, metadata: MemoryEntryMetadata) =>
     ipcRenderer.invoke('memory:store', { content, metadata }),
   recall: (query: string, topK?: number) =>
     ipcRenderer.invoke('memory:recall', { query, topK }),
-  search: (query: string, filters?: any) =>
+  search: (query: string, filters?: SearchFilters) =>
     ipcRenderer.invoke('memory:search', { query, filters }),
   delete: (id: string) =>
     ipcRenderer.invoke('memory:delete', id),
@@ -112,19 +153,19 @@ const appAPI = {
 
 const modelConfigAPI = {
   list: () => ipcRenderer.invoke('model-config:list'),
-  save: (provider: any) => ipcRenderer.invoke('model-config:save', provider),
+  save: (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) => ipcRenderer.invoke('model-config:save', provider),
   delete: (providerId: string) => ipcRenderer.invoke('model-config:delete', providerId),
-  saveModel: (providerId: string, model: any) => ipcRenderer.invoke('model-config:save-model', { providerId, model }),
+  saveModel: (providerId: string, model: ModelConfig) => ipcRenderer.invoke('model-config:save-model', { providerId, model }),
   deleteModel: (providerId: string, modelId: string) => ipcRenderer.invoke('model-config:delete-model', { providerId, modelId }),
-  testConnection: (request: any) => ipcRenderer.invoke('model-config:test-connection', request),
+  testConnection: (request: TestConnectionRequest) => ipcRenderer.invoke('model-config:test-connection', request),
 }
 
 const themeAPI = {
   get: () => ipcRenderer.invoke('theme:get'),
-  setMode: (mode: string) => ipcRenderer.invoke('theme:setMode', mode),
+  setMode: (mode: ThemeMode) => ipcRenderer.invoke('theme:setMode', mode),
   setTheme: (themeId: string) => ipcRenderer.invoke('theme:setTheme', themeId),
-  onThemeChanged: (cb: (state: any) => void) => {
-    const handler = (_: unknown, state: any) => cb(state)
+  onThemeChanged: (cb: (state: ThemeState) => void) => {
+    const handler = (_: unknown, state: ThemeState) => cb(state)
     ipcRenderer.on('theme:changed', handler)
     return () => ipcRenderer.removeListener('theme:changed', handler)
   },
@@ -157,7 +198,19 @@ const windowAPI = {
 }
 
 // Custom APIs for renderer
-const api: ElectronAPIExposed = {
+const api: {
+  agent: typeof agentAPI
+  tool: typeof toolAPI
+  sandbox: typeof sandboxAPI
+  workflow: typeof workflowAPI
+  role: typeof roleAPI
+  memory: typeof memoryAPI
+  settings: typeof settingsAPI
+  window: typeof windowAPI
+  app: typeof appAPI
+  modelConfig: typeof modelConfigAPI
+  theme: typeof themeAPI
+} = {
   agent: agentAPI,
   tool: toolAPI,
   sandbox: sandboxAPI,

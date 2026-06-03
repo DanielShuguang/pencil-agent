@@ -31,6 +31,18 @@ export default defineConfig({
         '@shared': resolve('packages/shared-types')
       }
     },
-    plugins: [react(), tailwindcss()]
+    plugins: [react(), tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-zustand': ['zustand'],
+            'vendor-monaco': ['@monaco-editor/react'],
+            'vendor-xyflow': ['@xyflow/react'],
+          }
+        }
+      }
+    }
   }
 })

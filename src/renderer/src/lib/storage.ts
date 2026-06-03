@@ -17,7 +17,19 @@ export function getStorageItem<T>(key: string, defaultValue: T): T {
 export function setStorageItem<T>(key: string, value: T): void {
   try {
     localStorage.setItem(getKey(key), JSON.stringify(value))
-  } catch {
+  } catch (e) {
+    if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      console.warn(`Storage quota exceeded for key: ${key}. Clearing old sessions...`)
+      const keys = Object.keys(localStorage)
+      for (const k of keys) {
+        if (k.startsWith(STORAGE_PREFIX) && k.includes('session:')) {
+          localStorage.removeItem(k)
+          break
+        }
+      }
+    } else {
+      console.warn('Failed to save to localStorage:', e)
+    }
   }
 }
 

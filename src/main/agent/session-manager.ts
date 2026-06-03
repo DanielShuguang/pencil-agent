@@ -130,4 +130,10 @@ export class AgentSessionManager {
       this.sessions.delete(sessionId)
     }
   }
+
+  destroyAll(): void {
+    for (const [sessionId] of this.sessions) {
+      this.destroy(sessionId)
+    }
+  }
 }

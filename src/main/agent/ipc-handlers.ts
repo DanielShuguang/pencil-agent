@@ -1,12 +1,10 @@
+import type { AgentRole, ThemeMode } from '@shared/ipc'
 import { ipcMain, safeStorage, nativeTheme, type BrowserWindow } from 'electron'
-import Store from 'electron-store'
+import { appStore } from '../lib/store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
 import { RoleManager } from './role-manager'
 import { ModelConfigManager } from './model-config'
-import type { ThemeMode } from '@shared/ipc'
-
-const store = new Store()
 
 let roleManager: RoleManager | null = null
 function getRoleManager(): RoleManager {
@@ -71,9 +69,9 @@ export function registerAgentHandlers(
     try {
       if (safeStorage.isEncryptionAvailable()) {
         const encrypted = safeStorage.encryptString(key).toString('base64')
-        store.set(`api-keys.${provider}`, encrypted)
+        appStore.set(`api-keys.${provider}`, encrypted)
       } else {
-        store.set(`api-keys.${provider}`, key)
+        appStore.set(`api-keys.${provider}`, key)
       }
     } catch (error) {
       throw new Error(`Failed to save API key: ${error}`)
@@ -82,7 +80,7 @@ export function registerAgentHandlers(
 
   ipcMain.handle('settings:get-key', (_, { provider }: { provider: string }) => {
     try {
-      const stored = store.get(`api-keys.${provider}`) as string | undefined
+      const stored = appStore.get(`api-keys.${provider}`) as string | undefined
       if (!stored) return null
 
       if (safeStorage.isEncryptionAvailable()) {
@@ -98,7 +96,7 @@ export function registerAgentHandlers(
 
   ipcMain.handle('settings:delete-key', (_, { provider }: { provider: string }) => {
     try {
-      store.delete(`api-keys.${provider}`)
+      appStore.delete(`api-keys.${provider}`)
     } catch (error) {
       throw new Error(`Failed to delete API key: ${error}`)
     }
@@ -106,7 +104,7 @@ export function registerAgentHandlers(
 
   ipcMain.handle('settings:checkConnection', async (_, { provider }: { provider: string }) => {
     try {
-      const stored = store.get(`api-keys.${provider}`) as string | undefined
+      const stored = appStore.get(`api-keys.${provider}`) as string | undefined
       if (!stored) return false
 
       let apiKey: string
@@ -164,11 +162,11 @@ export function registerAgentHandlers(
     return getRoleManager().get(id)
   })
 
-  ipcMain.handle('role:create', (_, role) => {
+  ipcMain.handle('role:create', (_, role: Omit<AgentRole, 'createdAt' | 'updatedAt'>) => {
     return getRoleManager().create(role)
   })
 
-  ipcMain.handle('role:update', (_, { id, updates }: { id: string; updates: Partial<any> }) => {
+  ipcMain.handle('role:update', (_, { id, updates }: { id: string; updates: Partial<AgentRole> }) => {
     return getRoleManager().update(id, updates)
   })
 
@@ -203,14 +201,17 @@ export function registerAgentHandlers(
 
   // 主题相关 handlers
   ipcMain.handle('theme:get', () => {
-    const mode = store.get('theme.mode', 'system') as string
+    const mode = appStore.get('theme.mode', 'system') as string
+    const themeId = appStore.get('theme.themeId', '') as string
     const isDark = nativeTheme.shouldUseDarkColors
-    const currentThemeId = mode === 'system' ? (isDark ? 'dark' : 'light') : mode
+    const currentThemeId = mode === 'system'
+      ? (isDark ? 'dark' : 'light')
+      : (themeId || mode)
     return { mode, currentThemeId, isDark }
   })
 
   ipcMain.handle('theme:setMode', (_, mode: ThemeMode) => {
-    store.set('theme.mode', mode)
+    appStore.set('theme.mode', mode)
     nativeTheme.themeSource = mode
     const isDark = nativeTheme.shouldUseDarkColors
     const currentThemeId = mode === 'system' ? (isDark ? 'dark' : 'light') : mode
@@ -219,7 +220,7 @@ export function registerAgentHandlers(
   })
 
   ipcMain.handle('theme:setTheme', (_, themeId: string) => {
-    store.set('theme.mode', themeId)
+    appStore.set('theme.themeId', themeId)
     nativeTheme.themeSource = themeId as 'light' | 'dark'
     const state = { mode: themeId, currentThemeId: themeId, isDark: themeId === 'dark' }
     mainWindow.webContents.send('theme:changed', state)
@@ -227,7 +228,7 @@ export function registerAgentHandlers(
 
   // 监听系统主题变化
   nativeTheme.on('updated', () => {
-    const mode = store.get('theme.mode', 'system') as string
+    const mode = appStore.get('theme.mode', 'system') as string
     if (mode === 'system') {
       const isDark = nativeTheme.shouldUseDarkColors
       const currentThemeId = isDark ? 'dark' : 'light'

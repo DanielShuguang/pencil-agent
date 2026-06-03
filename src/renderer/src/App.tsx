@@ -25,14 +25,13 @@ function App(): React.JSX.Element {
   }, [currentTheme])
 
   useEffect(() => {
-    if (window.api?.theme) {
-      const unsubscribe = window.api.theme.onThemeChanged((state) => {
-        const { setDark, setThemeMode } = useThemeStore.getState()
-        setThemeMode(state.mode as any)
-        setDark(state.isDark)
-      })
-      return unsubscribe
-    }
+    if (!window.api?.theme) return
+    const unsubscribe = window.api.theme.onThemeChanged((state) => {
+      const { setDark, setThemeMode } = useThemeStore.getState()
+      setThemeMode(state.mode)
+      setDark(state.isDark)
+    })
+    return unsubscribe
   }, [])
 
   const handleNewSession = async () => {

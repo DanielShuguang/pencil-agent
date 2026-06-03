@@ -1,19 +1,21 @@
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense, type ReactNode } from 'react'
 import { Minus, Square, X, Maximize2, MessageSquare, Code2, Workflow, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '../../lib/utils'
-import { EditorPanel } from '../code-editor/EditorPanel'
-import { FileTree } from '../code-editor/FileTree'
-import { TabBar } from '../code-editor/TabBar'
-import { TerminalPanel } from '../code-editor/TerminalPanel'
-import { WorkflowCanvas } from '../workflow/WorkflowCanvas'
-import { WorkflowToolbar } from '../workflow/WorkflowToolbar'
-import { NodeConfigPanel } from '../workflow/panels/NodeConfigPanel'
 import { Sidebar } from '../sidebar/Sidebar'
 import { SettingsDialog } from '../settings/SettingsDialog'
 import { StatusBar } from './StatusBar'
+import { Loading } from '../ui/loading'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import type { WorkflowNode } from '@shared/ipc'
+
+const EditorPanel = lazy(() => import('../code-editor/EditorPanel').then(m => ({ default: m.EditorPanel })))
+const FileTree = lazy(() => import('../code-editor/FileTree').then(m => ({ default: m.FileTree })))
+const TabBar = lazy(() => import('../code-editor/TabBar').then(m => ({ default: m.TabBar })))
+const TerminalPanel = lazy(() => import('../code-editor/TerminalPanel').then(m => ({ default: m.TerminalPanel })))
+const WorkflowCanvas = lazy(() => import('../workflow/WorkflowCanvas').then(m => ({ default: m.WorkflowCanvas })))
+const WorkflowToolbar = lazy(() => import('../workflow/WorkflowToolbar').then(m => ({ default: m.WorkflowToolbar })))
+const NodeConfigPanel = lazy(() => import('../workflow/panels/NodeConfigPanel').then(m => ({ default: m.NodeConfigPanel })))
 
 interface AppShellProps {
   children: ReactNode
@@ -163,32 +165,36 @@ export function AppShell({ children }: AppShellProps) {
           {activeTab === 'chat' ? (
             children
           ) : activeTab === 'editor' ? (
-            <div className='flex-1 flex overflow-hidden'>
-              <div className='w-48 border-r bg-muted/20 overflow-auto'>
-                <div className='p-2'>
-                  <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
-                    {t('app.file')}
-                  </h3>
-                  <FileTree />
+            <Suspense fallback={<Loading />}>
+              <div className='flex-1 flex overflow-hidden'>
+                <div className='w-48 border-r bg-muted/20 overflow-auto'>
+                  <div className='p-2'>
+                    <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
+                      {t('app.file')}
+                    </h3>
+                    <FileTree />
+                  </div>
+                </div>
+                <div className='flex-1 flex flex-col overflow-hidden'>
+                  <TabBar />
+                  <EditorPanel className='flex-1' />
+                  <TerminalPanel
+                    isCollapsed={isTerminalCollapsed}
+                    onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
+                  />
                 </div>
               </div>
-              <div className='flex-1 flex flex-col overflow-hidden'>
-                <TabBar />
-                <EditorPanel className='flex-1' />
-                <TerminalPanel
-                  isCollapsed={isTerminalCollapsed}
-                  onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
-                />
-              </div>
-            </div>
+            </Suspense>
           ) : (
-            <div className='flex-1 flex flex-col overflow-hidden'>
-              <WorkflowToolbar onExecute={handleExecute} />
-              <div className='flex-1 flex overflow-hidden'>
-                <WorkflowCanvas className='flex-1' />
-                {selectedNodeId && <NodeConfigPanel className='w-72' />}
+            <Suspense fallback={<Loading />}>
+              <div className='flex-1 flex flex-col overflow-hidden'>
+                <WorkflowToolbar onExecute={handleExecute} />
+                <div className='flex-1 flex overflow-hidden'>
+                  <WorkflowCanvas className='flex-1' />
+                  {selectedNodeId && <NodeConfigPanel className='w-72' />}
+                </div>
               </div>
-            </div>
+            </Suspense>
           )}
         </div>
       </main>

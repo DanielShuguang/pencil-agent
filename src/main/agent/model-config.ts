@@ -1,6 +1,6 @@
 import { safeStorage } from 'electron'
-import Store from 'electron-store'
 import type { ApiFormat, ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
+import { appStore } from '../lib/store'
 
 interface StoredProvider {
   id: string
@@ -14,16 +14,14 @@ interface StoredProvider {
 }
 
 export class ModelConfigManager {
-  private store: Store
   private providers: Map<string, ModelProvider> = new Map()
 
   constructor() {
-    this.store = new Store()
     this.loadFromStorage()
   }
 
   private loadFromStorage(): void {
-    const stored = this.store.get('modelProviders') as StoredProvider[] | undefined
+    const stored = appStore.get('modelProviders') as StoredProvider[] | undefined
     if (!stored) return
 
     if (!safeStorage.isEncryptionAvailable()) {
@@ -69,7 +67,7 @@ export class ModelConfigManager {
       })
     }
 
-    this.store.set('modelProviders', stored)
+    appStore.set('modelProviders', stored)
   }
 
   list(): ModelProviderInfo[] {

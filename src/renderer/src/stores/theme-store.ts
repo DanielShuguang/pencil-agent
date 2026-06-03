@@ -15,7 +15,7 @@ interface ThemeState {
 
 const DEFAULT_THEME_ID = 'dark'
 
-export const useThemeStore = create<ThemeState>((set, get) => ({
+export const useThemeStore = create<ThemeState>((set) => ({
   mode: 'system',
   currentThemeId: DEFAULT_THEME_ID,
   isDark: true,
@@ -36,7 +36,11 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   },
 
   setThemeMode: (mode: ThemeMode) => {
+    const themeId = mode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : mode
     set({ mode })
+    localStorage.setItem('theme-mode', themeId)
   },
 
   setDark: (isDark: boolean) => {

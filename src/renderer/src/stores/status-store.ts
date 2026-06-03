@@ -1,11 +1,7 @@
 import { create } from 'zustand'
-import type { ConnectionStatus } from '@shared/ipc'
+import type { ConnectionStatus, TokenUsage } from '@shared/ipc'
 
-export interface TokenUsage {
-  prompt: number
-  completion: number
-  total: number
-}
+let tokenListenerInitialized = false
 
 interface StatusState {
   currentModel: { id: string; provider: string }
@@ -80,8 +76,15 @@ export const useStatusStore = create<StatusState>((set, get) => ({
       console.error('Failed to get version:', error)
     }
 
-    const { checkConnection } = get()
+    const { checkConnection, incrementTokenUsage } = get()
     await checkConnection()
+
+    if (typeof window !== 'undefined' && window.addEventListener && !tokenListenerInitialized) {
+      tokenListenerInitialized = true
+      window.addEventListener('token-usage', ((e: CustomEvent<Partial<TokenUsage>>) => {
+        incrementTokenUsage(e.detail)
+      }) as EventListener)
+    }
 
     setInterval(() => {
       checkConnection()

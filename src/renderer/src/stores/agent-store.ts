@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import type { AgentChunk, AgentToolCall, TokenUsage } from '@shared/ipc'
 import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/storage'
-import { useStatusStore } from './status-store'
 import i18n from '../i18n'
 
 const MAX_MESSAGES_PER_SESSION = 100
@@ -238,7 +237,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     if (chunk.metadata?.tokenUsage) {
       const usage = chunk.metadata.tokenUsage as Partial<TokenUsage>
-      useStatusStore.getState().incrementTokenUsage(usage)
+      window.dispatchEvent(new CustomEvent('token-usage', { detail: usage }))
     }
 
     const sessions = new Map(get().sessions)

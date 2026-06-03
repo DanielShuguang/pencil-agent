@@ -6,3 +6,5 @@ out
 *.log*
 
 .claude/settings.local.json
+
+test-results/

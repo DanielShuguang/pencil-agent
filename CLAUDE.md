@@ -196,6 +196,31 @@ setLanguage('en') // 切换到英文
 - 测试文件与源码 colocate，放在 `__tests__/` 目录下
 - E2E 测试集中在 `test/e2e/` 目录
 
+### Vitest Mocking Notes
+
+**CJS 模块 mock：**
+- `vi.mock` 工厂函数被 hoist 到文件顶部，引用外部变量必须用 `vi.hoisted()`
+- Mock 构造函数用 `function() { return {...} }`（非箭头函数），确保 `new` 操作正常
+- `electron-updater` 等 CJS 模块用 `default: { autoUpdater: mock }` 结构 mock
+
+**Async Generator 测试：**
+- async generator 函数体在 `generator.next()` 首次调用前不执行
+- 用 `await null` 让微任务队列执行，配合 `await vi.waitFor()` 等待订阅注册
+- 消费事件 + 生成数据的协调模式：先用 async IIFE 启动 `for await` 循环，再用 `vi.waitFor` 确认 subscribe 注册后触发事件
+
+**静态状态重置：**
+- `vi.clearAllMocks()` 重置 spy 调用记录但不移除 `mockImplementation`
+- TypeScript `private` 静态字段在运行时可通过 `(Class as any).field` 访问和重置
+
+**Docker multiplexed stream：**
+- Docker 多路复用流格式：stream ID(1B) + padding(3B) + frame size(4B) + payload
+- `data.slice(8)` 跳过 8 字节头部获取实际内容
+- 测试构造数据：`Buffer.concat([Buffer.from([1]), Buffer.alloc(7, 0), Buffer.from('output')])`
+
+**Electron 测试：**
+- CJS 模块的 named exports 需用 `default` 属性访问：`vi.mock('electron', () => ({ default: { ... } }))`
+- `contextIsolation: true` 时需设置 `process.contextIsolated = true` 才能在 preload 测试中模拟 `contextBridge`
+
 ## 里程碑
 
 - **P0**: 基础脚手架 + 单 Agent 对话

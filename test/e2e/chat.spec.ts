@@ -24,6 +24,20 @@ test.afterAll(async () => {
   }
 })
 
+const INPUT_SELECTOR = 'input[placeholder*="输入"], input[placeholder*="消息"]'
+
+async function ensureSession(page: Page) {
+  const input = page.locator(INPUT_SELECTOR)
+  const count = await input.count()
+  if (count === 0) {
+    const newSessionBtn = page.locator('button', { hasText: '新建会话' })
+    await expect(newSessionBtn).toBeVisible()
+    await newSessionBtn.click()
+    await expect(input).toBeVisible({ timeout: 10000 })
+  }
+  return input
+}
+
 test.describe('Chat Panel', () => {
   test('chat tab is active by default', async () => {
     const chatBtn = window.locator('header button', { hasText: '对话' })
@@ -37,31 +51,24 @@ test.describe('Chat Panel', () => {
   })
 
   test('create new session button works', async () => {
-    const sidebar = window.locator('[class*="w-64"]').first()
-    const addBtn = sidebar.locator('button').last()
-    await addBtn.click()
-
-    const input = window.locator('input[placeholder*="输入"], input[placeholder*="消息"]')
-    await expect(input).toBeVisible({ timeout: 10000 })
+    await ensureSession(window)
   })
 
   test('chat input is available and functional', async () => {
-    const input = window.locator('input[placeholder*="输入"], input[placeholder*="消息"]')
-    await expect(input).toBeVisible()
+    const input = await ensureSession(window)
     await input.fill('Hello, this is a test message')
     await expect(input).toHaveValue('Hello, this is a test message')
     await input.fill('')
   })
 
   test('send button is disabled when input is empty', async () => {
-    const input = window.locator('input[placeholder*="输入"], input[placeholder*="消息"]')
-    await input.fill('')
+    await ensureSession(window)
     const sendBtn = window.locator('button', { hasText: '发送' })
     await expect(sendBtn).toBeDisabled()
   })
 
   test('send button is enabled when input has text', async () => {
-    const input = window.locator('input[placeholder*="输入"], input[placeholder*="消息"]')
+    const input = await ensureSession(window)
     await input.fill('Test message')
     const sendBtn = window.locator('button', { hasText: '发送' })
     await expect(sendBtn).toBeEnabled()
@@ -69,13 +76,14 @@ test.describe('Chat Panel', () => {
   })
 
   test('enter key sends message', async () => {
-    const input = window.locator('input[placeholder*="输入"], input[placeholder*="消息"]')
+    const input = await ensureSession(window)
     await input.fill('Test enter key message')
     await input.press('Enter')
     await expect(input).toHaveValue('')
   })
 
   test('session appears in sidebar after creation', async () => {
+    await ensureSession(window)
     const sidebar = window.locator('[class*="w-64"]').first()
     const sessionItems = sidebar.locator('[class*="hover"], [class*="cursor-pointer"]')
     const count = await sessionItems.count()

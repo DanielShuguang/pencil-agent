@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiKeyForm } from './ApiKeyForm'
 import { ModelConfigPanel } from './ModelConfigPanel'
+import { UpdateDialog } from './UpdateDialog'
 import { useAgentStore } from '../../stores/agent-store'
 import { useThemeStore } from '../../stores/theme-store'
+import { useUpdateStore } from '../../stores/update-store'
 import { themeRegistry } from '../../themes/theme-registry'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
@@ -30,11 +32,18 @@ const THEME_MODE_KEYS: Record<string, string> = {
 
 export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('api-keys')
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
   const { t } = useTranslation()
   const { language, setLanguage } = useAgentStore()
   const { mode, currentThemeId } = useThemeStore()
+  const { status, checkForUpdates } = useUpdateStore()
 
   const themes = themeRegistry.getAllThemes()
+
+  const handleCheckUpdate = async () => {
+    await checkForUpdates()
+    setIsUpdateDialogOpen(true)
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
@@ -54,6 +63,14 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
               {t(`settings.${TAB_KEYS[tab]}`)}
             </Button>
           ))}
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={handleCheckUpdate}
+            disabled={status === 'checking'}
+          >
+            {t('updater.checkNow')}
+          </Button>
         </div>
 
         {activeTab === 'api-keys' && <ApiKeyForm />}
@@ -114,6 +131,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           </div>
         )}
       </DialogContent>
+      <UpdateDialog isOpen={isUpdateDialogOpen} onClose={() => setIsUpdateDialogOpen(false)} />
     </Dialog>
   )
 }

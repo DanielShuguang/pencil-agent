@@ -4,6 +4,7 @@ import type {
   ModelConfig,
   TestConnectionRequest,
   TestConnectionResponse,
+  UpdateProgress,
   ThemeMode,
   ThemeState,
 } from '@shared/ipc'
@@ -72,6 +73,17 @@ interface ThemeAPI {
   onThemeChanged: (callback: (state: ThemeState) => void) => () => void
 }
 
+interface UpdaterAPI {
+  check: () => Promise<{ status: string; result?: object; error?: string }>
+  download: () => Promise<{ status: string; error?: string }>
+  install: () => Promise<void>
+  getStatus: () => Promise<{ isChecking: boolean; isDownloading: boolean }>
+  onStatus: (callback: (data: { status: string }) => void) => () => void
+  onInfo: (callback: (data: { status: string; info: object }) => void) => () => void
+  onError: (callback: (data: { error: string }) => void) => () => void
+  onProgress: (callback: (progress: UpdateProgress) => void) => () => void
+}
+
 interface RoleAPI {
   list: () => Promise<AgentRole[]>
   get: (id: string) => Promise<AgentRole | undefined>
@@ -100,6 +112,7 @@ interface ElectronAPI {
   app: AppAPI
   modelConfig: ModelConfigAPI
   theme: ThemeAPI
+  updater: UpdaterAPI
 }
 
 declare global {

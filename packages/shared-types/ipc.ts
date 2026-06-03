@@ -349,3 +349,34 @@ export interface ThemeAPI {
   setTheme: (themeId: string) => Promise<void>
   onThemeChanged: (callback: (state: ThemeState) => void) => () => void
 }
+
+// 更新相关
+export interface UpdateInfo {
+  version: string
+  releaseDate: string
+  releaseNotes?: string
+}
+
+export interface UpdateProgress {
+  bytesPerSecond: number
+  percent: number
+  transferred: number
+  total: number
+}
+
+export interface UpdateStatus {
+  isChecking: boolean
+  isDownloading: boolean
+}
+
+// 更新 API
+export interface UpdaterAPI {
+  check: () => Promise<{ status: string; result?: object; error?: string }>
+  download: () => Promise<{ status: string; error?: string }>
+  install: () => Promise<void>
+  getStatus: () => Promise<UpdateStatus>
+  onStatus: (callback: (data: { status: string }) => void) => () => void
+  onInfo: (callback: (data: { status: string; info: object }) => void) => () => void
+  onError: (callback: (data: { error: string }) => void) => () => void
+  onProgress: (callback: (progress: UpdateProgress) => void) => () => void
+}

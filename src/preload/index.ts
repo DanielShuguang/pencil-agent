@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { ThemeMode, ThemeState, AgentRole } from '@shared/ipc'
+import type { ThemeMode, ThemeState, AgentRole, UpdateProgress } from '@shared/ipc'
 
 interface AgentChunk {
   type: string
@@ -171,6 +171,33 @@ const themeAPI = {
   },
 }
 
+const updaterAPI = {
+  check: () => ipcRenderer.invoke('updater:check'),
+  download: () => ipcRenderer.invoke('updater:download'),
+  install: () => ipcRenderer.invoke('updater:install'),
+  getStatus: () => ipcRenderer.invoke('updater:getStatus'),
+  onStatus: (cb: (data: { status: string }) => void) => {
+    const handler = (_: unknown, data: { status: string }) => cb(data)
+    ipcRenderer.on('updater:status', handler)
+    return () => ipcRenderer.removeListener('updater:status', handler)
+  },
+  onInfo: (cb: (data: { status: string; info: object }) => void) => {
+    const handler = (_: unknown, data: { status: string; info: object }) => cb(data)
+    ipcRenderer.on('updater:info', handler)
+    return () => ipcRenderer.removeListener('updater:info', handler)
+  },
+  onError: (cb: (data: { error: string }) => void) => {
+    const handler = (_: unknown, data: { error: string }) => cb(data)
+    ipcRenderer.on('updater:error', handler)
+    return () => ipcRenderer.removeListener('updater:error', handler)
+  },
+  onProgress: (cb: (progress: UpdateProgress) => void) => {
+    const handler = (_: unknown, progress: UpdateProgress) => cb(progress)
+    ipcRenderer.on('updater:progress', handler)
+    return () => ipcRenderer.removeListener('updater:progress', handler)
+  },
+}
+
 const settingsAPI = {
   saveKey: (provider: string, key: string) =>
     ipcRenderer.invoke('settings:save-key', { provider, key }),
@@ -210,6 +237,7 @@ const api: {
   app: typeof appAPI
   modelConfig: typeof modelConfigAPI
   theme: typeof themeAPI
+  updater: typeof updaterAPI
 } = {
   agent: agentAPI,
   tool: toolAPI,
@@ -222,6 +250,7 @@ const api: {
   app: appAPI,
   modelConfig: modelConfigAPI,
   theme: themeAPI,
+  updater: updaterAPI,
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

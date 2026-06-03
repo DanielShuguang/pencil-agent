@@ -11,6 +11,7 @@ import type { SandboxExecutor } from './sandbox/executor'
 import { WorkflowEngine } from './workflow/engine'
 import { registerWorkflowHandlers } from './workflow/ipc-handlers'
 import { registerMemoryHandlers } from './memory/ipc-handlers'
+import { Updater } from './updater'
 
 let mainWindow: BrowserWindow | null = null
 const agentManager = new AgentSessionManager()
@@ -57,6 +58,9 @@ function createWindow(): void {
 
   // Register app info IPC handlers
   registerAppHandlers()
+
+  // Initialize updater
+  new Updater(mainWindow)
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.

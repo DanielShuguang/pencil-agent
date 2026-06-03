@@ -7,6 +7,7 @@ import { SettingsDialog } from '../settings/SettingsDialog'
 import { StatusBar } from './StatusBar'
 import { Loading } from '../ui/loading'
 import { useWorkflowStore } from '../../stores/workflow-store'
+import { useUpdateStore } from '../../stores/update-store'
 import type { WorkflowNode } from '@shared/ipc'
 
 const EditorPanel = lazy(() => import('../code-editor/EditorPanel').then(m => ({ default: m.EditorPanel })))
@@ -75,6 +76,11 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     window.api.window.isMaximized().then(setIsMaximized)
     const cleanup = window.api.window.onMaximizedChanged(setIsMaximized)
+    return cleanup
+  }, [])
+
+  useEffect(() => {
+    const cleanup = useUpdateStore.getState().initListeners()
     return cleanup
   }, [])
 

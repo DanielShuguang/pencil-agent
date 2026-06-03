@@ -5,6 +5,7 @@ import { useStatusStore } from '../../stores/status-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { ModelSelector } from '../chat/ModelSelector'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { UpdateNotification } from '../settings/UpdateNotification'
 
 export function StatusBar() {
   const { currentModel, tokenUsage, connectionStatus, version, isGenerating, checkConnection, syncFromAgentStore } =
@@ -99,6 +100,7 @@ export function StatusBar() {
       </div>
 
       <div className='flex items-center gap-4'>
+        <UpdateNotification />
         <button
           onClick={() => checkConnection()}
           className='flex items-center gap-1.5 hover:text-foreground transition-colors'

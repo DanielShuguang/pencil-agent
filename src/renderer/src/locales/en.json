@@ -127,5 +127,20 @@
     "loading": "Loading roles...",
     "noRoles": "No roles yet",
     "toolsCount": "{{count}} tools"
+  },
+  "updater": {
+    "title": "Check for Updates",
+    "checking": "Checking for updates...",
+    "available": "New version available!",
+    "downloading": "Downloading update...",
+    "downloaded": "Update downloaded!",
+    "noUpdate": "You are using the latest version",
+    "error": "Failed to check for updates",
+    "version": "Version",
+    "releaseNotes": "Release Notes",
+    "download": "Download Update",
+    "install": "Install Now",
+    "later": "Later",
+    "checkNow": "Check for Updates"
   }
 }

@@ -80,7 +80,13 @@
     "modelsCount": "({{count}} models)",
     "connected": "Connected",
     "deleteProviderConfirm": "Are you sure to delete this provider?",
-    "deleteModelConfirm": "Are you sure to delete this model?"
+    "deleteModelConfirm": "Are you sure to delete this model?",
+    "theme": "Theme",
+    "themeMode": "Theme Mode",
+    "followSystem": "Follow System",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "selectTheme": "Select Theme"
   },
   "workflow": {
     "nodeConfig": "Node Config",

@@ -4,6 +4,8 @@ import type {
   ModelConfig,
   TestConnectionRequest,
   TestConnectionResponse,
+  ThemeMode,
+  ThemeState,
 } from '@shared/ipc'
 
 interface AgentAPI {
@@ -63,6 +65,13 @@ interface ModelConfigAPI {
   testConnection: (request: TestConnectionRequest) => Promise<TestConnectionResponse>
 }
 
+interface ThemeAPI {
+  get: () => Promise<ThemeState>
+  setMode: (mode: ThemeMode) => Promise<void>
+  setTheme: (themeId: string) => Promise<void>
+  onThemeChanged: (callback: (state: ThemeState) => void) => () => void
+}
+
 interface RoleAPI {
   list: () => Promise<AgentRole[]>
   get: (id: string) => Promise<AgentRole | undefined>
@@ -90,6 +99,7 @@ interface ElectronAPI {
   settings: SettingsAPI
   app: AppAPI
   modelConfig: ModelConfigAPI
+  theme: ThemeAPI
 }
 
 declare global {

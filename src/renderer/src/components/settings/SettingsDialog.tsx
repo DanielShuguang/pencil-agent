@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { ApiKeyForm } from './ApiKeyForm'
 import { ModelConfigPanel } from './ModelConfigPanel'
 import { useAgentStore } from '../../stores/agent-store'
+import { useThemeStore } from '../../stores/theme-store'
+import { themeRegistry } from '../../themes/theme-registry'
 
-type SettingsTab = 'api-keys' | 'models' | 'language'
+type SettingsTab = 'api-keys' | 'models' | 'language' | 'theme'
 
 interface SettingsDialogProps {
   isOpen: boolean
@@ -15,8 +17,11 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('api-keys')
   const { t } = useTranslation()
   const { language, setLanguage } = useAgentStore()
+  const { mode, currentThemeId } = useThemeStore()
 
   if (!isOpen) return null
+
+  const themes = themeRegistry.getAllThemes()
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center'>
@@ -73,6 +78,16 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           >
             {t('settings.language')}
           </button>
+          <button
+            className={`px-3 py-2 text-sm font-medium transition-colors ${
+              activeTab === 'theme'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            onClick={() => setActiveTab('theme')}
+          >
+            {t('settings.theme')}
+          </button>
         </div>
 
         {activeTab === 'api-keys' && <ApiKeyForm />}
@@ -100,6 +115,69 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
               >
                 {t('settings.english')}
               </button>
+            </div>
+          </div>
+        )}
+        {activeTab === 'theme' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('settings.themeMode')}</label>
+              <div className="flex gap-2">
+                <button
+                  className={`px-4 py-2 rounded-md transition-colors ${
+                    mode === 'system'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                  onClick={() => window.api?.theme?.setMode('system')}
+                >
+                  {t('settings.followSystem')}
+                </button>
+                <button
+                  className={`px-4 py-2 rounded-md transition-colors ${
+                    mode === 'light'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                  onClick={() => window.api?.theme?.setMode('light')}
+                >
+                  {t('settings.lightMode')}
+                </button>
+                <button
+                  className={`px-4 py-2 rounded-md transition-colors ${
+                    mode === 'dark'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                  onClick={() => window.api?.theme?.setMode('dark')}
+                >
+                  {t('settings.darkMode')}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('settings.selectTheme')}</label>
+              <div className="grid grid-cols-2 gap-2">
+                {themes.map((theme) => (
+                  <button
+                    key={theme.id}
+                    className={`p-3 rounded-md border transition-colors ${
+                      currentThemeId === theme.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => window.api?.theme?.setTheme(theme.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: `hsl(${theme.colors.primary})` }}
+                      />
+                      <span className="text-sm">{theme.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

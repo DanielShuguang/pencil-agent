@@ -12,6 +12,7 @@ interface ElectronAPIExposed {
   window: any
   app: any
   modelConfig: any
+  theme: any
 }
 
 const agentAPI = {
@@ -118,6 +119,17 @@ const modelConfigAPI = {
   testConnection: (request: any) => ipcRenderer.invoke('model-config:test-connection', request),
 }
 
+const themeAPI = {
+  get: () => ipcRenderer.invoke('theme:get'),
+  setMode: (mode: string) => ipcRenderer.invoke('theme:setMode', mode),
+  setTheme: (themeId: string) => ipcRenderer.invoke('theme:setTheme', themeId),
+  onThemeChanged: (cb: (state: any) => void) => {
+    const handler = (_: unknown, state: any) => cb(state)
+    ipcRenderer.on('theme:changed', handler)
+    return () => ipcRenderer.removeListener('theme:changed', handler)
+  },
+}
+
 const settingsAPI = {
   saveKey: (provider: string, key: string) =>
     ipcRenderer.invoke('settings:save-key', { provider, key }),
@@ -156,6 +168,7 @@ const api: ElectronAPIExposed = {
   window: windowAPI,
   app: appAPI,
   modelConfig: modelConfigAPI,
+  theme: themeAPI,
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

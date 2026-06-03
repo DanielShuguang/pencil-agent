@@ -263,6 +263,43 @@ export interface CheckConnectionRequest {
   provider: string
 }
 
+// 主题相关
+export type ThemeMode = 'light' | 'dark' | 'system'
+
+export interface ThemeColors {
+  background: string
+  foreground: string
+  card: string
+  cardForeground: string
+  popover: string
+  popoverForeground: string
+  primary: string
+  primaryForeground: string
+  secondary: string
+  secondaryForeground: string
+  muted: string
+  mutedForeground: string
+  accent: string
+  accentForeground: string
+  destructive: string
+  destructiveForeground: string
+  border: string
+  input: string
+  ring: string
+}
+
+export interface Theme {
+  id: string
+  name: string
+  colors: ThemeColors
+}
+
+export interface ThemeState {
+  mode: ThemeMode
+  currentThemeId: string
+  isDark: boolean
+}
+
 // 模型配置相关
 export type ApiFormat = 'openai' | 'anthropic'
 
@@ -303,4 +340,12 @@ export interface ModelConfigAPI {
   saveModel: (providerId: string, model: ModelConfig) => Promise<void>
   deleteModel: (providerId: string, modelId: string) => Promise<void>
   testConnection: (request: TestConnectionRequest) => Promise<TestConnectionResponse>
+}
+
+// 主题 API
+export interface ThemeAPI {
+  get: () => Promise<ThemeState>
+  setMode: (mode: ThemeMode) => Promise<void>
+  setTheme: (themeId: string) => Promise<void>
+  onThemeChanged: (callback: (state: ThemeState) => void) => () => void
 }

@@ -109,7 +109,13 @@
     "modelsCount": "（{{count}} 个模型）",
     "connected": "已连接",
     "deleteProviderConfirm": "确定删除此供应商？",
-    "deleteModelConfirm": "确定删除此模型？"
+    "deleteModelConfirm": "确定删除此模型？",
+    "theme": "主题",
+    "themeMode": "主题模式",
+    "followSystem": "跟随系统",
+    "lightMode": "亮色模式",
+    "darkMode": "暗色模式",
+    "selectTheme": "选择主题"
   },
   "role": {
     "name": "名称",

@@ -4,17 +4,36 @@ import { AppShell } from './components/layout/AppShell'
 import { ChatPanel } from './components/chat/ChatPanel'
 import { useAgentStore } from './stores/agent-store'
 import { useStatusStore } from './stores/status-store'
+import { useThemeStore } from './stores/theme-store'
+import { applyTheme } from './themes/apply-theme'
 import { Button } from './components/ui/button'
 
 function App(): React.JSX.Element {
   const { activeSessionId, createSession, initFromStorage } = useAgentStore()
   const { init: initStatusStore } = useStatusStore()
+  const { initFromStorage: initTheme, currentTheme } = useThemeStore()
   const { t } = useTranslation()
 
   useEffect(() => {
     initFromStorage()
     initStatusStore()
-  }, [initFromStorage, initStatusStore])
+    initTheme()
+  }, [initFromStorage, initStatusStore, initTheme])
+
+  useEffect(() => {
+    applyTheme(currentTheme)
+  }, [currentTheme])
+
+  useEffect(() => {
+    if (window.api?.theme) {
+      const unsubscribe = window.api.theme.onThemeChanged((state) => {
+        const { setDark, setThemeMode } = useThemeStore.getState()
+        setThemeMode(state.mode as any)
+        setDark(state.isDark)
+      })
+      return unsubscribe
+    }
+  }, [])
 
   const handleNewSession = async () => {
     await createSession()

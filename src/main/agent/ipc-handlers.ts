@@ -1,9 +1,10 @@
-import { ipcMain, safeStorage, type BrowserWindow } from 'electron'
+import { ipcMain, safeStorage, nativeTheme, type BrowserWindow } from 'electron'
 import Store from 'electron-store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
 import { RoleManager } from './role-manager'
 import { ModelConfigManager } from './model-config'
+import type { ThemeMode } from '@shared/ipc'
 
 const store = new Store()
 
@@ -198,5 +199,40 @@ export function registerAgentHandlers(
 
   ipcMain.handle('model-config:delete-model', (_, { providerId, modelId }) => {
     getModelConfigManager().deleteModel(providerId, modelId)
+  })
+
+  // 主题相关 handlers
+  ipcMain.handle('theme:get', () => {
+    const mode = store.get('theme.mode', 'system') as string
+    const isDark = nativeTheme.shouldUseDarkColors
+    const currentThemeId = mode === 'system' ? (isDark ? 'dark' : 'light') : mode
+    return { mode, currentThemeId, isDark }
+  })
+
+  ipcMain.handle('theme:setMode', (_, mode: ThemeMode) => {
+    store.set('theme.mode', mode)
+    nativeTheme.themeSource = mode
+    const isDark = nativeTheme.shouldUseDarkColors
+    const currentThemeId = mode === 'system' ? (isDark ? 'dark' : 'light') : mode
+    const state = { mode, currentThemeId, isDark }
+    mainWindow.webContents.send('theme:changed', state)
+  })
+
+  ipcMain.handle('theme:setTheme', (_, themeId: string) => {
+    store.set('theme.mode', themeId)
+    nativeTheme.themeSource = themeId as 'light' | 'dark'
+    const state = { mode: themeId, currentThemeId: themeId, isDark: themeId === 'dark' }
+    mainWindow.webContents.send('theme:changed', state)
+  })
+
+  // 监听系统主题变化
+  nativeTheme.on('updated', () => {
+    const mode = store.get('theme.mode', 'system') as string
+    if (mode === 'system') {
+      const isDark = nativeTheme.shouldUseDarkColors
+      const currentThemeId = isDark ? 'dark' : 'light'
+      const state = { mode, currentThemeId, isDark }
+      mainWindow.webContents.send('theme:changed', state)
+    }
   })
 }

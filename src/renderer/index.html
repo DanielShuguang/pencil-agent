@@ -8,6 +8,25 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     />
+    <script>
+      // 避免 FOUC (Flash of Unstyled Content)
+      // 在页面加载前应用保存的主题
+      try {
+        const savedTheme = localStorage.getItem('theme-mode')
+        if (savedTheme) {
+          document.documentElement.classList.add(savedTheme === 'light' ? 'light' : 'dark')
+        } else {
+          // 默认跟随系统
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark')
+          } else {
+            document.documentElement.classList.add('light')
+          }
+        }
+      } catch (e) {
+        // 忽略错误
+      }
+    </script>
   </head>
 
   <body>

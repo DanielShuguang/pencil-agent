@@ -1,10 +1,20 @@
 {
   "name": "pencil-agent",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "AI Agent Desktop - 基于 pi-mono Agent 引擎的桌面端 AI Agent 平台",
   "main": "./out/main/index.mjs",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Pencil Agent Team",
+  "homepage": "https://github.com/pencil-agent/pencil-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pencil-agent/pencil-agent.git"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "ai-agent",
+    "desktop"
+  ],
   "scripts": {
     "lint": "oxlint --fix src",
     "fmt": "oxfmt src",

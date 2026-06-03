@@ -43,9 +43,6 @@
 
   // Files
   "files.exclude": {
-    "**/node_modules": true,
-    "**/dist": true,
-    "**/out": true,
     "**/.git": true
   },
   "files.associations": {

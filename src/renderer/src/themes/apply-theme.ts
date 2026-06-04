@@ -6,7 +6,8 @@ export function applyTheme(theme: Theme): void {
 
   Object.entries(colors).forEach(([key, value]) => {
     const cssVarName = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`
-    root.style.setProperty(cssVarName, value)
+    // Theme colors are HSL values, wrap in hsl() for CSS
+    root.style.setProperty(cssVarName, `hsl(${value})`)
   })
 
   root.classList.remove('light', 'dark')

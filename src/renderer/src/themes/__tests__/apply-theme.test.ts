@@ -51,10 +51,10 @@ describe('applyTheme', () => {
 
     applyTheme(theme)
 
-    expect(mockSetProperty).toHaveBeenCalledWith('--background', '222.2 84% 4.9%')
-    expect(mockSetProperty).toHaveBeenCalledWith('--foreground', '210 40% 98%')
-    expect(mockSetProperty).toHaveBeenCalledWith('--card', '222.2 84% 4.9%')
-    expect(mockSetProperty).toHaveBeenCalledWith('--primary', '210 40% 98%')
+    expect(mockSetProperty).toHaveBeenCalledWith('--background', 'hsl(222.2 84% 4.9%)')
+    expect(mockSetProperty).toHaveBeenCalledWith('--foreground', 'hsl(210 40% 98%)')
+    expect(mockSetProperty).toHaveBeenCalledWith('--card', 'hsl(222.2 84% 4.9%)')
+    expect(mockSetProperty).toHaveBeenCalledWith('--primary', 'hsl(210 40% 98%)')
   })
 
   it('should add dark class for dark theme', () => {
@@ -112,8 +112,8 @@ describe('applyTheme', () => {
 
     applyTheme(theme)
 
-    expect(mockSetProperty).toHaveBeenCalledWith('--card-foreground', '0 0% 0%')
-    expect(mockSetProperty).toHaveBeenCalledWith('--popover-foreground', '0 0% 0%')
-    expect(mockSetProperty).toHaveBeenCalledWith('--primary-foreground', '0 0% 100%')
+    expect(mockSetProperty).toHaveBeenCalledWith('--card-foreground', 'hsl(0 0% 0%)')
+    expect(mockSetProperty).toHaveBeenCalledWith('--popover-foreground', 'hsl(0 0% 0%)')
+    expect(mockSetProperty).toHaveBeenCalledWith('--primary-foreground', 'hsl(0 0% 100%)')
   })
 })

@@ -30,8 +30,12 @@ beforeEach(() => {
 const sampleEntry = {
   id: 'mem-1',
   content: 'test content',
-  metadata: { tags: ['test'], sessionId: 's1' },
-  createdAt: Date.now(),
+  metadata: {
+    tags: ['test'],
+    sessionId: 's1',
+    role: 'user',
+    timestamp: Date.now(),
+  },
 }
 
 describe('memory-store', () => {
@@ -49,9 +53,16 @@ describe('memory-store', () => {
     it('should call memory.api.store and refresh list', async () => {
       vi.mocked(mockMemoryApi.recall).mockResolvedValueOnce([sampleEntry])
 
-      await useMemoryStore.getState().storeMemory('test content', { tags: ['test'], sessionId: 's1' })
+      await useMemoryStore
+        .getState()
+        .storeMemory('test content', { tags: ['test'], sessionId: 's1', role: 'user', timestamp: Date.now() })
 
-      expect(mockMemoryApi.store).toHaveBeenCalledWith('test content', { tags: ['test'], sessionId: 's1' })
+      expect(mockMemoryApi.store).toHaveBeenCalledWith('test content', {
+        tags: ['test'],
+        sessionId: 's1',
+        role: 'user',
+        timestamp: expect.any(Number),
+      })
       expect(mockMemoryApi.recall).toHaveBeenCalledWith('', 50)
 
       const state = useMemoryStore.getState()
@@ -61,10 +72,16 @@ describe('memory-store', () => {
 
     it('should set isLoading during operation', async () => {
       let resolveStore: () => void
-      vi.mocked(mockMemoryApi.store).mockReturnValueOnce(new Promise<void>((r) => { resolveStore = r }))
+      vi.mocked(mockMemoryApi.store).mockReturnValueOnce(
+        new Promise<void>((r) => {
+          resolveStore = r
+        }),
+      )
       vi.mocked(mockMemoryApi.recall).mockResolvedValueOnce([])
 
-      const promise = useMemoryStore.getState().storeMemory('content', { tags: [], sessionId: 's1' })
+      const promise = useMemoryStore
+        .getState()
+        .storeMemory('content', { tags: [], sessionId: 's1', role: 'user', timestamp: Date.now() })
       expect(useMemoryStore.getState().isLoading).toBe(true)
 
       resolveStore!()
@@ -76,7 +93,7 @@ describe('memory-store', () => {
       vi.mocked(mockMemoryApi.store).mockRejectedValueOnce(new Error('fail'))
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await useMemoryStore.getState().storeMemory('content', { tags: [], sessionId: 's1' })
+      await useMemoryStore.getState().storeMemory('content', { tags: [], sessionId: 's1', role: 'user', timestamp: Date.now() })
 
       expect(useMemoryStore.getState().isLoading).toBe(false)
       consoleSpy.mockRestore()

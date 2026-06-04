@@ -27,7 +27,10 @@ beforeEach(() => {
 const sampleRole = {
   id: 'role-1',
   name: 'Assistant',
+  description: 'A helpful assistant',
   systemPrompt: 'You are a helpful assistant',
+  model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+  tools: [],
   createdAt: Date.now(),
   updatedAt: Date.now(),
 }
@@ -55,7 +58,11 @@ describe('role-store', () => {
 
     it('should set isLoading during fetch', async () => {
       let resolve: (v: unknown[]) => void
-      vi.mocked(mockRoleApi.list).mockReturnValueOnce(new Promise((r) => { resolve = r }))
+      vi.mocked(mockRoleApi.list).mockReturnValueOnce(
+        new Promise((r) => {
+          resolve = r
+        }),
+      )
 
       const promise = useRoleStore.getState().fetchRoles()
       expect(useRoleStore.getState().isLoading).toBe(true)
@@ -83,13 +90,19 @@ describe('role-store', () => {
       await useRoleStore.getState().createRole({
         id: 'role-1',
         name: 'Assistant',
+        description: 'A helpful assistant',
         systemPrompt: 'You are a helpful assistant',
+        model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+        tools: [],
       })
 
       expect(mockRoleApi.create).toHaveBeenCalledWith({
         id: 'role-1',
         name: 'Assistant',
+        description: 'A helpful assistant',
         systemPrompt: 'You are a helpful assistant',
+        model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+        tools: [],
       })
       expect(mockRoleApi.list).toHaveBeenCalled()
       expect(useRoleStore.getState().roles).toEqual([sampleRole])
@@ -102,7 +115,10 @@ describe('role-store', () => {
       await useRoleStore.getState().createRole({
         id: 'role-1',
         name: 'Assistant',
+        description: 'A helpful assistant',
         systemPrompt: 'prompt',
+        model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+        tools: [],
       })
 
       consoleSpy.mockRestore()

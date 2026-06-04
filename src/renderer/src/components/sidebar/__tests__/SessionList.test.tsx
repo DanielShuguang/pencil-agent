@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { SessionList } from '../SessionList'
 import { useAgentStore } from '../../../stores/agent-store'
 import '../../../i18n'
@@ -31,8 +30,26 @@ describe('SessionList', () => {
 
   it('renders session items sorted by updatedAt desc', () => {
     const sessions = new Map([
-      ['s1', { id: 's1', title: 'Old Session', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }],
-      ['s2', { id: 's2', title: 'New Session', model: { id: 'm1', provider: 'p1' }, updatedAt: 2000, createdAt: 2000 }],
+      [
+        's1',
+        {
+          id: 's1',
+          title: 'Old Session',
+          model: { id: 'm1', provider: 'p1' },
+          updatedAt: 1000,
+          createdAt: 1000,
+        },
+      ],
+      [
+        's2',
+        {
+          id: 's2',
+          title: 'New Session',
+          model: { id: 'm1', provider: 'p1' },
+          updatedAt: 2000,
+          createdAt: 2000,
+        },
+      ],
     ])
 
     mockUseAgentStore.mockReturnValue({
@@ -50,7 +67,16 @@ describe('SessionList', () => {
 
   it('marks active session', () => {
     const sessions = new Map([
-      ['s1', { id: 's1', title: 'Active Session', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }],
+      [
+        's1',
+        {
+          id: 's1',
+          title: 'Active Session',
+          model: { id: 'm1', provider: 'p1' },
+          updatedAt: 1000,
+          createdAt: 1000,
+        },
+      ],
     ])
 
     mockUseAgentStore.mockReturnValue({
@@ -67,7 +93,16 @@ describe('SessionList', () => {
   it('calls switchSession on click', () => {
     const switchSession = vi.fn()
     const sessions = new Map([
-      ['s1', { id: 's1', title: 'Session', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }],
+      [
+        's1',
+        {
+          id: 's1',
+          title: 'Session',
+          model: { id: 'm1', provider: 'p1' },
+          updatedAt: 1000,
+          createdAt: 1000,
+        },
+      ],
     ])
 
     mockUseAgentStore.mockReturnValue({

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { SessionItem } from '../SessionItem'
 import '../../../i18n'
 
@@ -10,6 +9,7 @@ const baseMeta = {
   model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
   updatedAt: Date.now(),
   createdAt: Date.now(),
+  messageCount: 0,
 }
 
 describe('SessionItem', () => {
@@ -33,7 +33,9 @@ describe('SessionItem', () => {
   })
 
   it('applies active styles when isActive', () => {
-    const { container } = render(<SessionItem meta={baseMeta} isActive={true} onClick={vi.fn()} onDelete={vi.fn()} />)
+    const { container } = render(
+      <SessionItem meta={baseMeta} isActive={true} onClick={vi.fn()} onDelete={vi.fn()} />,
+    )
     expect(container.querySelector('.bg-accent')).toBeInTheDocument()
   })
 

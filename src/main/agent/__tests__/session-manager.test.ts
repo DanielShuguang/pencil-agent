@@ -87,9 +87,14 @@ describe('AgentSessionManager', () => {
       const subscribeCb = mocks.mockSubscribe.mock.calls[0][0]
 
       // Fire events while generator is waiting
-      subscribeCb({ type: 'message_update', message: { role: 'assistant', content: [{ type: 'text', text: 'Hello' }] } })
-      null
-      subscribeCb({ type: 'message_update', message: { role: 'assistant', content: [{ type: 'text', text: ' World' }] } })
+      subscribeCb({
+        type: 'message_update',
+        message: { role: 'assistant', content: [{ type: 'text', text: 'Hello' }] },
+      })
+      subscribeCb({
+        type: 'message_update',
+        message: { role: 'assistant', content: [{ type: 'text', text: ' World' }] },
+      })
       subscribeCb({ type: 'message_end' })
 
       await consume
@@ -125,7 +130,8 @@ describe('AgentSessionManager', () => {
       const generator = manager.prompt('session-1', 'hello')
 
       const consume = (async () => {
-        for await (const _ of generator) { }
+        for await (const _ of generator) {
+        }
       })()
 
       await vi.waitFor(() => expect(mocks.mockSubscribe).toHaveBeenCalled())

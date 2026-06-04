@@ -6,16 +6,24 @@ let store: Record<string, string> = {}
 function createMockLocalStorage() {
   const mock = {
     getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value }),
-    removeItem: vi.fn((key: string) => { delete store[key] }),
-    clear: vi.fn(() => { store = {} }),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key]
+    }),
+    clear: vi.fn(() => {
+      store = {}
+    }),
     key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
-    get length() { return Object.keys(store).length },
+    get length() {
+      return Object.keys(store).length
+    },
   }
   return new Proxy(mock, {
     get(target, prop) {
       if (prop === Symbol.toStringTag) return 'Storage'
-      if (prop in target) return (target as Record<string, unknown>)[prop]
+      if (typeof prop === 'string' && prop in target) return (target as Record<string, unknown>)[prop]
       return undefined
     },
     ownKeys() {

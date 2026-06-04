@@ -85,7 +85,11 @@ describe('ApiKeyForm', () => {
     let resolveSave: () => void
     mockUseSettingsStore.mockReturnValue({
       loadApiKey: vi.fn().mockResolvedValue(null),
-      saveApiKey: vi.fn().mockReturnValue(new Promise<void>((r) => { resolveSave = r })),
+      saveApiKey: vi.fn().mockReturnValue(
+        new Promise<void>((r) => {
+          resolveSave = r
+        }),
+      ),
       deleteApiKey: vi.fn(),
     } as unknown as ReturnType<typeof useSettingsStore>)
 

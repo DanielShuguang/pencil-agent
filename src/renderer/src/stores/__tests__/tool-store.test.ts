@@ -16,7 +16,11 @@ beforeEach(() => {
 
 const sampleTools = [
   { name: 'read_file', description: 'Read a file', parameters: { path: 'string' } },
-  { name: 'write_file', description: 'Write a file', parameters: { path: 'string', content: 'string' } },
+  {
+    name: 'write_file',
+    description: 'Write a file',
+    parameters: { path: 'string', content: 'string' },
+  },
 ]
 
 describe('tool-store', () => {

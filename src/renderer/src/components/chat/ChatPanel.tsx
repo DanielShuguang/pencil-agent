@@ -13,15 +13,16 @@ export function ChatPanel() {
   const activeMeta = activeSessionId ? sessionMetas.get(activeSessionId) : null
   const messages = activeSessionId ? sessions.get(activeSessionId) || [] : []
 
-  const shouldUseVirtualScroll = useMemo(() => messages.length > VIRTUAL_SCROLL_THRESHOLD, [messages.length])
+  const shouldUseVirtualScroll = useMemo(
+    () => messages.length > VIRTUAL_SCROLL_THRESHOLD,
+    [messages.length],
+  )
 
   return (
     <div className='flex h-full flex-col'>
       <div className='flex items-center justify-between px-4 py-2 border-b'>
         <div className='flex items-center gap-2'>
-          <div className='text-sm font-medium truncate'>
-            {activeMeta?.title || 'Pencil Agent'}
-          </div>
+          <div className='text-sm font-medium truncate'>{activeMeta?.title || 'Pencil Agent'}</div>
           <BranchSelector />
         </div>
         <ModelSelector />

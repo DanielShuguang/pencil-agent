@@ -5,7 +5,7 @@ import { MessageBubble } from '../MessageBubble'
 const baseMessage = {
   id: '1',
   content: 'Hello World',
-  timestamp: 1000
+  timestamp: 1000,
 }
 
 describe('MessageBubble', () => {

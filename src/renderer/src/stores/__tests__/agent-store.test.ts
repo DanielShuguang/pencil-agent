@@ -204,7 +204,7 @@ describe('agent-store', () => {
       JSON.stringify({
         meta,
         messages: [{ id: 'msg-1', role: 'user', content: 'Hi', timestamp: Date.now() }],
-      })
+      }),
     )
 
     useAgentStore.getState().initFromStorage()
@@ -259,7 +259,7 @@ describe('agent-store', () => {
     expect(useAgentStore.getState().language).toBe('en')
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'pencil-agent:language',
-      JSON.stringify('en')
+      JSON.stringify('en'),
     )
   })
 

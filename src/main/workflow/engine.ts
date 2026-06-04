@@ -88,8 +88,12 @@ export class WorkflowEngine {
       const sourceNode = nodes.find((n) => n.id === e.source)
 
       if (sourceNode?.type && CONDITION_TYPES.has(sourceNode.type) && e.sourceHandle) {
-        const conditionOutput = sourceOutput as { trueOutput: unknown; falseOutput: unknown } | undefined
-        return e.sourceHandle === 'true' ? conditionOutput?.trueOutput : conditionOutput?.falseOutput
+        const conditionOutput = sourceOutput as
+          | { trueOutput: unknown; falseOutput: unknown }
+          | undefined
+        return e.sourceHandle === 'true'
+          ? conditionOutput?.trueOutput
+          : conditionOutput?.falseOutput
       }
 
       return sourceOutput
@@ -118,10 +122,12 @@ export class WorkflowEngine {
     inputs: unknown[],
     context: ExecutionContext,
   ): Promise<string> {
-    const config = node.data.config as {
-      model?: { id: string; provider: string }
-      systemPrompt?: string
-    } | undefined
+    const config = node.data.config as
+      | {
+          model?: { id: string; provider: string }
+          systemPrompt?: string
+        }
+      | undefined
 
     const sessionId = `${context.workflowId}-${node.id}`
     const model = config?.model ?? { id: 'claude-sonnet-4-20250514', provider: 'anthropic' }
@@ -142,14 +148,13 @@ export class WorkflowEngine {
     return result
   }
 
-  private async executeToolNode(
-    node: WorkflowNode,
-    inputs: unknown[],
-  ): Promise<unknown> {
-    const config = node.data.config as {
-      toolName?: string
-      parameters?: Record<string, unknown>
-    } | undefined
+  private async executeToolNode(node: WorkflowNode, inputs: unknown[]): Promise<unknown> {
+    const config = node.data.config as
+      | {
+          toolName?: string
+          parameters?: Record<string, unknown>
+        }
+      | undefined
 
     const toolName = config?.toolName
     if (!toolName) throw new Error('Tool node missing toolName config')
@@ -171,12 +176,14 @@ export class WorkflowEngine {
       throw new Error('Multi-agent orchestration requires a RoleManager')
     }
 
-    const config = node.data.config as {
-      mode?: 'sequential' | 'parallel' | 'debate' | 'hierarchical'
-      roleIds?: string[]
-      maxRounds?: number
-      mergerRoleId?: string
-    } | undefined
+    const config = node.data.config as
+      | {
+          mode?: 'sequential' | 'parallel' | 'debate' | 'hierarchical'
+          roleIds?: string[]
+          maxRounds?: number
+          mergerRoleId?: string
+        }
+      | undefined
 
     const mode = config?.mode || 'sequential'
     const roleIds = config?.roleIds || []
@@ -195,9 +202,11 @@ export class WorkflowEngine {
     inputs: unknown[],
     _context: ExecutionContext,
   ): { trueOutput: unknown; falseOutput: unknown } {
-    const config = node.data.config as {
-      expression?: string
-    } | undefined
+    const config = node.data.config as
+      | {
+          expression?: string
+        }
+      | undefined
 
     const expression = config?.expression
     if (!expression) throw new Error('Condition node missing expression config')

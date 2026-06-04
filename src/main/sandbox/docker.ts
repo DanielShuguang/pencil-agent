@@ -60,7 +60,12 @@ export class DockerSandbox implements SandboxExecutor {
       container.attach({ stream: true, stdout: true, stderr: true }, (err, stream) => {
         if (err || !stream) {
           this.running.delete(executionId)
-          resolve({ stdout: '', stderr: err?.message || 'Failed to attach', exitCode: 1, executionId })
+          resolve({
+            stdout: '',
+            stderr: err?.message || 'Failed to attach',
+            exitCode: 1,
+            executionId,
+          })
           return
         }
 
@@ -106,7 +111,10 @@ export class DockerSandbox implements SandboxExecutor {
   stop(executionId: string): void {
     const running = this.running.get(executionId)
     if (running) {
-      this.docker.getContainer(running.containerId).kill().catch(() => {})
+      this.docker
+        .getContainer(running.containerId)
+        .kill()
+        .catch(() => {})
       this.running.delete(executionId)
     }
   }

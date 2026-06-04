@@ -33,9 +33,7 @@ const agentAPI = {
 
   stop: (sessionId: string) => ipcRenderer.send('agent:stop', sessionId),
 
-  onChunk: (
-    cb: (chunk: AgentChunk) => void,
-  ) => {
+  onChunk: (cb: (chunk: AgentChunk) => void) => {
     const handler = (_: unknown, chunk: AgentChunk) => cb(chunk)
     ipcRenderer.on('agent:chunk', handler)
     return () => ipcRenderer.removeListener('agent:chunk', handler)
@@ -112,12 +110,26 @@ const sandboxAPI = {
 }
 
 const workflowAPI = {
-  execute: (workflow: {
-    id: string
-    name: string
-    nodes: Array<{ id: string; type: string; data: Record<string, unknown>; position: { x: number; y: number } }>
-    edges: Array<{ id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string }>
-  }, input: Record<string, unknown>): Promise<Record<string, unknown>> => ipcRenderer.invoke('workflow:execute', workflow, input),
+  execute: (
+    workflow: {
+      id: string
+      name: string
+      nodes: Array<{
+        id: string
+        type: string
+        data: Record<string, unknown>
+        position: { x: number; y: number }
+      }>
+      edges: Array<{
+        id: string
+        source: string
+        target: string
+        sourceHandle?: string
+        targetHandle?: string
+      }>
+    },
+    input: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => ipcRenderer.invoke('workflow:execute', workflow, input),
 
   onProgress: (cb: (progress: WorkflowProgress) => void) => {
     const handler = (_: unknown, progress: WorkflowProgress) => cb(progress)
@@ -129,22 +141,21 @@ const workflowAPI = {
 const roleAPI = {
   list: () => ipcRenderer.invoke('role:list'),
   get: (id: string) => ipcRenderer.invoke('role:get', id),
-  create: (role: Omit<AgentRole, 'createdAt' | 'updatedAt'>) => ipcRenderer.invoke('role:create', role),
-  update: (id: string, updates: Partial<AgentRole>) => ipcRenderer.invoke('role:update', { id, updates }),
+  create: (role: Omit<AgentRole, 'createdAt' | 'updatedAt'>) =>
+    ipcRenderer.invoke('role:create', role),
+  update: (id: string, updates: Partial<AgentRole>) =>
+    ipcRenderer.invoke('role:update', { id, updates }),
   delete: (id: string) => ipcRenderer.invoke('role:delete', id),
 }
 
 const memoryAPI = {
   store: (content: string, metadata: MemoryEntryMetadata) =>
     ipcRenderer.invoke('memory:store', { content, metadata }),
-  recall: (query: string, topK?: number) =>
-    ipcRenderer.invoke('memory:recall', { query, topK }),
+  recall: (query: string, topK?: number) => ipcRenderer.invoke('memory:recall', { query, topK }),
   search: (query: string, filters?: SearchFilters) =>
     ipcRenderer.invoke('memory:search', { query, filters }),
-  delete: (id: string) =>
-    ipcRenderer.invoke('memory:delete', id),
-  clearAll: () =>
-    ipcRenderer.invoke('memory:clear-all'),
+  delete: (id: string) => ipcRenderer.invoke('memory:delete', id),
+  clearAll: () => ipcRenderer.invoke('memory:clear-all'),
 }
 
 const appAPI = {
@@ -153,11 +164,15 @@ const appAPI = {
 
 const modelConfigAPI = {
   list: () => ipcRenderer.invoke('model-config:list'),
-  save: (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) => ipcRenderer.invoke('model-config:save', provider),
+  save: (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) =>
+    ipcRenderer.invoke('model-config:save', provider),
   delete: (providerId: string) => ipcRenderer.invoke('model-config:delete', providerId),
-  saveModel: (providerId: string, model: ModelConfig) => ipcRenderer.invoke('model-config:save-model', { providerId, model }),
-  deleteModel: (providerId: string, modelId: string) => ipcRenderer.invoke('model-config:delete-model', { providerId, modelId }),
-  testConnection: (request: TestConnectionRequest) => ipcRenderer.invoke('model-config:test-connection', request),
+  saveModel: (providerId: string, model: ModelConfig) =>
+    ipcRenderer.invoke('model-config:save-model', { providerId, model }),
+  deleteModel: (providerId: string, modelId: string) =>
+    ipcRenderer.invoke('model-config:delete-model', { providerId, modelId }),
+  testConnection: (request: TestConnectionRequest) =>
+    ipcRenderer.invoke('model-config:test-connection', request),
 }
 
 const themeAPI = {
@@ -202,11 +217,9 @@ const settingsAPI = {
   saveKey: (provider: string, key: string) =>
     ipcRenderer.invoke('settings:save-key', { provider, key }),
 
-  getKey: (provider: string) =>
-    ipcRenderer.invoke('settings:get-key', { provider }),
+  getKey: (provider: string) => ipcRenderer.invoke('settings:get-key', { provider }),
 
-  deleteKey: (provider: string) =>
-    ipcRenderer.invoke('settings:delete-key', { provider }),
+  deleteKey: (provider: string) => ipcRenderer.invoke('settings:delete-key', { provider }),
 
   checkConnection: (provider: string) =>
     ipcRenderer.invoke('settings:checkConnection', { provider }),

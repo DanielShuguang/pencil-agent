@@ -40,10 +40,10 @@ export function createToolRegistry(): ToolRegistry {
       properties: {
         path: { type: 'string', description: '文件路径' },
         startLine: { type: 'number', description: '起始行号（可选）' },
-        endLine: { type: 'number', description: '结束行号（可选）' }
+        endLine: { type: 'number', description: '结束行号（可选）' },
       },
-      required: ['path']
-    }
+      required: ['path'],
+    },
   })
 
   registry.register({
@@ -53,10 +53,10 @@ export function createToolRegistry(): ToolRegistry {
       type: 'object',
       properties: {
         path: { type: 'string', description: '文件路径' },
-        content: { type: 'string', description: '文件内容' }
+        content: { type: 'string', description: '文件内容' },
       },
-      required: ['path', 'content']
-    }
+      required: ['path', 'content'],
+    },
   })
 
   registry.register({
@@ -67,10 +67,10 @@ export function createToolRegistry(): ToolRegistry {
       properties: {
         path: { type: 'string', description: '文件路径' },
         oldString: { type: 'string', description: '要替换的原文' },
-        newString: { type: 'string', description: '替换后的新文本' }
+        newString: { type: 'string', description: '替换后的新文本' },
       },
-      required: ['path', 'oldString', 'newString']
-    }
+      required: ['path', 'oldString', 'newString'],
+    },
   })
 
   registry.register({
@@ -80,10 +80,10 @@ export function createToolRegistry(): ToolRegistry {
       type: 'object',
       properties: {
         command: { type: 'string', description: 'Shell 命令' },
-        timeout: { type: 'number', description: '超时时间（毫秒）', default: 30000 }
+        timeout: { type: 'number', description: '超时时间（毫秒）', default: 30000 },
       },
-      required: ['command']
-    }
+      required: ['command'],
+    },
   })
 
   return registry

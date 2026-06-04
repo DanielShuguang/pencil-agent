@@ -40,20 +40,10 @@ export function BaseNode({
       )}
       onClick={() => selectNode(nodeId)}
     >
-      {hasInput && (
-        <Handle
-          type='target'
-          position={Position.Top}
-          className='w-3 h-3 !bg-primary'
-        />
-      )}
+      {hasInput && <Handle type='target' position={Position.Top} className='w-3 h-3 !bg-primary' />}
       {children}
       {hasOutput && !outputHandles && (
-        <Handle
-          type='source'
-          position={Position.Bottom}
-          className='w-3 h-3 !bg-primary'
-        />
+        <Handle type='source' position={Position.Bottom} className='w-3 h-3 !bg-primary' />
       )}
       {outputHandles?.map((handle) => (
         <Handle

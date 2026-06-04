@@ -70,7 +70,7 @@ describe('WorkflowEngine - Parallel Execution', () => {
         { id: 'e2', source: 's', target: 'b' },
         { id: 'e3', source: 'a', target: 'e' },
         { id: 'e4', source: 'b', target: 'e' },
-      ]
+      ],
     )
 
     const onProgress = vi.fn()
@@ -100,7 +100,7 @@ describe('WorkflowEngine - Parallel Execution', () => {
       [
         { id: 'e1', source: 's', target: 'ma' },
         { id: 'e2', source: 'ma', target: 'e' },
-      ]
+      ],
     )
 
     const onProgress = vi.fn()
@@ -125,11 +125,11 @@ describe('WorkflowEngine - Parallel Execution', () => {
       [
         { id: 'e1', source: 's', target: 'ma' },
         { id: 'e2', source: 'ma', target: 'e' },
-      ]
+      ],
     )
 
-    await expect(
-      engineWithoutRoles.execute(workflow, {}, vi.fn())
-    ).rejects.toThrow('Multi-agent orchestration requires a RoleManager')
+    await expect(engineWithoutRoles.execute(workflow, {}, vi.fn())).rejects.toThrow(
+      'Multi-agent orchestration requires a RoleManager',
+    )
   })
 })

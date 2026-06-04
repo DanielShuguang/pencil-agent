@@ -50,32 +50,32 @@ export function ApiKeyForm() {
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-medium">{t('settings.apiKeys')}</h3>
+    <div className='space-y-4'>
+      <h3 className='text-sm font-medium'>{t('settings.apiKeys')}</h3>
       {PROVIDERS.map((provider) => (
-        <div key={provider.id} className="space-y-2">
-          <label className="text-sm text-muted-foreground">{provider.name}</label>
+        <div key={provider.id} className='space-y-2'>
+          <label className='text-sm text-muted-foreground'>{provider.name}</label>
           {savedKeys[provider.id] ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t('common.saved')}</span>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-muted-foreground'>{t('common.saved')}</span>
               <button
-                className="text-xs text-destructive hover:underline"
+                className='text-xs text-destructive hover:underline'
                 onClick={() => handleDelete(provider.id)}
               >
                 {t('common.delete')}
               </button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <input
-                type="password"
-                className="flex-1 px-3 py-1.5 text-sm border rounded-md bg-background"
+                type='password'
+                className='flex-1 px-3 py-1.5 text-sm border rounded-md bg-background'
                 placeholder={provider.placeholder}
                 value={keys[provider.id] || ''}
                 onChange={(e) => setKeys((prev) => ({ ...prev, [provider.id]: e.target.value }))}
               />
               <button
-                className="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+                className='px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50'
                 onClick={() => handleSave(provider.id)}
                 disabled={!keys[provider.id] || saving === provider.id}
               >

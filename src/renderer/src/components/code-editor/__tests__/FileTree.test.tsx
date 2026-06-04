@@ -58,9 +58,7 @@ describe('FileTree', () => {
 
   it('calls openFile on file click', () => {
     const openFile = vi.fn()
-    const files = new Map([
-      ['src/index.ts', { content: 'const x = 1', language: 'typescript' }],
-    ])
+    const files = new Map([['src/index.ts', { content: 'const x = 1', language: 'typescript' }]])
     mockUseEditorStore.mockReturnValue({
       files,
       openFile,
@@ -72,9 +70,7 @@ describe('FileTree', () => {
   })
 
   it('toggles directory expand/collapse', () => {
-    const files = new Map([
-      ['src/index.ts', { content: '', language: 'typescript' }],
-    ])
+    const files = new Map([['src/index.ts', { content: '', language: 'typescript' }]])
     mockUseEditorStore.mockReturnValue({
       files,
       openFile: vi.fn(),
@@ -82,23 +78,21 @@ describe('FileTree', () => {
 
     render(<FileTree />)
     const dirButton = screen.getByText('src')
-    
+
     // Directory is expanded by default, file is visible
     expect(screen.getByText('index.ts')).toBeInTheDocument()
-    
+
     // Click to collapse
     fireEvent.click(dirButton)
     expect(screen.queryByText('index.ts')).not.toBeInTheDocument()
-    
+
     // Click to expand
     fireEvent.click(dirButton)
     expect(screen.getByText('index.ts')).toBeInTheDocument()
   })
 
   it('handles deeply nested files', () => {
-    const files = new Map([
-      ['a/b/c/d/file.txt', { content: '', language: 'text' }],
-    ])
+    const files = new Map([['a/b/c/d/file.txt', { content: '', language: 'text' }]])
     mockUseEditorStore.mockReturnValue({
       files,
       openFile: vi.fn(),

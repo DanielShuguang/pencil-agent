@@ -39,9 +39,7 @@ describe('topologicalSort', () => {
   })
 
   it('should handle single node', () => {
-    const nodes: WorkflowNode[] = [
-      { id: 'a', type: 'start', data: {}, position: { x: 0, y: 0 } },
-    ]
+    const nodes: WorkflowNode[] = [{ id: 'a', type: 'start', data: {}, position: { x: 0, y: 0 } }]
     const edges: WorkflowEdge[] = []
 
     const result = topologicalSort(nodes, edges)

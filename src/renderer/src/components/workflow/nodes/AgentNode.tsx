@@ -7,10 +7,12 @@ interface AgentNodeProps {
 }
 
 export function AgentNode({ id, data }: AgentNodeProps) {
-  const config = data.config as {
-    model?: { id: string; provider: string }
-    systemPrompt?: string
-  } | undefined
+  const config = data.config as
+    | {
+        model?: { id: string; provider: string }
+        systemPrompt?: string
+      }
+    | undefined
 
   return (
     <BaseNode nodeId={id}>
@@ -19,9 +21,7 @@ export function AgentNode({ id, data }: AgentNodeProps) {
         <span className='font-medium text-sm'>Agent</span>
       </div>
       {config?.model && (
-        <p className='text-xs text-muted-foreground mt-1 truncate'>
-          {config.model.id}
-        </p>
+        <p className='text-xs text-muted-foreground mt-1 truncate'>{config.model.id}</p>
       )}
     </BaseNode>
   )

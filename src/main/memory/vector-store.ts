@@ -85,7 +85,7 @@ export class VectorStore {
 
   async search(
     query: string,
-    filters?: { tags?: string[]; sessionId?: string }
+    filters?: { tags?: string[]; sessionId?: string },
   ): Promise<MemoryEntry[]> {
     await this.ensureInitialized()
     if (!this.collection) throw new Error('Vector store not initialized')
@@ -116,7 +116,7 @@ export class VectorStore {
     // Filter by tags if specified
     if (filters?.tags && filters.tags.length > 0) {
       entries = entries.filter((entry) =>
-        filters.tags!.some((tag) => entry.metadata.tags?.includes(tag))
+        filters.tags!.some((tag) => entry.metadata.tags?.includes(tag)),
       )
     }
 

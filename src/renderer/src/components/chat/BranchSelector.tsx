@@ -11,10 +11,10 @@ export function BranchSelector() {
   const parentId = activeMeta?.parentSessionId
 
   return (
-    <div className="flex items-center gap-2">
+    <div className='flex items-center gap-2'>
       {parentId && (
         <button
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className='text-xs text-muted-foreground hover:text-foreground transition-colors'
           onClick={() => switchSession(parentId)}
         >
           ← 返回父会话
@@ -22,7 +22,7 @@ export function BranchSelector() {
       )}
       {branches.length > 0 && (
         <Select value={activeSessionId} onValueChange={(value) => switchSession(value)}>
-          <SelectTrigger className="text-xs bg-background border rounded px-2 py-1 h-7 w-auto">
+          <SelectTrigger className='text-xs bg-background border rounded px-2 py-1 h-7 w-auto'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

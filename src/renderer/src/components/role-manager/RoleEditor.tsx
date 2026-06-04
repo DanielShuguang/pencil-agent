@@ -54,12 +54,12 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className='space-y-4 p-4'>
       <div>
-        <label className="text-sm font-medium">{t('role.name')}</label>
+        <label className='text-sm font-medium'>{t('role.name')}</label>
         <input
-          type="text"
-          className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
+          type='text'
+          className='w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background'
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('role.namePlaceholder')}
@@ -67,10 +67,10 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium">{t('role.description')}</label>
+        <label className='text-sm font-medium'>{t('role.description')}</label>
         <input
-          type="text"
-          className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background"
+          type='text'
+          className='w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background'
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t('role.descriptionPlaceholder')}
@@ -78,20 +78,20 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium">{t('role.systemPrompt')}</label>
+        <label className='text-sm font-medium'>{t('role.systemPrompt')}</label>
         <textarea
-          className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background min-h-[100px]"
+          className='w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background min-h-[100px]'
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
           placeholder={t('role.systemPromptPlaceholder')}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className='grid grid-cols-2 gap-4'>
         <div>
-          <label className="text-sm font-medium">{t('settings.providerName')}</label>
+          <label className='text-sm font-medium'>{t('settings.providerName')}</label>
           <Select value={provider} onValueChange={setProvider}>
-            <SelectTrigger className="w-full mt-1">
+            <SelectTrigger className='w-full mt-1'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -105,9 +105,9 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium">{t('workflow.model')}</label>
+          <label className='text-sm font-medium'>{t('workflow.model')}</label>
           <Select value={modelId} onValueChange={setModelId}>
-            <SelectTrigger className="w-full mt-1">
+            <SelectTrigger className='w-full mt-1'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -122,13 +122,15 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium">{t('workflow.tool')}</label>
-        <div className="flex flex-wrap gap-2 mt-2">
+        <label className='text-sm font-medium'>{t('workflow.tool')}</label>
+        <div className='flex flex-wrap gap-2 mt-2'>
           {AVAILABLE_TOOLS.map((tool) => (
             <button
               key={tool}
               className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-                tools.includes(tool) ? 'bg-primary text-primary-foreground' : 'bg-secondary hover:bg-secondary/80'
+                tools.includes(tool)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary hover:bg-secondary/80'
               }`}
               onClick={() => toggleTool(tool)}
             >
@@ -138,15 +140,15 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
+      <div className='flex justify-end gap-2 pt-4'>
         <button
-          className="px-4 py-2 text-sm border rounded-md hover:bg-accent transition-colors"
+          className='px-4 py-2 text-sm border rounded-md hover:bg-accent transition-colors'
           onClick={onCancel}
         >
           {t('common.cancel')}
         </button>
         <button
-          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+          className='px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50'
           onClick={handleSave}
           disabled={!name.trim() || !systemPrompt.trim()}
         >

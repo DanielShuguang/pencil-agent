@@ -37,7 +37,8 @@ export class ModelConfigManager {
         name: item.name,
         baseUrl: item.baseUrl,
         apiKey,
-        apiFormat: (item.apiFormat === 'openai' || item.apiFormat === 'anthropic') ? item.apiFormat : 'openai',
+        apiFormat:
+          item.apiFormat === 'openai' || item.apiFormat === 'anthropic' ? item.apiFormat : 'openai',
         models: item.models,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,

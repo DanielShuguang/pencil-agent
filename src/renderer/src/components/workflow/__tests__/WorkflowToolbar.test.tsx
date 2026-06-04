@@ -89,9 +89,7 @@ describe('WorkflowToolbar', () => {
 
     render(<WorkflowToolbar />)
     fireEvent.click(screen.getByText('开始'))
-    expect(addNode).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'start' })
-    )
+    expect(addNode).toHaveBeenCalledWith(expect.objectContaining({ type: 'start' }))
   })
 
   it('calls clearWorkflow on clear click', () => {

@@ -10,9 +10,11 @@ interface ConditionNodeProps {
 
 export function ConditionNode({ id, data }: ConditionNodeProps) {
   const { t } = useTranslation()
-  const config = data.config as {
-    expression?: string
-  } | undefined
+  const config = data.config as
+    | {
+        expression?: string
+      }
+    | undefined
 
   return (
     <BaseNode
@@ -27,9 +29,7 @@ export function ConditionNode({ id, data }: ConditionNodeProps) {
         <span className='font-medium text-sm'>{t('workflow.conditionNode')}</span>
       </div>
       {config?.expression && (
-        <p className='text-xs text-muted-foreground mt-1 truncate'>
-          {config.expression}
-        </p>
+        <p className='text-xs text-muted-foreground mt-1 truncate'>{config.expression}</p>
       )}
       <div className='flex justify-between mt-2 text-xs'>
         <span className='text-green-500'>{t('workflow.yes')}</span>

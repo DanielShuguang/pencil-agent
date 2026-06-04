@@ -21,7 +21,11 @@ interface SandboxState {
   activeExecutionId: string | null
 
   startExecution: (id: string, language: string, code: string) => void
-  appendOutput: (output: { type: 'stdout' | 'stderr' | 'exit'; content: string; exitCode?: number }) => void
+  appendOutput: (output: {
+    type: 'stdout' | 'stderr' | 'exit'
+    content: string
+    exitCode?: number
+  }) => void
   completeExecution: (exitCode: number) => void
   setActiveExecution: (id: string | null) => void
   clearExecution: (id: string) => void
@@ -101,8 +105,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
     set((state) => {
       const executions = new Map(state.executions)
       executions.delete(id)
-      const activeExecutionId =
-        state.activeExecutionId === id ? null : state.activeExecutionId
+      const activeExecutionId = state.activeExecutionId === id ? null : state.activeExecutionId
       return { executions, activeExecutionId }
     })
   },

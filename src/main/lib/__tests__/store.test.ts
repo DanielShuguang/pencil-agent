@@ -1,15 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockStoreData = vi.hoisted(() => ({} as Record<string, unknown>))
+const mockStoreData = vi.hoisted(() => ({}) as Record<string, unknown>)
 
 const { mockGet, mockSet, mockDelete } = vi.hoisted(() => ({
   mockGet: vi.fn((key: string) => mockStoreData[key]),
-  mockSet: vi.fn((key: string, value: unknown) => { mockStoreData[key] = value }),
-  mockDelete: vi.fn((key: string) => { delete mockStoreData[key] }),
+  mockSet: vi.fn((key: string, value: unknown) => {
+    mockStoreData[key] = value
+  }),
+  mockDelete: vi.fn((key: string) => {
+    delete mockStoreData[key]
+  }),
 }))
 
 vi.mock('electron-store', () => ({
-  default: function () { return { get: mockGet, set: mockSet, delete: mockDelete } },
+  default: function () {
+    return { get: mockGet, set: mockSet, delete: mockDelete }
+  },
 }))
 
 import { appStore } from '../store'

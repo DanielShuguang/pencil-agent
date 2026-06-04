@@ -11,7 +11,7 @@ describe('ToolCallCard', () => {
           parameters: { command: 'echo hello' },
           status: 'pending',
         }}
-      />
+      />,
     )
     expect(screen.getByText('bash')).toBeInTheDocument()
   })
@@ -24,7 +24,7 @@ describe('ToolCallCard', () => {
           parameters: { command: 'echo hello' },
           status: 'pending',
         }}
-      />
+      />,
     )
     expect(screen.getByText('等待中')).toBeInTheDocument()
   })
@@ -37,7 +37,7 @@ describe('ToolCallCard', () => {
           parameters: { command: 'echo hello' },
           status: 'running',
         }}
-      />
+      />,
     )
     expect(screen.getByText('执行中')).toBeInTheDocument()
   })
@@ -51,7 +51,7 @@ describe('ToolCallCard', () => {
           status: 'success',
           result: 'hello',
         }}
-      />
+      />,
     )
     expect(screen.getByText('成功')).toBeInTheDocument()
   })
@@ -65,7 +65,7 @@ describe('ToolCallCard', () => {
           status: 'error',
           error: 'Command failed',
         }}
-      />
+      />,
     )
     expect(screen.getByText('失败')).toBeInTheDocument()
   })
@@ -78,7 +78,7 @@ describe('ToolCallCard', () => {
           parameters: { command: 'echo hello' },
           status: 'success',
         }}
-      />
+      />,
     )
     const button = screen.getByRole('button')
     fireEvent.click(button)

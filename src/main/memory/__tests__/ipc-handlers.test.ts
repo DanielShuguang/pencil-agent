@@ -41,9 +41,20 @@ describe('registerMemoryHandlers', () => {
   describe('memory:store', () => {
     it('should store memory and return id', async () => {
       memoryMocks.mockStore.mockResolvedValue('mem-1')
-      const result = await ipcHandlers.get('memory:store')!({}, { content: 'Hello', metadata: { sessionId: 's1', role: 'user', timestamp: 1000, tags: [] } })
+      const result = await ipcHandlers.get('memory:store')!(
+        {},
+        {
+          content: 'Hello',
+          metadata: { sessionId: 's1', role: 'user', timestamp: 1000, tags: [] },
+        },
+      )
       expect(result).toBe('mem-1')
-      expect(memoryMocks.mockStore).toHaveBeenCalledWith('Hello', { sessionId: 's1', role: 'user', timestamp: 1000, tags: [] })
+      expect(memoryMocks.mockStore).toHaveBeenCalledWith('Hello', {
+        sessionId: 's1',
+        role: 'user',
+        timestamp: 1000,
+        tags: [],
+      })
     })
   })
 

@@ -70,7 +70,13 @@ describe('DockerSandbox', () => {
       expect(dockerMocks.mockCreateContainer).toHaveBeenCalledWith({
         Image: 'node:22-slim',
         Cmd: ['node', '-e', 'console.log("hi")'],
-        HostConfig: { Memory: 268435456, CpuQuota: 50000, NetworkMode: 'none', AutoRemove: true, ReadonlyRootfs: true },
+        HostConfig: {
+          Memory: 268435456,
+          CpuQuota: 50000,
+          NetworkMode: 'none',
+          AutoRemove: true,
+          ReadonlyRootfs: true,
+        },
         Env: [],
         StopTimeout: 30,
       })

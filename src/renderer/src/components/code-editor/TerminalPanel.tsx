@@ -46,9 +46,7 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
           <Terminal className='h-3.5 w-3.5 text-muted-foreground' />
           <span className='text-xs font-medium'>终端</span>
           {activeExecution && (
-            <span className='text-xs text-muted-foreground'>
-              {activeExecution.language}
-            </span>
+            <span className='text-xs text-muted-foreground'>{activeExecution.language}</span>
           )}
         </div>
         <div className='flex items-center gap-1'>
@@ -84,9 +82,7 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
                 )}
               >
                 {line.type === 'exit' ? (
-                  <span className={cn(
-                    line.exitCode === 0 ? 'text-green-400' : 'text-red-400'
-                  )}>
+                  <span className={cn(line.exitCode === 0 ? 'text-green-400' : 'text-red-400')}>
                     进程退出，退出码: {line.exitCode}
                   </span>
                 ) : (

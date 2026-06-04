@@ -88,12 +88,9 @@ describe('MultiAgentOrchestrator', () => {
   })
 
   it('should execute parallel orchestration with merger', async () => {
-    const result = await orchestrator.execute(
-      'parallel',
-      ['researcher', 'analyst'],
-      'test input',
-      { mergerRoleId: 'writer' }
-    )
+    const result = await orchestrator.execute('parallel', ['researcher', 'analyst'], 'test input', {
+      mergerRoleId: 'writer',
+    })
 
     expect(result.mode).toBe('parallel')
     expect(result.results).toHaveLength(2)
@@ -105,7 +102,7 @@ describe('MultiAgentOrchestrator', () => {
       'debate',
       ['researcher', 'analyst', 'writer'],
       'test input',
-      { maxRounds: 2 }
+      { maxRounds: 2 },
     )
 
     expect(result.mode).toBe('debate')
@@ -115,7 +112,7 @@ describe('MultiAgentOrchestrator', () => {
 
   it('should throw error for debate with less than 3 roles', async () => {
     await expect(
-      orchestrator.execute('debate', ['researcher', 'analyst'], 'test input')
+      orchestrator.execute('debate', ['researcher', 'analyst'], 'test input'),
     ).rejects.toThrow('Debate mode requires at least 3 roles')
   })
 
@@ -123,7 +120,7 @@ describe('MultiAgentOrchestrator', () => {
     const result = await orchestrator.execute(
       'hierarchical',
       ['researcher', 'analyst', 'writer'],
-      'test input'
+      'test input',
     )
 
     expect(result.mode).toBe('hierarchical')
@@ -133,13 +130,13 @@ describe('MultiAgentOrchestrator', () => {
 
   it('should throw error for hierarchical with less than 2 roles', async () => {
     await expect(
-      orchestrator.execute('hierarchical', ['researcher'], 'test input')
+      orchestrator.execute('hierarchical', ['researcher'], 'test input'),
     ).rejects.toThrow('Hierarchical mode requires at least 2 roles')
   })
 
   it('should throw error for unknown mode', async () => {
     await expect(
-      orchestrator.execute('unknown' as any, ['researcher'], 'test input')
+      orchestrator.execute('unknown' as any, ['researcher'], 'test input'),
     ).rejects.toThrow('Unknown orchestration mode')
   })
 

@@ -84,7 +84,7 @@ describe('RoleEditor', () => {
   it('calls onSave with correct data', () => {
     const onSave = vi.fn()
     render(<RoleEditor onSave={onSave} onCancel={vi.fn()} />)
-    
+
     const nameInput = screen.getByPlaceholderText('例如：研究员')
     const promptInput = screen.getByPlaceholderText('定义角色的行为和能力...')
     fireEvent.change(nameInput, { target: { value: 'My Role' } })
@@ -96,36 +96,34 @@ describe('RoleEditor', () => {
         name: 'My Role',
         systemPrompt: 'Be helpful',
         model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-      })
+      }),
     )
   })
 
   it('generates ID from name', () => {
     const onSave = vi.fn()
     render(<RoleEditor onSave={onSave} onCancel={vi.fn()} />)
-    
+
     const nameInput = screen.getByPlaceholderText('例如：研究员')
     const promptInput = screen.getByPlaceholderText('定义角色的行为和能力...')
     fireEvent.change(nameInput, { target: { value: 'My Role' } })
     fireEvent.change(promptInput, { target: { value: 'Be helpful' } })
     fireEvent.click(screen.getByText('创建'))
 
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'my-role' })
-    )
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'my-role' }))
   })
 
   it('toggles tool selection', () => {
     render(<RoleEditor onSave={vi.fn()} onCancel={vi.fn()} />)
-    
+
     const readBtn = screen.getByText('read')
     // read is selected by default
     expect(readBtn.className).toContain('bg-primary')
-    
+
     // Click to deselect
     fireEvent.click(readBtn)
     expect(readBtn.className).toContain('bg-secondary')
-    
+
     // Click to select again
     fireEvent.click(readBtn)
     expect(readBtn.className).toContain('bg-primary')
@@ -143,7 +141,7 @@ describe('RoleEditor', () => {
       updatedAt: Date.now(),
     }
     render(<RoleEditor role={role} onSave={vi.fn()} onCancel={vi.fn()} />)
-    
+
     expect(screen.getByDisplayValue('Existing Role')).toBeInTheDocument()
     expect(screen.getByDisplayValue('A role')).toBeInTheDocument()
     expect(screen.getByDisplayValue('Existing prompt')).toBeInTheDocument()

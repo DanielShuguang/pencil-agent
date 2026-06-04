@@ -109,12 +109,7 @@ function FileTreeNode({
       {node.isDirectory && isExpanded && (
         <div>
           {node.children.map((child) => (
-            <FileTreeNode
-              key={child.path}
-              node={child}
-              depth={depth + 1}
-              onSelect={onSelect}
-            />
+            <FileTreeNode key={child.path} node={child} depth={depth + 1} onSelect={onSelect} />
           ))}
         </div>
       )}

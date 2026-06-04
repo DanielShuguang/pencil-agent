@@ -57,7 +57,9 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
           ) : (
             filteredProviders.map((provider) => (
               <div key={provider.id} className='p-2'>
-                <div className='px-2 py-1 text-xs font-medium text-muted-foreground'>{provider.name}</div>
+                <div className='px-2 py-1 text-xs font-medium text-muted-foreground'>
+                  {provider.name}
+                </div>
                 {provider.models.map((model) => (
                   <button
                     key={model.id}
@@ -85,7 +87,9 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
         className='flex items-center gap-2 px-3 py-1.5 text-sm rounded-md hover:bg-accent transition-colors'
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className='text-muted-foreground'>{currentProvider?.name || currentModel.provider}</span>
+        <span className='text-muted-foreground'>
+          {currentProvider?.name || currentModel.provider}
+        </span>
         <span className='font-medium'>{currentModelInfo?.name || currentModel.id}</span>
         <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -108,7 +112,9 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
             ) : (
               filteredProviders.map((provider) => (
                 <div key={provider.id} className='p-2'>
-                  <div className='px-2 py-1 text-xs font-medium text-muted-foreground'>{provider.name}</div>
+                  <div className='px-2 py-1 text-xs font-medium text-muted-foreground'>
+                    {provider.name}
+                  </div>
                   {provider.models.map((model) => (
                     <button
                       key={model.id}

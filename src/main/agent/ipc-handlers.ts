@@ -115,11 +115,12 @@ export function registerAgentHandlers(
         apiKey = stored
       }
 
-      const url = provider === 'openai'
-        ? 'https://api.openai.com/v1/models'
-        : provider === 'anthropic'
-          ? 'https://api.anthropic.com/v1/messages'
-          : null
+      const url =
+        provider === 'openai'
+          ? 'https://api.openai.com/v1/models'
+          : provider === 'anthropic'
+            ? 'https://api.anthropic.com/v1/messages'
+            : null
 
       if (!url) return false
 
@@ -166,9 +167,12 @@ export function registerAgentHandlers(
     return getRoleManager().create(role)
   })
 
-  ipcMain.handle('role:update', (_, { id, updates }: { id: string; updates: Partial<AgentRole> }) => {
-    return getRoleManager().update(id, updates)
-  })
+  ipcMain.handle(
+    'role:update',
+    (_, { id, updates }: { id: string; updates: Partial<AgentRole> }) => {
+      return getRoleManager().update(id, updates)
+    },
+  )
 
   ipcMain.handle('role:delete', (_, id: string) => {
     return getRoleManager().delete(id)
@@ -204,9 +208,7 @@ export function registerAgentHandlers(
     const mode = appStore.get('theme.mode', 'system') as string
     const themeId = appStore.get('theme.themeId', '') as string
     const isDark = nativeTheme.shouldUseDarkColors
-    const currentThemeId = mode === 'system'
-      ? (isDark ? 'dark' : 'light')
-      : (themeId || mode)
+    const currentThemeId = mode === 'system' ? (isDark ? 'dark' : 'light') : themeId || mode
     return { mode, currentThemeId, isDark }
   })
 

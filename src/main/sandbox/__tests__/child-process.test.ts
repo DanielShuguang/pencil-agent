@@ -50,7 +50,9 @@ describe('ChildProcessSandbox', () => {
     })
 
     it('should throw for unsupported language', async () => {
-      await expect(sandbox.execute({ code: 'test', language: 'ruby' } as any)).rejects.toThrow('Unsupported language: ruby')
+      await expect(sandbox.execute({ code: 'test', language: 'ruby' } as any)).rejects.toThrow(
+        'Unsupported language: ruby',
+      )
     })
 
     it('should capture stdout content', async () => {

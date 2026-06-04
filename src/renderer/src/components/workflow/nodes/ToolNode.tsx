@@ -9,9 +9,11 @@ interface ToolNodeProps {
 
 export function ToolNode({ id, data }: ToolNodeProps) {
   const { t } = useTranslation()
-  const config = data.config as {
-    toolName?: string
-  } | undefined
+  const config = data.config as
+    | {
+        toolName?: string
+      }
+    | undefined
 
   return (
     <BaseNode nodeId={id}>
@@ -20,9 +22,7 @@ export function ToolNode({ id, data }: ToolNodeProps) {
         <span className='font-medium text-sm'>{t('workflow.toolNode')}</span>
       </div>
       {config?.toolName && (
-        <p className='text-xs text-muted-foreground mt-1 truncate'>
-          {config.toolName}
-        </p>
+        <p className='text-xs text-muted-foreground mt-1 truncate'>{config.toolName}</p>
       )}
     </BaseNode>
   )

@@ -10,7 +10,8 @@ interface UpdateDialogProps {
 
 export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
   const { t } = useTranslation()
-  const { status, progress, error, updateInfo, downloadUpdate, installUpdate, reset } = useUpdateStore()
+  const { status, progress, error, updateInfo, downloadUpdate, installUpdate, reset } =
+    useUpdateStore()
 
   const handleClose = () => {
     reset()
@@ -21,7 +22,12 @@ export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
   const handleInstall = () => installUpdate()
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose()
+      }}
+    >
       <DialogContent className='max-w-md'>
         <DialogHeader>
           <DialogTitle>{t('updater.title')}</DialogTitle>
@@ -39,12 +45,19 @@ export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
             <p>{t('updater.available')}</p>
             {updateInfo && (
               <div className='bg-muted p-3 rounded-md text-sm'>
-                <p><strong>{t('updater.version')}:</strong> {(updateInfo as { version?: string }).version}</p>
+                <p>
+                  <strong>{t('updater.version')}:</strong>{' '}
+                  {(updateInfo as { version?: string }).version}
+                </p>
                 {(updateInfo as { releaseNotes?: string }).releaseNotes && (
-                  <p className='mt-2'><strong>{t('updater.releaseNotes')}:</strong></p>
+                  <p className='mt-2'>
+                    <strong>{t('updater.releaseNotes')}:</strong>
+                  </p>
                 )}
                 {(updateInfo as { releaseNotes?: string }).releaseNotes && (
-                  <p className='mt-1 whitespace-pre-wrap'>{(updateInfo as { releaseNotes?: string }).releaseNotes}</p>
+                  <p className='mt-1 whitespace-pre-wrap'>
+                    {(updateInfo as { releaseNotes?: string }).releaseNotes}
+                  </p>
                 )}
               </div>
             )}
@@ -52,9 +65,7 @@ export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
               <Button variant='secondary' onClick={handleClose}>
                 {t('updater.later')}
               </Button>
-              <Button onClick={handleDownload}>
-                {t('updater.download')}
-              </Button>
+              <Button onClick={handleDownload}>{t('updater.download')}</Button>
             </div>
           </div>
         )}
@@ -63,7 +74,10 @@ export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
           <div className='space-y-4'>
             <p>{t('updater.downloading')}</p>
             <div className='w-full bg-secondary rounded-full h-2.5'>
-              <div className='bg-primary h-2.5 rounded-full transition-all' style={{ width: `${progress}%` }} />
+              <div
+                className='bg-primary h-2.5 rounded-full transition-all'
+                style={{ width: `${progress}%` }}
+              />
             </div>
             <p className='text-sm text-muted-foreground text-center'>{Math.round(progress)}%</p>
           </div>
@@ -76,9 +90,7 @@ export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
               <Button variant='secondary' onClick={handleClose}>
                 {t('updater.later')}
               </Button>
-              <Button onClick={handleInstall}>
-                {t('updater.install')}
-              </Button>
+              <Button onClick={handleInstall}>{t('updater.install')}</Button>
             </div>
           </div>
         )}

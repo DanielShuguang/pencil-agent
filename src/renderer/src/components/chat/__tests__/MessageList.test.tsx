@@ -6,8 +6,8 @@ vi.mock('../../stores/agent-store', () => ({
   useAgentStore: (selector: (s: Record<string, unknown>) => unknown) =>
     selector({
       sessions: new Map(),
-      activeSessionId: null
-    })
+      activeSessionId: null,
+    }),
 }))
 
 describe('MessageList', () => {

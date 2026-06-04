@@ -24,14 +24,7 @@ interface WorkflowCanvasProps {
 }
 
 export function WorkflowCanvas({ className }: WorkflowCanvasProps) {
-  const {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    onConnect,
-    selectNode,
-  } = useWorkflowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, selectNode } = useWorkflowStore()
 
   const reactFlowRef = useRef<ReactFlowInstance | null>(null)
 
@@ -48,29 +41,26 @@ export function WorkflowCanvas({ className }: WorkflowCanvasProps) {
     event.dataTransfer.dropEffect = 'move'
   }, [])
 
-  const onDrop = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault()
+  const onDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault()
 
-      const type = event.dataTransfer.getData('application/reactflow')
-      if (!type || !reactFlowRef.current) return
+    const type = event.dataTransfer.getData('application/reactflow')
+    if (!type || !reactFlowRef.current) return
 
-      const position = reactFlowRef.current.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      })
+    const position = reactFlowRef.current.screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    })
 
-      const newNode = {
-        id: `${type}-${Date.now()}`,
-        type,
-        position,
-        data: { config: {} },
-      }
+    const newNode = {
+      id: `${type}-${Date.now()}`,
+      type,
+      position,
+      data: { config: {} },
+    }
 
-      useWorkflowStore.getState().addNode(newNode)
-    },
-    [],
-  )
+    useWorkflowStore.getState().addNode(newNode)
+  }, [])
 
   return (
     <div className={className}>

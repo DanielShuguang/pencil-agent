@@ -32,9 +32,7 @@ const mockProviders = [
     id: 'openai',
     name: 'OpenAI',
     baseUrl: 'https://api.openai.com',
-    models: [
-      { id: 'gpt-4o', name: 'GPT-4o' },
-    ],
+    models: [{ id: 'gpt-4o', name: 'GPT-4o' }],
   },
 ]
 

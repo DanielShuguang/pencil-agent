@@ -73,7 +73,9 @@ describe('Updater', () => {
     it('should return checking status if already checking', async () => {
       const handler = ipcHandlers.get('updater:check')!
 
-      const checkCb = mockAutoUpdater.on.mock.calls.find((c: any[]) => c[0] === 'checking-for-update')?.[1]
+      const checkCb = mockAutoUpdater.on.mock.calls.find(
+        (c: any[]) => c[0] === 'checking-for-update',
+      )?.[1]
       checkCb?.()
 
       mockAutoUpdater.checkForUpdates.mockResolvedValue({ version: '2.0.0' })
@@ -118,21 +120,30 @@ describe('Updater', () => {
 
   describe('event forwarding', () => {
     it('should forward checking-for-update event', () => {
-      const cb = mockAutoUpdater.on.mock.calls.find((c: any[]) => c[0] === 'checking-for-update')?.[1]
+      const cb = mockAutoUpdater.on.mock.calls.find(
+        (c: any[]) => c[0] === 'checking-for-update',
+      )?.[1]
       cb?.()
-      expect(mainWindow.webContents.send).toHaveBeenCalledWith('updater:status', { status: 'checking' })
+      expect(mainWindow.webContents.send).toHaveBeenCalledWith('updater:status', {
+        status: 'checking',
+      })
     })
 
     it('should forward update-available event', () => {
       const cb = mockAutoUpdater.on.mock.calls.find((c: any[]) => c[0] === 'update-available')?.[1]
       cb?.({ version: '2.0.0' })
-      expect(mainWindow.webContents.send).toHaveBeenCalledWith('updater:info', { status: 'available', info: { version: '2.0.0' } })
+      expect(mainWindow.webContents.send).toHaveBeenCalledWith('updater:info', {
+        status: 'available',
+        info: { version: '2.0.0' },
+      })
     })
 
     it('should forward error event', () => {
       const cb = mockAutoUpdater.on.mock.calls.find((c: any[]) => c[0] === 'error')?.[1]
       cb?.({ message: 'Update error' })
-      expect(mainWindow.webContents.send).toHaveBeenCalledWith('updater:error', { error: 'Update error' })
+      expect(mainWindow.webContents.send).toHaveBeenCalledWith('updater:error', {
+        error: 'Update error',
+      })
     })
 
     it('should forward download-progress event', () => {

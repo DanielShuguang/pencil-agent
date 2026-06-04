@@ -131,7 +131,10 @@ describe('preload API surface', () => {
       const cleanup = api.agent.onChunk(cb)
       expect(mocks.mockIpcRendererOn).toHaveBeenCalledWith('agent:chunk', expect.any(Function))
       cleanup()
-      expect(mocks.mockIpcRendererRemoveListener).toHaveBeenCalledWith('agent:chunk', expect.any(Function))
+      expect(mocks.mockIpcRendererRemoveListener).toHaveBeenCalledWith(
+        'agent:chunk',
+        expect.any(Function),
+      )
     })
   })
 })

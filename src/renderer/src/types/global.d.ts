@@ -36,7 +36,10 @@ interface ToolAPI {
 }
 
 interface WorkflowAPI {
-  execute: (workflow: WorkflowDefinition, input: Record<string, unknown>) => Promise<Record<string, unknown>>
+  execute: (
+    workflow: WorkflowDefinition,
+    input: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>
   onProgress: (cb: (progress: WorkflowProgress) => void) => () => void
 }
 
@@ -95,7 +98,10 @@ interface RoleAPI {
 interface MemoryAPI {
   store: (content: string, metadata: MemoryEntry['metadata']) => Promise<string>
   recall: (query: string, topK?: number) => Promise<MemoryEntry[]>
-  search: (query: string, filters?: { tags?: string[]; sessionId?: string }) => Promise<MemoryEntry[]>
+  search: (
+    query: string,
+    filters?: { tags?: string[]; sessionId?: string },
+  ) => Promise<MemoryEntry[]>
   delete: (id: string) => Promise<void>
   clearAll: () => Promise<void>
 }

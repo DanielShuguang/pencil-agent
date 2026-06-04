@@ -19,9 +19,9 @@ interface SettingsDialogProps {
 
 const TAB_KEYS: Record<SettingsTab, string> = {
   'api-keys': 'apiKeys',
-  'models': 'models',
-  'language': 'language',
-  'theme': 'theme',
+  models: 'models',
+  language: 'language',
+  theme: 'theme',
 }
 
 const THEME_MODE_KEYS: Record<string, string> = {
@@ -46,7 +46,12 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+    >
       <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle>{t('settings.title')}</DialogTitle>
@@ -76,8 +81,8 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         {activeTab === 'api-keys' && <ApiKeyForm />}
         {activeTab === 'models' && <ModelConfigPanel />}
         {activeTab === 'language' && (
-          <div className="space-y-4">
-            <div className="flex gap-2">
+          <div className='space-y-4'>
+            <div className='flex gap-2'>
               <Button
                 variant={language === 'zh' ? 'default' : 'secondary'}
                 onClick={() => setLanguage('zh')}
@@ -94,10 +99,10 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           </div>
         )}
         {activeTab === 'theme' && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('settings.themeMode')}</label>
-              <div className="flex gap-2">
+          <div className='space-y-4'>
+            <div className='space-y-2'>
+              <label className='text-sm font-medium'>{t('settings.themeMode')}</label>
+              <div className='flex gap-2'>
                 {(['system', 'light', 'dark'] as const).map((m) => (
                   <Button
                     key={m}
@@ -109,9 +114,9 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 ))}
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('settings.selectTheme')}</label>
-              <div className="grid grid-cols-2 gap-2">
+            <div className='space-y-2'>
+              <label className='text-sm font-medium'>{t('settings.selectTheme')}</label>
+              <div className='grid grid-cols-2 gap-2'>
                 {themes.map((theme) => (
                   <Button
                     key={theme.id}
@@ -120,10 +125,10 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     onClick={() => window.api?.theme?.setTheme(theme.id)}
                   >
                     <div
-                      className="w-4 h-4 rounded-full shrink-0"
+                      className='w-4 h-4 rounded-full shrink-0'
                       style={{ backgroundColor: `hsl(${theme.colors.primary})` }}
                     />
-                    <span className="text-sm">{theme.name}</span>
+                    <span className='text-sm'>{theme.name}</span>
                   </Button>
                 ))}
               </div>

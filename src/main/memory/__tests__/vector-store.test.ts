@@ -40,7 +40,10 @@ describe('VectorStore', () => {
   describe('store', () => {
     it('should store a memory entry and return id', async () => {
       const id = await store.store('Hello world', {
-        sessionId: 'session-1', role: 'user', timestamp: 1000, tags: ['test'],
+        sessionId: 'session-1',
+        role: 'user',
+        timestamp: 1000,
+        tags: ['test'],
       })
       expect(id).toMatch(/^mem-\d+-[a-z0-9]+$/)
       expect(vectorMocks.mockAdd).toHaveBeenCalledWith({
@@ -63,7 +66,12 @@ describe('VectorStore', () => {
       vectorMocks.mockQuery.mockResolvedValue({
         ids: [['mem-1', 'mem-2']],
         documents: [['doc1', 'doc2']],
-        metadatas: [[{ sessionId: 's1', role: 'user', timestamp: 1000, tags: ['a'] }, { sessionId: 's2', role: 'assistant', timestamp: 2000, tags: ['b'] }]],
+        metadatas: [
+          [
+            { sessionId: 's1', role: 'user', timestamp: 1000, tags: ['a'] },
+            { sessionId: 's2', role: 'assistant', timestamp: 2000, tags: ['b'] },
+          ],
+        ],
         distances: [[0.1, 0.2]],
       })
 
@@ -74,7 +82,12 @@ describe('VectorStore', () => {
     })
 
     it('should return empty array when no results', async () => {
-      vectorMocks.mockQuery.mockResolvedValue({ ids: [[]], documents: [[]], metadatas: [[]], distances: [[]] })
+      vectorMocks.mockQuery.mockResolvedValue({
+        ids: [[]],
+        documents: [[]],
+        metadatas: [[]],
+        distances: [[]],
+      })
       const results = await store.recall('empty', 5)
       expect(results).toEqual([])
     })
@@ -83,7 +96,8 @@ describe('VectorStore', () => {
   describe('search', () => {
     it('should search with session filter', async () => {
       vectorMocks.mockQuery.mockResolvedValue({
-        ids: [['mem-1']], documents: [['doc1']],
+        ids: [['mem-1']],
+        documents: [['doc1']],
         metadatas: [[{ sessionId: 's1', role: 'user', timestamp: 1000, tags: [] }]],
         distances: [[0.1]],
       })
@@ -93,8 +107,14 @@ describe('VectorStore', () => {
 
     it('should filter by tags when specified', async () => {
       vectorMocks.mockQuery.mockResolvedValue({
-        ids: [['mem-1', 'mem-2']], documents: [['doc1', 'doc2']],
-        metadatas: [[{ sessionId: 's1', role: 'user', timestamp: 1000, tags: ['important'] }, { sessionId: 's2', role: 'assistant', timestamp: 2000, tags: ['normal'] }]],
+        ids: [['mem-1', 'mem-2']],
+        documents: [['doc1', 'doc2']],
+        metadatas: [
+          [
+            { sessionId: 's1', role: 'user', timestamp: 1000, tags: ['important'] },
+            { sessionId: 's2', role: 'assistant', timestamp: 2000, tags: ['normal'] },
+          ],
+        ],
         distances: [[0.1, 0.2]],
       })
       const results = await store.search('query', { tags: ['important'] })
@@ -112,7 +132,11 @@ describe('VectorStore', () => {
 
   describe('clearAll', () => {
     it('should clear all memories', async () => {
-      vectorMocks.mockGetOrCreateCollection.mockResolvedValue({ add: vectorMocks.mockAdd, query: vectorMocks.mockQuery, delete: vectorMocks.mockDelete })
+      vectorMocks.mockGetOrCreateCollection.mockResolvedValue({
+        add: vectorMocks.mockAdd,
+        query: vectorMocks.mockQuery,
+        delete: vectorMocks.mockDelete,
+      })
       await store.clearAll()
       expect(vectorMocks.mockDeleteCollection).toHaveBeenCalledWith({ name: 'agent_memory' })
     })

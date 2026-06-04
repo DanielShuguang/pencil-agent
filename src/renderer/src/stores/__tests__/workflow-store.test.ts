@@ -8,7 +8,7 @@ beforeEach(() => {
     edges: [],
     selectedNodeId: null,
     nodeStatus: new Map(),
-    isExecuting: false
+    isExecuting: false,
   })
 })
 
@@ -16,7 +16,7 @@ const mockNode = (id: string): Node => ({
   id,
   type: 'default',
   position: { x: 0, y: 0 },
-  data: { label: `Node ${id}` }
+  data: { label: `Node ${id}` },
 })
 
 describe('workflow-store', () => {
@@ -52,8 +52,8 @@ describe('workflow-store', () => {
       edges: [
         { id: 'e1-2', source: '1', target: '2' },
         { id: 'e1-3', source: '1', target: '3' },
-        { id: 'e2-3', source: '2', target: '3' }
-      ]
+        { id: 'e2-3', source: '2', target: '3' },
+      ],
     })
     useWorkflowStore.getState().removeNode('1')
     expect(useWorkflowStore.getState().nodes).toHaveLength(2)
@@ -65,9 +65,9 @@ describe('workflow-store', () => {
   it('onNodesChange applies node changes through xyflow', () => {
     const node = mockNode('1')
     useWorkflowStore.setState({ nodes: [node] })
-    useWorkflowStore.getState().onNodesChange([
-      { type: 'position', id: '1', position: { x: 100, y: 200 }, dragging: false }
-    ])
+    useWorkflowStore
+      .getState()
+      .onNodesChange([{ type: 'position', id: '1', position: { x: 100, y: 200 }, dragging: false }])
     const updated = useWorkflowStore.getState().nodes[0]
     expect(updated.position).toEqual({ x: 100, y: 200 })
   })
@@ -106,7 +106,7 @@ describe('workflow-store', () => {
       nodes: [mockNode('1')],
       edges: [{ id: 'e1', source: '1', target: '2' }],
       selectedNodeId: '1',
-      isExecuting: true
+      isExecuting: true,
     })
     useWorkflowStore.getState().clearWorkflow()
     const state = useWorkflowStore.getState()

@@ -147,7 +147,9 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
           placeholder={apiFormat === 'openai' ? 'sk-...' : 'sk-ant-...'}
           required
         />
-        {apiKeyWarning && <p className='text-sm text-yellow-600 dark:text-yellow-500'>{apiKeyWarning}</p>}
+        {apiKeyWarning && (
+          <p className='text-sm text-yellow-600 dark:text-yellow-500'>{apiKeyWarning}</p>
+        )}
       </div>
 
       <div className='flex justify-end gap-2'>

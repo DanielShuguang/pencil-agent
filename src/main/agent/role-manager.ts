@@ -20,7 +20,8 @@ function createDefaultRoles(): AgentRole[] {
       id: 'researcher',
       name: '研究员',
       description: '负责搜索和收集信息',
-      systemPrompt: '你是一个专业的研究员，负责搜索和收集相关信息。请仔细分析问题，提供准确、全面的信息。',
+      systemPrompt:
+        '你是一个专业的研究员，负责搜索和收集相关信息。请仔细分析问题，提供准确、全面的信息。',
       model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tools: ['read', 'write', 'bash'],
       createdAt: now,
@@ -30,7 +31,8 @@ function createDefaultRoles(): AgentRole[] {
       id: 'analyst',
       name: '分析师',
       description: '负责分析和处理数据',
-      systemPrompt: '你是一个专业的数据分析师，负责分析和处理数据。请使用严谨的分析方法，提供有洞察力的结论。',
+      systemPrompt:
+        '你是一个专业的数据分析师，负责分析和处理数据。请使用严谨的分析方法，提供有洞察力的结论。',
       model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tools: ['read', 'write', 'bash'],
       createdAt: now,
@@ -40,7 +42,8 @@ function createDefaultRoles(): AgentRole[] {
       id: 'writer',
       name: '写作者',
       description: '负责撰写和整理文档',
-      systemPrompt: '你是一个专业的写作者，负责撰写和整理文档。请使用清晰、专业的语言，确保文档质量。',
+      systemPrompt:
+        '你是一个专业的写作者，负责撰写和整理文档。请使用清晰、专业的语言，确保文档质量。',
       model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tools: ['read', 'write'],
       createdAt: now,

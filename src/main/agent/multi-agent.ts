@@ -11,7 +11,7 @@ export interface OrchestrationResult {
 export class MultiAgentOrchestrator {
   constructor(
     private agents: AgentSessionManager,
-    private roles: RoleManager
+    private roles: RoleManager,
   ) {}
 
   async execute(
@@ -22,7 +22,7 @@ export class MultiAgentOrchestrator {
       maxRounds?: number
       mergerRoleId?: string
       onProgress?: (agentId: string, output: string) => void
-    } = {}
+    } = {},
   ): Promise<OrchestrationResult> {
     const roles = roleIds.map((id) => this.roles.get(id)).filter(Boolean) as AgentRole[]
 
@@ -43,7 +43,7 @@ export class MultiAgentOrchestrator {
   private async executeSequential(
     roles: AgentRole[],
     input: string,
-    onProgress?: (agentId: string, output: string) => void
+    onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
     const results: { roleId: string; output: string }[] = []
     let currentInput = input
@@ -83,7 +83,7 @@ export class MultiAgentOrchestrator {
     roles: AgentRole[],
     input: string,
     mergerRoleId?: string,
-    onProgress?: (agentId: string, output: string) => void
+    onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
     const MAX_PARALLEL = 3
     const results: { roleId: string; output: string }[] = []
@@ -111,7 +111,7 @@ export class MultiAgentOrchestrator {
           await this.agents.stop(sessionId)
           onProgress?.(role.id, output)
           return { roleId: role.id, output }
-        })
+        }),
       )
       results.push(...batchResults)
     }
@@ -154,7 +154,7 @@ export class MultiAgentOrchestrator {
     roles: AgentRole[],
     input: string,
     maxRounds: number,
-    onProgress?: (agentId: string, output: string) => void
+    onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
     if (roles.length < 3) {
       throw new Error('Debate mode requires at least 3 roles: proposer, opposer, judge')
@@ -256,7 +256,7 @@ export class MultiAgentOrchestrator {
   private async executeHierarchical(
     roles: AgentRole[],
     input: string,
-    onProgress?: (agentId: string, output: string) => void
+    onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
     if (roles.length < 2) {
       throw new Error('Hierarchical mode requires at least 2 roles: manager and workers')
@@ -318,7 +318,7 @@ export class MultiAgentOrchestrator {
         await this.agents.stop(workerSession)
         onProgress?.(worker.id, output)
         return { roleId: worker.id, output }
-      })
+      }),
     )
     results.push(...workerResults)
 

@@ -31,38 +31,48 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
     <div className={`border-l bg-background p-4 overflow-auto ${className}`}>
       <div className='flex items-center justify-between mb-4'>
         <h3 className='font-medium text-sm'>{t('workflow.nodeConfig')}</h3>
-        <button
-          onClick={() => selectNode(null)}
-          className='p-1 hover:bg-muted rounded'
-        >
+        <button onClick={() => selectNode(null)} className='p-1 hover:bg-muted rounded'>
           <X className='h-4 w-4' />
         </button>
       </div>
 
       <div className='space-y-4'>
         <div>
-          <label className='text-xs font-medium text-muted-foreground'>{t('workflow.nodeId')}</label>
+          <label className='text-xs font-medium text-muted-foreground'>
+            {t('workflow.nodeId')}
+          </label>
           <p className='text-sm mt-1'>{selectedNode.id}</p>
         </div>
 
         <div>
-          <label className='text-xs font-medium text-muted-foreground'>{t('workflow.nodeType')}</label>
+          <label className='text-xs font-medium text-muted-foreground'>
+            {t('workflow.nodeType')}
+          </label>
           <p className='text-sm mt-1'>{selectedNode.type}</p>
         </div>
 
         {selectedNode.type === 'agent' && (
           <>
             <div>
-              <label className='text-xs font-medium text-muted-foreground'>{t('workflow.model')}</label>
+              <label className='text-xs font-medium text-muted-foreground'>
+                {t('workflow.model')}
+              </label>
               <Select
-                value={JSON.stringify(config.model ?? { id: 'claude-sonnet-4-20250514', provider: 'anthropic' })}
+                value={JSON.stringify(
+                  config.model ?? { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+                )}
                 onValueChange={(value) => handleChange('model', JSON.parse(value))}
               >
                 <SelectTrigger className='w-full mt-1'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={JSON.stringify({ id: 'claude-sonnet-4-20250514', provider: 'anthropic' })}>
+                  <SelectItem
+                    value={JSON.stringify({
+                      id: 'claude-sonnet-4-20250514',
+                      provider: 'anthropic',
+                    })}
+                  >
                     Claude Sonnet 4
                   </SelectItem>
                   <SelectItem value={JSON.stringify({ id: 'gpt-4o', provider: 'openai' })}>
@@ -103,7 +113,9 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
         {selectedNode.type === 'tool' && (
           <>
             <div>
-              <label className='text-xs font-medium text-muted-foreground'>{t('workflow.tool')}</label>
+              <label className='text-xs font-medium text-muted-foreground'>
+                {t('workflow.tool')}
+              </label>
               <Select
                 value={(config.toolName as string) ?? ''}
                 onValueChange={(value) => handleChange('toolName', value)}
@@ -125,16 +137,16 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
 
         {selectedNode.type === 'condition' && (
           <div>
-            <label className='text-xs font-medium text-muted-foreground'>{t('workflow.condition')}</label>
+            <label className='text-xs font-medium text-muted-foreground'>
+              {t('workflow.condition')}
+            </label>
             <textarea
               className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm font-mono min-h-[80px]'
               value={(config.expression as string) ?? ''}
               onChange={(e) => handleChange('expression', e.target.value)}
               placeholder='$input !== null'
             />
-            <p className='text-xs text-muted-foreground mt-1'>
-              {t('workflow.conditionHint')}
-            </p>
+            <p className='text-xs text-muted-foreground mt-1'>{t('workflow.conditionHint')}</p>
           </div>
         )}
       </div>

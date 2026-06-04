@@ -10,13 +10,25 @@ import { useWorkflowStore } from '../../stores/workflow-store'
 import { useUpdateStore } from '../../stores/update-store'
 import type { WorkflowNode } from '@shared/ipc'
 
-const EditorPanel = lazy(() => import('../code-editor/EditorPanel').then(m => ({ default: m.EditorPanel })))
-const FileTree = lazy(() => import('../code-editor/FileTree').then(m => ({ default: m.FileTree })))
-const TabBar = lazy(() => import('../code-editor/TabBar').then(m => ({ default: m.TabBar })))
-const TerminalPanel = lazy(() => import('../code-editor/TerminalPanel').then(m => ({ default: m.TerminalPanel })))
-const WorkflowCanvas = lazy(() => import('../workflow/WorkflowCanvas').then(m => ({ default: m.WorkflowCanvas })))
-const WorkflowToolbar = lazy(() => import('../workflow/WorkflowToolbar').then(m => ({ default: m.WorkflowToolbar })))
-const NodeConfigPanel = lazy(() => import('../workflow/panels/NodeConfigPanel').then(m => ({ default: m.NodeConfigPanel })))
+const EditorPanel = lazy(() =>
+  import('../code-editor/EditorPanel').then((m) => ({ default: m.EditorPanel })),
+)
+const FileTree = lazy(() =>
+  import('../code-editor/FileTree').then((m) => ({ default: m.FileTree })),
+)
+const TabBar = lazy(() => import('../code-editor/TabBar').then((m) => ({ default: m.TabBar })))
+const TerminalPanel = lazy(() =>
+  import('../code-editor/TerminalPanel').then((m) => ({ default: m.TerminalPanel })),
+)
+const WorkflowCanvas = lazy(() =>
+  import('../workflow/WorkflowCanvas').then((m) => ({ default: m.WorkflowCanvas })),
+)
+const WorkflowToolbar = lazy(() =>
+  import('../workflow/WorkflowToolbar').then((m) => ({ default: m.WorkflowToolbar })),
+)
+const NodeConfigPanel = lazy(() =>
+  import('../workflow/panels/NodeConfigPanel').then((m) => ({ default: m.NodeConfigPanel })),
+)
 
 interface AppShellProps {
   children: ReactNode

@@ -3,11 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { UpdateDialog } from '../UpdateDialog'
 import '../../../i18n'
 
-vi.stubGlobal('getComputedStyle', vi.fn(() => ({
-  getPropertyValue: () => '',
-  paddingLeft: '0px',
-  paddingRight: '0px',
-})))
+vi.stubGlobal(
+  'getComputedStyle',
+  vi.fn(() => ({
+    getPropertyValue: () => '',
+    paddingLeft: '0px',
+    paddingRight: '0px',
+  })),
+)
 
 vi.mock('../../../stores/update-store', () => ({
   useUpdateStore: vi.fn(),

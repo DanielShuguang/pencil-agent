@@ -8,7 +8,7 @@ vi.mock('../../../stores/agent-store', () => ({
 }))
 
 vi.mock('../SessionList', () => ({
-  SessionList: () => <div data-testid="session-list">SessionList</div>,
+  SessionList: () => <div data-testid='session-list'>SessionList</div>,
 }))
 
 const { useAgentStore } = await import('../../../stores/agent-store')

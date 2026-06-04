@@ -60,9 +60,17 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('../ProviderForm', () => ({
-  ProviderForm: ({ onSave, onCancel }: { onSave: (...args: unknown[]) => void; onCancel: () => void }) => (
+  ProviderForm: ({
+    onSave,
+    onCancel,
+  }: {
+    onSave: (...args: unknown[]) => void
+    onCancel: () => void
+  }) => (
     <div data-testid='provider-form'>
-      <button onClick={() => onSave({ id: 'new', name: 'New', baseUrl: '', apiKey: '', models: [] })}>
+      <button
+        onClick={() => onSave({ id: 'new', name: 'New', baseUrl: '', apiKey: '', models: [] })}
+      >
         Save Provider
       </button>
       <button onClick={onCancel}>Cancel Provider</button>
@@ -71,7 +79,13 @@ vi.mock('../ProviderForm', () => ({
 }))
 
 vi.mock('../ModelForm', () => ({
-  ModelForm: ({ onSave, onCancel }: { onSave: (...args: unknown[]) => void; onCancel: () => void }) => (
+  ModelForm: ({
+    onSave,
+    onCancel,
+  }: {
+    onSave: (...args: unknown[]) => void
+    onCancel: () => void
+  }) => (
     <div data-testid='model-form'>
       <button onClick={() => onSave({ id: 'model-1', name: 'Model 1', providerId: 'openai' })}>
         Save Model

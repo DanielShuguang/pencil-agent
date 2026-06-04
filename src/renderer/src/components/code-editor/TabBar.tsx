@@ -32,9 +32,7 @@ export function TabBar({ className }: TabBarProps) {
           >
             <File className='h-3 w-3 shrink-0' />
             <span className='truncate'>{file.name}</span>
-            {file.isDirty && (
-              <span className='h-2 w-2 rounded-full bg-yellow-500 shrink-0' />
-            )}
+            {file.isDirty && <span className='h-2 w-2 rounded-full bg-yellow-500 shrink-0' />}
             <button
               onClick={(e) => {
                 e.stopPropagation()

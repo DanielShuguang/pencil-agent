@@ -6,8 +6,12 @@ const mockWebContentsSend = vi.fn()
 
 vi.mock('electron', () => ({
   ipcMain: {
-    handle: vi.fn((channel: string, handler: Function) => { ipcHandlers.set(channel, handler) }),
-    on: vi.fn((channel: string, handler: Function) => { ipcListeners.set(channel, handler) }),
+    handle: vi.fn((channel: string, handler: Function) => {
+      ipcHandlers.set(channel, handler)
+    }),
+    on: vi.fn((channel: string, handler: Function) => {
+      ipcListeners.set(channel, handler)
+    }),
   },
 }))
 
@@ -28,8 +32,16 @@ describe('registerSandboxHandlers', () => {
 
   describe('sandbox:execute', () => {
     it('should execute code and return result', async () => {
-      mockSandbox.execute.mockResolvedValue({ stdout: 'hello', stderr: '', exitCode: 0, executionId: 'exec-1' })
-      const result = await ipcHandlers.get('sandbox:execute')!({}, { code: 'console.log("hi")', language: 'javascript' })
+      mockSandbox.execute.mockResolvedValue({
+        stdout: 'hello',
+        stderr: '',
+        exitCode: 0,
+        executionId: 'exec-1',
+      })
+      const result = await ipcHandlers.get('sandbox:execute')!(
+        {},
+        { code: 'console.log("hi")', language: 'javascript' },
+      )
       expect(result.stdout).toBe('hello')
     })
 
@@ -39,13 +51,17 @@ describe('registerSandboxHandlers', () => {
         return { stdout: 'output', stderr: '', exitCode: 0, executionId: 'exec-1' }
       })
       await ipcHandlers.get('sandbox:execute')!({}, { code: 'test', language: 'javascript' })
-      expect(mockWebContentsSend).toHaveBeenCalledWith('sandbox:output', { type: 'stdout', content: 'output' })
+      expect(mockWebContentsSend).toHaveBeenCalledWith('sandbox:output', {
+        type: 'stdout',
+        content: 'output',
+      })
     })
 
     it('should throw on execution failure', async () => {
       mockSandbox.execute.mockRejectedValue(new Error('Execution error'))
-      await expect(ipcHandlers.get('sandbox:execute')!({}, { code: 'bad code', language: 'javascript' }))
-        .rejects.toThrow('Sandbox execution failed: Error: Execution error')
+      await expect(
+        ipcHandlers.get('sandbox:execute')!({}, { code: 'bad code', language: 'javascript' }),
+      ).rejects.toThrow('Sandbox execution failed: Error: Execution error')
     })
   })
 

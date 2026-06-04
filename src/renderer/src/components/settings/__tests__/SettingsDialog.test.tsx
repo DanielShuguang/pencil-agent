@@ -3,11 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { SettingsDialog } from '../SettingsDialog'
 import '../../../i18n'
 
-vi.stubGlobal('getComputedStyle', vi.fn(() => ({
-  getPropertyValue: () => '',
-  paddingLeft: '0px',
-  paddingRight: '0px',
-})))
+vi.stubGlobal(
+  'getComputedStyle',
+  vi.fn(() => ({
+    getPropertyValue: () => '',
+    paddingLeft: '0px',
+    paddingRight: '0px',
+  })),
+)
 
 vi.mock('../../../stores/agent-store', () => ({
   useAgentStore: vi.fn(),
@@ -31,16 +34,16 @@ vi.mock('../../../themes/theme-registry', () => ({
 }))
 
 vi.mock('../ApiKeyForm', () => ({
-  ApiKeyForm: () => <div data-testid="api-key-form">ApiKeyForm</div>,
+  ApiKeyForm: () => <div data-testid='api-key-form'>ApiKeyForm</div>,
 }))
 
 vi.mock('../ModelConfigPanel', () => ({
-  ModelConfigPanel: () => <div data-testid="model-config-panel">ModelConfigPanel</div>,
+  ModelConfigPanel: () => <div data-testid='model-config-panel'>ModelConfigPanel</div>,
 }))
 
 vi.mock('../UpdateDialog', () => ({
   UpdateDialog: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div data-testid="update-dialog">UpdateDialog</div> : null,
+    isOpen ? <div data-testid='update-dialog'>UpdateDialog</div> : null,
 }))
 
 const { useAgentStore } = await import('../../../stores/agent-store')

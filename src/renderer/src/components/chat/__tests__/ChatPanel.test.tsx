@@ -8,25 +8,27 @@ vi.mock('../../../stores/agent-store', () => ({
 }))
 
 vi.mock('../MessageList', () => ({
-  MessageList: () => <div data-testid="message-list">MessageList</div>,
+  MessageList: () => <div data-testid='message-list'>MessageList</div>,
 }))
 
 vi.mock('../VirtualMessageList', () => ({
-  VirtualMessageList: () => <div data-testid="virtual-message-list">VirtualMessageList</div>,
+  VirtualMessageList: () => <div data-testid='virtual-message-list'>VirtualMessageList</div>,
 }))
 
 vi.mock('../InputBar', () => ({
   InputBar: ({ disabled }: { disabled: boolean }) => (
-    <div data-testid="input-bar" data-disabled={disabled}>InputBar</div>
+    <div data-testid='input-bar' data-disabled={disabled}>
+      InputBar
+    </div>
   ),
 }))
 
 vi.mock('../ModelSelector', () => ({
-  ModelSelector: () => <div data-testid="model-selector">ModelSelector</div>,
+  ModelSelector: () => <div data-testid='model-selector'>ModelSelector</div>,
 }))
 
 vi.mock('../BranchSelector', () => ({
-  BranchSelector: () => <div data-testid="branch-selector">BranchSelector</div>,
+  BranchSelector: () => <div data-testid='branch-selector'>BranchSelector</div>,
 }))
 
 const { useAgentStore } = await import('../../../stores/agent-store')
@@ -50,7 +52,16 @@ describe('ChatPanel', () => {
 
   it('renders session title when active', () => {
     const sessionMetas = new Map([
-      ['s1', { id: 's1', title: 'My Chat', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }],
+      [
+        's1',
+        {
+          id: 's1',
+          title: 'My Chat',
+          model: { id: 'm1', provider: 'p1' },
+          updatedAt: 1000,
+          createdAt: 1000,
+        },
+      ],
     ])
     mockUseAgentStore.mockReturnValue({
       activeSessionId: 's1',
@@ -70,7 +81,18 @@ describe('ChatPanel', () => {
       activeSessionId: 's1',
       isGenerating: false,
       stopGeneration: vi.fn(),
-      sessionMetas: new Map([['s1', { id: 's1', title: 'Chat', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }]]),
+      sessionMetas: new Map([
+        [
+          's1',
+          {
+            id: 's1',
+            title: 'Chat',
+            model: { id: 'm1', provider: 'p1' },
+            updatedAt: 1000,
+            createdAt: 1000,
+          },
+        ],
+      ]),
       sessions,
     } as unknown as ReturnType<typeof useAgentStore>)
 
@@ -85,7 +107,18 @@ describe('ChatPanel', () => {
       activeSessionId: 's1',
       isGenerating: false,
       stopGeneration: vi.fn(),
-      sessionMetas: new Map([['s1', { id: 's1', title: 'Chat', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }]]),
+      sessionMetas: new Map([
+        [
+          's1',
+          {
+            id: 's1',
+            title: 'Chat',
+            model: { id: 'm1', provider: 'p1' },
+            updatedAt: 1000,
+            createdAt: 1000,
+          },
+        ],
+      ]),
       sessions,
     } as unknown as ReturnType<typeof useAgentStore>)
 
@@ -112,7 +145,18 @@ describe('ChatPanel', () => {
       activeSessionId: 's1',
       isGenerating: false,
       stopGeneration: vi.fn(),
-      sessionMetas: new Map([['s1', { id: 's1', title: 'Chat', model: { id: 'm1', provider: 'p1' }, updatedAt: 1000, createdAt: 1000 }]]),
+      sessionMetas: new Map([
+        [
+          's1',
+          {
+            id: 's1',
+            title: 'Chat',
+            model: { id: 'm1', provider: 'p1' },
+            updatedAt: 1000,
+            createdAt: 1000,
+          },
+        ],
+      ]),
       sessions: new Map([['s1', []]]),
     } as unknown as ReturnType<typeof useAgentStore>)
 

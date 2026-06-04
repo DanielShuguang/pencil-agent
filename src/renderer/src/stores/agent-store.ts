@@ -87,7 +87,9 @@ function handleToolResultChunk(chunk: AgentChunk, prev: Message[]): Message[] {
       toolCall: {
         ...target.toolCall!,
         status: chunk.metadata?.error ? ('error' as const) : ('success' as const),
-        ...(chunk.metadata?.error ? { error: chunk.metadata.error as string } : { result: chunk.content }),
+        ...(chunk.metadata?.error
+          ? { error: chunk.metadata.error as string }
+          : { result: chunk.content }),
       },
     },
     ...prev.slice(index + 1),
@@ -134,14 +136,18 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const lastActiveId = getStorageItem<string | null>('activeSessionId', null)
 
     for (const id of savedSessions) {
-      const data = getStorageItem<{ meta: SessionMeta; messages: Message[] } | null>(`session:${id}`, null)
+      const data = getStorageItem<{ meta: SessionMeta; messages: Message[] } | null>(
+        `session:${id}`,
+        null,
+      )
       if (data) {
         sessions.set(id, data.messages)
         sessionMetas.set(id, data.meta)
       }
     }
 
-    const activeSessionId = lastActiveId && sessions.has(lastActiveId) ? lastActiveId : savedSessions[0] || null
+    const activeSessionId =
+      lastActiveId && sessions.has(lastActiveId) ? lastActiveId : savedSessions[0] || null
 
     set({ sessions, sessionMetas, activeSessionId })
   },
@@ -305,7 +311,9 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     const meta: SessionMeta = {
       id: branchId,
-      title: i18n.t('app.branchTitle', { title: sessionMetas.get(activeSessionId)?.title || i18n.t('app.newConversation') }),
+      title: i18n.t('app.branchTitle', {
+        title: sessionMetas.get(activeSessionId)?.title || i18n.t('app.newConversation'),
+      }),
       model: currentModel,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -332,7 +340,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     if (!activeSessionId) return []
 
     return Array.from(sessionMetas.values()).filter(
-      (meta) => meta.parentSessionId === activeSessionId
+      (meta) => meta.parentSessionId === activeSessionId,
     )
   },
 

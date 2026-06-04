@@ -36,8 +36,7 @@ export function setStorageItem<T>(key: string, value: T): void {
 export function removeStorageItem(key: string): void {
   try {
     localStorage.removeItem(getKey(key))
-  } catch {
-  }
+  } catch {}
 }
 
 export function clearStorage(): void {
@@ -48,6 +47,5 @@ export function clearStorage(): void {
         localStorage.removeItem(key)
       }
     }
-  } catch {
-  }
+  } catch {}
 }

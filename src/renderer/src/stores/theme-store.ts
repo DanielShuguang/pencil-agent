@@ -36,9 +36,12 @@ export const useThemeStore = create<ThemeState>((set) => ({
   },
 
   setThemeMode: (mode: ThemeMode) => {
-    const themeId = mode === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : mode
+    const themeId =
+      mode === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        : mode
     set({ mode })
     localStorage.setItem('theme-mode', themeId)
   },
@@ -65,7 +68,9 @@ export const useThemeStore = create<ThemeState>((set) => ({
             mode: state.mode,
             currentThemeId: state.currentThemeId,
             isDark: state.isDark,
-            currentTheme: themeRegistry.getTheme(state.currentThemeId) ?? themeRegistry.getTheme(DEFAULT_THEME_ID)!,
+            currentTheme:
+              themeRegistry.getTheme(state.currentThemeId) ??
+              themeRegistry.getTheme(DEFAULT_THEME_ID)!,
           })
           localStorage.setItem('theme-mode', state.currentThemeId)
         }

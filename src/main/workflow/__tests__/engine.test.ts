@@ -45,18 +45,24 @@ describe('WorkflowEngine', () => {
         { id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } },
         { id: 'e', type: 'end', data: {}, position: { x: 0, y: 200 } },
       ],
-      edges: [
-        { id: 'e1', source: 's', target: 'e' },
-      ],
+      edges: [{ id: 'e1', source: 's', target: 'e' }],
     })
 
     const result = await engine.execute(workflow, { foo: 'bar' }, onProgress)
 
     expect(result).toEqual({ foo: 'bar' })
     expect(onProgress).toHaveBeenCalledWith({ nodeId: 's', status: 'running' })
-    expect(onProgress).toHaveBeenCalledWith({ nodeId: 's', status: 'success', result: { foo: 'bar' } })
+    expect(onProgress).toHaveBeenCalledWith({
+      nodeId: 's',
+      status: 'success',
+      result: { foo: 'bar' },
+    })
     expect(onProgress).toHaveBeenCalledWith({ nodeId: 'e', status: 'running' })
-    expect(onProgress).toHaveBeenCalledWith({ nodeId: 'e', status: 'success', result: { foo: 'bar' } })
+    expect(onProgress).toHaveBeenCalledWith({
+      nodeId: 'e',
+      status: 'success',
+      result: { foo: 'bar' },
+    })
   })
 
   it('passes start input to agent node', async () => {
@@ -68,7 +74,12 @@ describe('WorkflowEngine', () => {
     const workflow = createWorkflow({
       nodes: [
         { id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } },
-        { id: 'a', type: 'agent', data: { config: { model: { id: 'test-model', provider: 'anthropic' } } }, position: { x: 0, y: 100 } },
+        {
+          id: 'a',
+          type: 'agent',
+          data: { config: { model: { id: 'test-model', provider: 'anthropic' } } },
+          position: { x: 0, y: 100 },
+        },
         { id: 'e', type: 'end', data: {}, position: { x: 0, y: 200 } },
       ],
       edges: [
@@ -95,7 +106,12 @@ describe('WorkflowEngine', () => {
     const workflow = createWorkflow({
       nodes: [
         { id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } },
-        { id: 'c', type: 'condition', data: { config: { expression: '$input !== null' } }, position: { x: 0, y: 100 } },
+        {
+          id: 'c',
+          type: 'condition',
+          data: { config: { expression: '$input !== null' } },
+          position: { x: 0, y: 100 },
+        },
         { id: 'true-target', type: 'end', data: {}, position: { x: -100, y: 200 } },
         { id: 'false-target', type: 'end', data: {}, position: { x: 100, y: 200 } },
       ],
@@ -110,13 +126,13 @@ describe('WorkflowEngine', () => {
 
     expect(result).toEqual({ value: 42 })
 
-    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0]) as { nodeId: string; status: string; result?: unknown }[]
-    const trueTargetProgress = progressCalls.findLast(
-      (p) => p.nodeId === 'true-target',
-    )
-    const falseTargetProgress = progressCalls.findLast(
-      (p) => p.nodeId === 'false-target',
-    )
+    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0]) as {
+      nodeId: string
+      status: string
+      result?: unknown
+    }[]
+    const trueTargetProgress = progressCalls.findLast((p) => p.nodeId === 'true-target')
+    const falseTargetProgress = progressCalls.findLast((p) => p.nodeId === 'false-target')
     expect(trueTargetProgress).toMatchObject({ status: 'success', result: { value: 42 } })
     expect(falseTargetProgress).toMatchObject({ status: 'success', result: {} })
   })
@@ -131,7 +147,12 @@ describe('WorkflowEngine', () => {
     const workflow = createWorkflow({
       nodes: [
         { id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } },
-        { id: 'c', type: 'condition', data: { config: { expression: '$input === null' } }, position: { x: 0, y: 100 } },
+        {
+          id: 'c',
+          type: 'condition',
+          data: { config: { expression: '$input === null' } },
+          position: { x: 0, y: 100 },
+        },
         { id: 'false-branch', type: 'end', data: {}, position: { x: 100, y: 200 } },
         { id: 'true-branch', type: 'end', data: {}, position: { x: -100, y: 200 } },
       ],
@@ -146,13 +167,13 @@ describe('WorkflowEngine', () => {
 
     expect(result).toEqual({ value: 42 })
 
-    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0]) as { nodeId: string; status: string; result?: unknown }[]
-    const falseBranchProgress = progressCalls.findLast(
-      (p) => p.nodeId === 'false-branch',
-    )
-    const trueBranchProgress = progressCalls.findLast(
-      (p) => p.nodeId === 'true-branch',
-    )
+    const progressCalls = onProgress.mock.calls.map((c: unknown[]) => c[0]) as {
+      nodeId: string
+      status: string
+      result?: unknown
+    }[]
+    const falseBranchProgress = progressCalls.findLast((p) => p.nodeId === 'false-branch')
+    const trueBranchProgress = progressCalls.findLast((p) => p.nodeId === 'true-branch')
     expect(falseBranchProgress).toMatchObject({ status: 'success', result: { value: 42 } })
     expect(trueBranchProgress).toMatchObject({ status: 'success', result: {} })
   })
@@ -176,12 +197,18 @@ describe('WorkflowEngine', () => {
       ],
     })
 
-    await expect(engine.execute(workflow, {}, onProgress)).rejects.toThrow('Session creation failed')
+    await expect(engine.execute(workflow, {}, onProgress)).rejects.toThrow(
+      'Session creation failed',
+    )
 
     expect(onProgress).toHaveBeenCalledWith({ nodeId: 's', status: 'running' })
     expect(onProgress).toHaveBeenCalledWith({ nodeId: 's', status: 'success', result: {} })
     expect(onProgress).toHaveBeenCalledWith({ nodeId: 'a', status: 'running' })
-    expect(onProgress).toHaveBeenCalledWith({ nodeId: 'a', status: 'error', error: 'Error: Session creation failed' })
+    expect(onProgress).toHaveBeenCalledWith({
+      nodeId: 'a',
+      status: 'error',
+      error: 'Error: Session creation failed',
+    })
   })
 
   it('detects cycles and throws', async () => {
@@ -201,7 +228,9 @@ describe('WorkflowEngine', () => {
       ],
     })
 
-    await expect(engine.execute(workflow, {}, onProgress)).rejects.toThrow('Workflow contains a cycle')
+    await expect(engine.execute(workflow, {}, onProgress)).rejects.toThrow(
+      'Workflow contains a cycle',
+    )
   })
 
   it('returns empty object when no end node exists', async () => {
@@ -211,9 +240,7 @@ describe('WorkflowEngine', () => {
     const onProgress = vi.fn()
 
     const workflow = createWorkflow({
-      nodes: [
-        { id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } },
-      ],
+      nodes: [{ id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } }],
       edges: [],
     })
 
@@ -239,6 +266,8 @@ describe('WorkflowEngine', () => {
       ],
     })
 
-    await expect(engine.execute(workflow, {}, onProgress)).rejects.toThrow('Tool node missing toolName config')
+    await expect(engine.execute(workflow, {}, onProgress)).rejects.toThrow(
+      'Tool node missing toolName config',
+    )
   })
 })

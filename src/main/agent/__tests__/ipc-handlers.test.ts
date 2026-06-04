@@ -47,7 +47,9 @@ vi.mock('electron', () => ({
   },
   nativeTheme: {
     on: vi.fn(),
-    get shouldUseDarkColors() { return false },
+    get shouldUseDarkColors() {
+      return false
+    },
     set themeSource(_val: string) {},
   },
 }))
@@ -124,34 +126,49 @@ describe('registerAgentHandlers', () => {
   describe('agent:create', () => {
     it('should create a session and return id', async () => {
       const handler = ipcHandlers.get('agent:create')!
-      const result = await handler({}, { sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' } })
+      const result = await handler(
+        {},
+        { sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' } },
+      )
       expect(result).toBe('session-1')
-      expect(mockManager.create).toHaveBeenCalledWith({ sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' } })
+      expect(mockManager.create).toHaveBeenCalledWith({
+        sessionId: 'session-1',
+        model: { id: 'gpt-4', provider: 'openai' },
+      })
     })
 
     it('should throw when creation fails', async () => {
-      (mockManager.create as any).mockRejectedValue(new Error('Creation error'))
+      ;(mockManager.create as any).mockRejectedValue(new Error('Creation error'))
       const handler = ipcHandlers.get('agent:create')!
-      await expect(handler({}, { sessionId: 's1', model: { id: 'gpt-4', provider: 'openai' } }))
-        .rejects.toThrow('Failed to create session: Error: Creation error')
+      await expect(
+        handler({}, { sessionId: 's1', model: { id: 'gpt-4', provider: 'openai' } }),
+      ).rejects.toThrow('Failed to create session: Error: Creation error')
     })
   })
 
   describe('agent:prompt', () => {
     it('should send chunks and done event', async () => {
-      const asyncGen = async function* () { yield { type: 'text', content: 'Hello' } }
+      const asyncGen = async function* () {
+        yield { type: 'text', content: 'Hello' }
+      }
       ;(mockManager.prompt as any).mockReturnValue(asyncGen())
       const handler = ipcListeners.get('agent:prompt')!
       await handler({}, { sessionId: 's1', message: 'Hi' })
-      expect(mockWebContentsSend).toHaveBeenCalledWith('agent:chunk', { type: 'text', content: 'Hello' })
+      expect(mockWebContentsSend).toHaveBeenCalledWith('agent:chunk', {
+        type: 'text',
+        content: 'Hello',
+      })
       expect(mockWebContentsSend).toHaveBeenCalledWith('agent:done')
     })
 
     it('should send error on failure', async () => {
-      (mockManager.prompt as any).mockReturnValue(undefined)
+      ;(mockManager.prompt as any).mockReturnValue(undefined)
       const handler = ipcListeners.get('agent:prompt')!
       await handler({}, { sessionId: 's1', message: 'Hi' })
-      expect(mockWebContentsSend).toHaveBeenCalledWith('agent:error', expect.stringContaining('Error'))
+      expect(mockWebContentsSend).toHaveBeenCalledWith(
+        'agent:error',
+        expect.stringContaining('Error'),
+      )
     })
   })
 
@@ -163,7 +180,7 @@ describe('registerAgentHandlers', () => {
     })
 
     it('should handle stop errors gracefully', async () => {
-      (mockManager.stop as any).mockRejectedValue(new Error('Stop error'))
+      ;(mockManager.stop as any).mockRejectedValue(new Error('Stop error'))
       const handler = ipcListeners.get('agent:stop')!
       await expect(handler({}, 'session-1')).resolves.toBeUndefined()
     })
@@ -181,7 +198,10 @@ describe('registerAgentHandlers', () => {
     it('should encrypt and save API key', async () => {
       const handler = ipcHandlers.get('settings:save-key')!
       await handler({}, { provider: 'openai', key: 'sk-test' })
-      expect(appStoreMocks.mockAppStoreSet).toHaveBeenCalledWith('api-keys.openai', expect.any(String))
+      expect(appStoreMocks.mockAppStoreSet).toHaveBeenCalledWith(
+        'api-keys.openai',
+        expect.any(String),
+      )
     })
   })
 
@@ -209,7 +229,16 @@ describe('registerAgentHandlers', () => {
 
     it('should create role', async () => {
       roleMocks.mockRoleCreate.mockReturnValue({ id: 'r1', name: 'New Role' })
-      const result = await ipcHandlers.get('role:create')!({}, { name: 'New Role', description: 'A role', systemPrompt: 'You are...', model: { id: 'gpt-4', provider: 'openai' }, tools: [] })
+      const result = await ipcHandlers.get('role:create')!(
+        {},
+        {
+          name: 'New Role',
+          description: 'A role',
+          systemPrompt: 'You are...',
+          model: { id: 'gpt-4', provider: 'openai' },
+          tools: [],
+        },
+      )
       expect(result).toEqual({ id: 'r1', name: 'New Role' })
     })
 
@@ -223,7 +252,11 @@ describe('registerAgentHandlers', () => {
   describe('model-config', () => {
     it('should save and delete', async () => {
       const provider = { id: 'openai', name: 'OpenAI' }
-      modelConfigMocks.mockModelConfigSave.mockReturnValue({ ...provider, createdAt: 100, updatedAt: 100 })
+      modelConfigMocks.mockModelConfigSave.mockReturnValue({
+        ...provider,
+        createdAt: 100,
+        updatedAt: 100,
+      })
       const result = await ipcHandlers.get('model-config:save')!({}, provider)
       expect(result).toHaveProperty('createdAt')
       expect(modelConfigMocks.mockModelConfigSave).toHaveBeenCalledWith(provider)
@@ -232,7 +265,10 @@ describe('registerAgentHandlers', () => {
       expect(modelConfigMocks.mockModelConfigDelete).toHaveBeenCalledWith('openai')
 
       modelConfigMocks.mockModelConfigTestConnection.mockResolvedValue({ success: true })
-      const testResult = await ipcHandlers.get('model-config:test-connection')!({}, { providerId: 'openai' })
+      const testResult = await ipcHandlers.get('model-config:test-connection')!(
+        {},
+        { providerId: 'openai' },
+      )
       expect(testResult).toEqual({ success: true })
     })
   })
@@ -245,7 +281,10 @@ describe('registerAgentHandlers', () => {
 
     it('should set theme mode', async () => {
       await ipcHandlers.get('theme:setMode')!({}, 'dark')
-      expect(mockWebContentsSend).toHaveBeenCalledWith('theme:changed', expect.objectContaining({ mode: 'dark' }))
+      expect(mockWebContentsSend).toHaveBeenCalledWith(
+        'theme:changed',
+        expect.objectContaining({ mode: 'dark' }),
+      )
     })
   })
 })

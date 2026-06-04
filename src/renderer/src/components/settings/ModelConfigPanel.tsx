@@ -18,17 +18,34 @@ import { ProviderForm } from './ProviderForm'
 import { ModelForm } from './ModelForm'
 
 export function ModelConfigPanel() {
-  const { providers, isLoading, error, fetchProviders, saveProvider, deleteProvider, saveModel, deleteModel, testConnection } =
-    useModelConfigStore()
+  const {
+    providers,
+    isLoading,
+    error,
+    fetchProviders,
+    saveProvider,
+    deleteProvider,
+    saveModel,
+    deleteModel,
+    testConnection,
+  } = useModelConfigStore()
   const { t } = useTranslation()
 
   const [editingProvider, setEditingProvider] = useState<ModelProviderInfo | null>(null)
   const [isAddingProvider, setIsAddingProvider] = useState(false)
-  const [editingModel, setEditingModel] = useState<{ providerId: string; model?: ModelConfig } | null>(null)
+  const [editingModel, setEditingModel] = useState<{
+    providerId: string
+    model?: ModelConfig
+  } | null>(null)
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set())
-  const [testResults, setTestResults] = useState<Record<string, { success: boolean; error?: string }>>({})
+  const [testResults, setTestResults] = useState<
+    Record<string, { success: boolean; error?: string }>
+  >({})
   const [deleteProviderConfirm, setDeleteProviderConfirm] = useState<string | null>(null)
-  const [deleteModelConfirm, setDeleteModelConfirm] = useState<{ providerId: string; modelId: string } | null>(null)
+  const [deleteModelConfirm, setDeleteModelConfirm] = useState<{
+    providerId: string
+    modelId: string
+  } | null>(null)
 
   useEffect(() => {
     fetchProviders()
@@ -90,7 +107,9 @@ export function ModelConfigPanel() {
   if (editingProvider || isAddingProvider) {
     return (
       <div className='space-y-4'>
-        <h3 className='text-lg font-medium'>{editingProvider ? t('settings.editProvider') : t('settings.addProvider')}</h3>
+        <h3 className='text-lg font-medium'>
+          {editingProvider ? t('settings.editProvider') : t('settings.addProvider')}
+        </h3>
         <ProviderForm
           provider={editingProvider || undefined}
           onSave={handleSaveProvider}
@@ -106,7 +125,9 @@ export function ModelConfigPanel() {
   if (editingModel) {
     return (
       <div className='space-y-4'>
-        <h3 className='text-lg font-medium'>{editingModel.model ? t('settings.editModel') : t('settings.addModel')}</h3>
+        <h3 className='text-lg font-medium'>
+          {editingModel.model ? t('settings.editModel') : t('settings.addModel')}
+        </h3>
         <ModelForm
           model={editingModel.model}
           providerId={editingModel.providerId}
@@ -148,7 +169,9 @@ export function ModelConfigPanel() {
                     <ChevronRight className='h-4 w-4' />
                   )}
                   <span className='font-medium'>{provider.name}</span>
-                  <span className='text-sm text-muted-foreground'>{t('settings.modelsCount', { count: provider.models.length })}</span>
+                  <span className='text-sm text-muted-foreground'>
+                    {t('settings.modelsCount', { count: provider.models.length })}
+                  </span>
                 </button>
 
                 <div className='flex items-center gap-1'>
@@ -158,11 +181,17 @@ export function ModelConfigPanel() {
                         testResults[provider.id].success ? 'text-green-500' : 'text-destructive'
                       }`}
                     >
-                      {testResults[provider.id].success ? t('settings.connected') : testResults[provider.id].error}
+                      {testResults[provider.id].success
+                        ? t('settings.connected')
+                        : testResults[provider.id].error}
                     </span>
                   )}
 
-                  <Button size='sm' variant='ghost' onClick={() => handleTestConnection(provider.id)}>
+                  <Button
+                    size='sm'
+                    variant='ghost'
+                    onClick={() => handleTestConnection(provider.id)}
+                  >
                     <TestTube className='h-4 w-4' />
                   </Button>
 
@@ -170,7 +199,11 @@ export function ModelConfigPanel() {
                     <Pencil className='h-4 w-4' />
                   </Button>
 
-                  <Button size='sm' variant='ghost' onClick={() => handleDeleteProvider(provider.id)}>
+                  <Button
+                    size='sm'
+                    variant='ghost'
+                    onClick={() => handleDeleteProvider(provider.id)}
+                  >
                     <Trash2 className='h-4 w-4' />
                   </Button>
                 </div>
@@ -195,7 +228,10 @@ export function ModelConfigPanel() {
                   ) : (
                     <div className='space-y-1'>
                       {provider.models.map((model) => (
-                        <div key={model.id} className='flex items-center justify-between rounded-md p-2 hover:bg-muted'>
+                        <div
+                          key={model.id}
+                          className='flex items-center justify-between rounded-md p-2 hover:bg-muted'
+                        >
                           <div>
                             <span className='font-medium'>{model.name}</span>
                             <span className='ml-2 text-sm text-muted-foreground'>{model.id}</span>
@@ -229,7 +265,10 @@ export function ModelConfigPanel() {
         </div>
       )}
 
-      <AlertDialog open={Boolean(deleteProviderConfirm)} onOpenChange={() => setDeleteProviderConfirm(null)}>
+      <AlertDialog
+        open={Boolean(deleteProviderConfirm)}
+        onOpenChange={() => setDeleteProviderConfirm(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('common.confirm')}</AlertDialogTitle>
@@ -242,7 +281,10 @@ export function ModelConfigPanel() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={Boolean(deleteModelConfirm)} onOpenChange={() => setDeleteModelConfirm(null)}>
+      <AlertDialog
+        open={Boolean(deleteModelConfirm)}
+        onOpenChange={() => setDeleteModelConfirm(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('common.confirm')}</AlertDialogTitle>

@@ -94,7 +94,9 @@ describe('status-store', () => {
     })
 
     it('should handle connection check error', async () => {
-      vi.mocked(window.api.settings.checkConnection).mockRejectedValueOnce(new Error('Network error'))
+      vi.mocked(window.api.settings.checkConnection).mockRejectedValueOnce(
+        new Error('Network error'),
+      )
 
       const { checkConnection } = useStatusStore.getState()
       await checkConnection()

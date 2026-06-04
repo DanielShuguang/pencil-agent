@@ -24,10 +24,7 @@ export function VirtualMessageList() {
 
       const hasToolCall = Boolean(message.toolCall)
       const lineCount = message.content.split('\n').length
-      const estimatedHeight = Math.max(
-        ITEM_SIZE,
-        lineCount * 20 + (hasToolCall ? 100 : 0) + 32,
-      )
+      const estimatedHeight = Math.max(ITEM_SIZE, lineCount * 20 + (hasToolCall ? 100 : 0) + 32)
 
       heightCache.current.set(message.id, estimatedHeight)
       return estimatedHeight

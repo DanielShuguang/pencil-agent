@@ -9,11 +9,13 @@ export function SessionList() {
   const sortedSessions = Array.from(sessionMetas.values()).sort((a, b) => b.updatedAt - a.updatedAt)
 
   if (sortedSessions.length === 0) {
-    return <div className="p-4 text-sm text-muted-foreground text-center">{t('sidebar.noSessions')}</div>
+    return (
+      <div className='p-4 text-sm text-muted-foreground text-center'>{t('sidebar.noSessions')}</div>
+    )
   }
 
   return (
-    <div className="flex flex-col gap-1 p-2">
+    <div className='flex flex-col gap-1 p-2'>
       {sortedSessions.map((meta) => (
         <SessionItem
           key={meta.id}

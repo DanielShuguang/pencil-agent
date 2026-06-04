@@ -8,8 +8,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { UpdateNotification } from '../settings/UpdateNotification'
 
 export function StatusBar() {
-  const { currentModel, tokenUsage, connectionStatus, version, isGenerating, checkConnection, syncFromAgentStore } =
-    useStatusStore()
+  const {
+    currentModel,
+    tokenUsage,
+    connectionStatus,
+    version,
+    isGenerating,
+    checkConnection,
+    syncFromAgentStore,
+  } = useStatusStore()
 
   const { currentModel: agentModel, isGenerating: agentIsGenerating } = useAgentStore()
 

@@ -28,8 +28,8 @@ describe('ThemeRegistry', () => {
   it('should get all themes', () => {
     const themes = themeRegistry.getAllThemes()
     expect(themes.length).toBeGreaterThanOrEqual(2)
-    expect(themes.some(t => t.id === 'dark')).toBe(true)
-    expect(themes.some(t => t.id === 'light')).toBe(true)
+    expect(themes.some((t) => t.id === 'dark')).toBe(true)
+    expect(themes.some((t) => t.id === 'light')).toBe(true)
   })
 
   it('should register a new theme', () => {

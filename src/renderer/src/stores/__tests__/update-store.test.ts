@@ -118,7 +118,12 @@ describe('update-store', () => {
   })
 
   it('should reset store state', () => {
-    useUpdateStore.setState({ status: 'error', progress: 75, error: 'something wrong', updateInfo: { version: '1.0' } })
+    useUpdateStore.setState({
+      status: 'error',
+      progress: 75,
+      error: 'something wrong',
+      updateInfo: { version: '1.0' },
+    })
 
     useUpdateStore.getState().reset()
 

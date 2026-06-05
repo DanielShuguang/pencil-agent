@@ -24,7 +24,7 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
-    "postinstall": "tsx scripts/generate-cpu-features-gypi.ts && electron-builder install-app-deps || echo 'Warning: Some optional native modules failed to build (cpu-features is not compatible with this Electron version)'",
+    "postinstall": "tsx scripts/generate-cpu-features-gypi.ts && tsx scripts/ensure-electron.ts && electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
@@ -75,7 +75,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "electron": "^42.3.3",
+    "electron": "^41.7.1",
     "electron-builder": "^26.0.12",
     "electron-vite": "^5.0.0",
     "jsdom": "^29.1.1",
@@ -92,14 +92,5 @@
     "typescript": "^6.0.3",
     "vite": "^7.2.6",
     "vitest": "^4.1.8"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "electron",
-      "esbuild"
-    ],
-    "ignoredBuiltDependencies": [
-      "cpu-features"
-    ]
   }
 }

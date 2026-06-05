@@ -56,7 +56,7 @@
     "highlight.js": "^11.11.1",
     "i18next": "^26.3.0",
     "react-i18next": "^17.0.8",
-    "react-window": "^1.8.11",
+    "react-window": "^2.2.7",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -75,12 +75,12 @@
     "@vitejs/plugin-react": "^5.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "electron": "^39.2.6",
+    "electron": "^42.3.3",
     "electron-builder": "^26.0.12",
     "electron-vite": "^5.0.0",
     "jsdom": "^29.1.1",
     "lucide-react": "^1.17.0",
-    "oxfmt": "^0.52.0",
+    "oxfmt": "^0.53.0",
     "oxlint": "^1.67.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",

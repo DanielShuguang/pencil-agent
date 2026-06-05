@@ -2,6 +2,7 @@ import { safeStorage } from 'electron'
 import type { ApiFormat, ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 import { appStore } from '../lib/store'
 
+// 存储格式的 Provider 定义（API Key 已加密）
 interface StoredProvider {
   id: string
   name: string
@@ -13,6 +14,7 @@ interface StoredProvider {
   updatedAt: number
 }
 
+// 模型配置管理器，负责 Provider 和 Model 的 CRUD 操作
 export class ModelConfigManager {
   private providers: Map<string, ModelProvider> = new Map()
 
@@ -20,6 +22,7 @@ export class ModelConfigManager {
     this.loadFromStorage()
   }
 
+  // 从本地存储加载 Provider 配置（解密 API Key）
   private loadFromStorage(): void {
     const stored = appStore.get('modelProviders') as StoredProvider[] | undefined
     if (!stored) return
@@ -37,6 +40,7 @@ export class ModelConfigManager {
         name: item.name,
         baseUrl: item.baseUrl,
         apiKey,
+        // 兼容旧数据：默认使用 openai 格式
         apiFormat:
           item.apiFormat === 'openai' || item.apiFormat === 'anthropic' ? item.apiFormat : 'openai',
         models: item.models,
@@ -46,6 +50,7 @@ export class ModelConfigManager {
     }
   }
 
+  // 将 Provider 配置保存到本地存储（加密 API Key）
   private saveToStorage(): void {
     if (!safeStorage.isEncryptionAvailable()) {
       throw new Error('System encryption is not available, cannot save API keys securely')
@@ -71,10 +76,12 @@ export class ModelConfigManager {
     appStore.set('modelProviders', stored)
   }
 
+  // 获取所有 Provider 列表（不包含 API Key）
   list(): ModelProviderInfo[] {
     return Array.from(this.providers.values()).map(({ apiKey: _, ...rest }) => rest)
   }
 
+  // 保存 Provider 配置（新增或更新）
   save(provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>): ModelProvider {
     const existing = this.providers.get(provider.id)
     const now = Date.now()
@@ -91,11 +98,13 @@ export class ModelConfigManager {
     return saved
   }
 
+  // 删除 Provider
   delete(providerId: string): void {
     this.providers.delete(providerId)
     this.saveToStorage()
   }
 
+  // 保存模型配置（新增或更新）
   saveModel(providerId: string, model: ModelConfig): void {
     const provider = this.providers.get(providerId)
     if (!provider) {
@@ -113,6 +122,7 @@ export class ModelConfigManager {
     this.saveToStorage()
   }
 
+  // 删除模型
   deleteModel(providerId: string, modelId: string): void {
     const provider = this.providers.get(providerId)
     if (!provider) {
@@ -124,6 +134,7 @@ export class ModelConfigManager {
     this.saveToStorage()
   }
 
+  // 测试 Provider 连接（支持 OpenAI 和 Anthropic 格式）
   async testConnection(providerId: string): Promise<{ success: boolean; error?: string }> {
     const provider = this.providers.get(providerId)
     if (!provider) {
@@ -131,9 +142,11 @@ export class ModelConfigManager {
     }
 
     try {
+      // 设置 5 秒超时
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000)
 
+      // 根据 API 格式选择不同的端点和请求头
       const isOpenAI = provider.apiFormat === 'openai'
       const url = isOpenAI ? `${provider.baseUrl}/models` : `${provider.baseUrl}/v1/models`
       const headers: Record<string, string> = {

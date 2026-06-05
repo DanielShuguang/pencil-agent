@@ -71,6 +71,26 @@ pnpm typecheck     # 类型检查
 - 变量/函数: `camelCase`
 - 常量: `UPPER_SNAKE_CASE`
 
+## 代码注释规范
+
+- **语言**：注释使用中文，除非是专有名词或 API 名称
+- **适量原则**：在关键逻辑、复杂算法、非显而易见的代码处添加注释
+- **避免冗余**：不要为显而易见的代码添加注释
+- **位置**：注释应放在代码上方或行尾，保持整洁
+
+**示例：**
+```typescript
+// ✅ 正确：解释复杂逻辑
+// 根据 API 格式选择不同的测试端点和请求头
+const endpoint = apiFormat === 'openai' ? '/models' : '/v1/models'
+const headers = apiFormat === 'openai' 
+  ? { Authorization: `Bearer ${apiKey}` }
+  : { 'x-api-key': apiKey }
+
+// ❌ 错误：显而易见的代码不需要注释
+const count = 0 // 初始化 count 为 0
+```
+
 ## 架构要点
 
 ### IPC 通信

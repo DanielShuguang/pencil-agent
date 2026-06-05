@@ -3,8 +3,10 @@ import type { AgentChunk, AgentToolCall, TokenUsage } from '@shared/ipc'
 import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/storage'
 import i18n from '../i18n'
 
+// 每个会话最大消息数，超出后自动截断最早的消息
 const MAX_MESSAGES_PER_SESSION = 100
 
+// 消息类型定义
 export interface Message {
   id: string
   role: 'user' | 'assistant' | 'system' | 'tool'
@@ -13,6 +15,7 @@ export interface Message {
   timestamp: number
 }
 
+// 会话元数据
 export interface SessionMeta {
   id: string
   title: string
@@ -20,10 +23,11 @@ export interface SessionMeta {
   createdAt: number
   updatedAt: number
   messageCount: number
-  parentSessionId?: string
-  branchPointMessageId?: string
+  parentSessionId?: string  // 父会话 ID（分支功能）
+  branchPointMessageId?: string  // 分支点消息 ID
 }
 
+// Agent 状态接口
 interface AgentState {
   sessions: Map<string, Message[]>
   sessionMetas: Map<string, SessionMeta>
@@ -45,19 +49,23 @@ interface AgentState {
   setLanguage: (lang: 'zh' | 'en') => void
 }
 
+// 持久化会话到本地存储
 function persistSession(meta: SessionMeta, messages: Message[]): void {
   setStorageItem(`session:${meta.id}`, { meta, messages })
 }
 
+// 从本地存储删除会话
 function persistRemoveSession(id: string): void {
   removeStorageItem(`session:${id}`)
 }
 
+// 截断消息列表，保持在最大限制内
 function truncateMessages(messages: Message[]): Message[] {
   if (messages.length <= MAX_MESSAGES_PER_SESSION) return messages
   return messages.slice(-MAX_MESSAGES_PER_SESSION)
 }
 
+// 处理工具调用块：创建新的工具调用消息
 function handleToolCallChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   return [
     ...prev,
@@ -75,7 +83,9 @@ function handleToolCallChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   ]
 }
 
+// 处理工具结果块：更新对应工具调用的状态
 function handleToolResultChunk(chunk: AgentChunk, prev: Message[]): Message[] {
+  // 查找最后一个正在运行的工具调用
   const index = prev.findLastIndex((m) => m.toolCall?.status === 'running')
   if (index === -1) return prev
 
@@ -86,6 +96,7 @@ function handleToolResultChunk(chunk: AgentChunk, prev: Message[]): Message[] {
       ...target,
       toolCall: {
         ...target.toolCall!,
+        // 根据是否有错误设置状态
         status: chunk.metadata?.error ? ('error' as const) : ('success' as const),
         ...(chunk.metadata?.error
           ? { error: chunk.metadata.error as string }
@@ -96,6 +107,7 @@ function handleToolResultChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   ]
 }
 
+// 处理文本块：追加到现有消息或创建新消息
 function handleTextChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   if (prev.length > 0) {
     const last = prev[prev.length - 1]

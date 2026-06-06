@@ -33,6 +33,11 @@
     "branchTitle": "Branch - {{title}}",
     "startNewConversation": "Start a new conversation"
   },
+  "status": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "checking": "Checking..."
+  },
   "editor": {
     "noOpenFiles": "No open files",
     "openFileToEdit": "Open a file to start editing"
@@ -117,6 +122,12 @@
     "modeDescAuto": "All tools execute directly without confirmation",
     "modeDescPrompt": "Every tool call requires user confirmation",
     "modeDescSmart": "Low-risk tools auto-execute, high-risk tools require confirmation"
+  },
+  "memory": {
+    "searchPlaceholder": "Search memories...",
+    "search": "Search",
+    "searching": "Searching...",
+    "score": "Score"
   },
   "workflow": {
     "nodeConfig": "Node Config",

@@ -33,6 +33,11 @@
     "branchTitle": "分支 - {{title}}",
     "startNewConversation": "开始一个新的对话"
   },
+  "status": {
+    "connected": "已连接",
+    "disconnected": "已断开",
+    "checking": "检查中..."
+  },
   "editor": {
     "noOpenFiles": "暂无打开的文件",
     "openFileToEdit": "打开文件开始编辑"
@@ -146,6 +151,12 @@
     "modeDescAuto": "所有工具直接执行，不弹出确认框",
     "modeDescPrompt": "每次工具调用都需要用户确认",
     "modeDescSmart": "低风险工具直接执行，高风险工具需要确认"
+  },
+  "memory": {
+    "searchPlaceholder": "搜索记忆...",
+    "search": "搜索",
+    "searching": "搜索中...",
+    "score": "分数"
   },
   "role": {
     "name": "名称",

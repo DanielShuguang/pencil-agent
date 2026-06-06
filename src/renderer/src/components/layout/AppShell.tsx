@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense, type ReactNode } from 'react'
 import { Minus, Square, X, Maximize2, MessageSquare, Code2, Workflow, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { match } from 'ts-pattern'
 import { cn } from '../../lib/utils'
 import { Sidebar } from '../sidebar/Sidebar'
 import { SettingsDialog } from '../settings/SettingsDialog'
@@ -213,46 +214,48 @@ export function AppShell({ children }: AppShellProps) {
           </>
         )}
         <div className='flex-1 flex flex-col overflow-hidden'>
-          {activeTab === 'chat' ? (
-            children
-          ) : activeTab === 'editor' ? (
-            <Suspense fallback={<Loading />}>
-              <div className='flex-1 flex overflow-hidden'>
-                <div className='border-r bg-muted/20 overflow-auto' style={{ width: fileTreeWidth }}>
-                  <div className='p-2'>
-                    <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
-                      {t('app.file')}
-                    </h3>
-                    <FileTree />
+          {match(activeTab)
+            .with('chat', () => children)
+            .with('editor', () => (
+              <Suspense fallback={<Loading />}>
+                <div className='flex-1 flex overflow-hidden'>
+                  <div className='border-r bg-muted/20 overflow-auto' style={{ width: fileTreeWidth }}>
+                    <div className='p-2'>
+                      <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
+                        {t('app.file')}
+                      </h3>
+                      <FileTree />
+                    </div>
+                  </div>
+                  <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
+                  <div className='flex-1 flex flex-col overflow-hidden'>
+                    <TabBar />
+                    <EditorPanel className='flex-1' />
+                    <TerminalPanel
+                      isCollapsed={isTerminalCollapsed}
+                      onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
+                    />
                   </div>
                 </div>
-                <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
+              </Suspense>
+            ))
+            .with('workflow', () => (
+              <Suspense fallback={<Loading />}>
                 <div className='flex-1 flex flex-col overflow-hidden'>
-                  <TabBar />
-                  <EditorPanel className='flex-1' />
-                  <TerminalPanel
-                    isCollapsed={isTerminalCollapsed}
-                    onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
-                  />
+                  <WorkflowToolbar onExecute={handleExecute} />
+                  <div className='flex-1 flex overflow-hidden'>
+                    <WorkflowCanvas className='flex-1' />
+                    {selectedNodeId && (
+                      <>
+                        <ResizeHandle direction='horizontal' onResize={handleNodeConfigResize} />
+                        <NodeConfigPanel style={{ width: nodeConfigWidth }} />
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Suspense>
-          ) : (
-            <Suspense fallback={<Loading />}>
-              <div className='flex-1 flex flex-col overflow-hidden'>
-                <WorkflowToolbar onExecute={handleExecute} />
-                <div className='flex-1 flex overflow-hidden'>
-                  <WorkflowCanvas className='flex-1' />
-                  {selectedNodeId && (
-                    <>
-                      <ResizeHandle direction='horizontal' onResize={handleNodeConfigResize} />
-                      <NodeConfigPanel style={{ width: nodeConfigWidth }} />
-                    </>
-                  )}
-                </div>
-              </div>
-            </Suspense>
-          )}
+              </Suspense>
+            ))
+            .exhaustive()}
         </div>
       </main>
       <StatusBar />

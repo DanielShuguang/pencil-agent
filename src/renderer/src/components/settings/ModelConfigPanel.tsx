@@ -5,6 +5,7 @@ import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 import { useModelConfigStore } from '../../stores/model-config-store'
 import { Button } from '../ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { useListAnimate } from '../../hooks/useAutoAnimate'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +34,7 @@ export function ModelConfigPanel() {
     fetchModels,
   } = useModelConfigStore()
   const { t } = useTranslation()
+  const [providerListRef] = useListAnimate()
 
   const [editingProvider, setEditingProvider] = useState<ModelProviderInfo | null>(null)
   const [isAddingProvider, setIsAddingProvider] = useState(false)
@@ -184,7 +186,7 @@ export function ModelConfigPanel() {
       ) : providers.length === 0 ? (
         <div className='text-sm text-muted-foreground'>{t('settings.noProviders')}</div>
       ) : (
-        <div className='space-y-2'>
+        <div ref={providerListRef} className='space-y-2'>
           {providers.map((provider) => (
             <div key={provider.id} className='rounded-md border'>
               <div className='flex items-center justify-between p-3'>
@@ -298,7 +300,7 @@ export function ModelConfigPanel() {
                             <span className='font-medium'>{model.name}</span>
                             <span className='ml-2 text-sm text-muted-foreground'>{model.id}</span>
                             {model.visible === false && (
-                              <span className='ml-2 text-xs text-muted-foreground'>(已隐藏)</span>
+                              <span className='ml-2 text-xs text-muted-foreground'>({t('settings.hideModel')})</span>
                             )}
                           </div>
 

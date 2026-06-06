@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { useAgentStore } from '../../stores/agent-store'
 import { SessionItem } from './SessionItem'
+import { useListAnimate } from '../../hooks/useAutoAnimate'
 
 export function SessionList() {
   const { sessionMetas, activeSessionId, switchSession, deleteSession } = useAgentStore()
   const { t } = useTranslation()
+  const [listRef] = useListAnimate()
 
   const sortedSessions = Array.from(sessionMetas.values()).sort((a, b) => b.updatedAt - a.updatedAt)
 
@@ -15,7 +17,7 @@ export function SessionList() {
   }
 
   return (
-    <div className='flex flex-col gap-1 p-2'>
+    <div ref={listRef} className='flex flex-col gap-1 p-2'>
       {sortedSessions.map((meta) => (
         <SessionItem
           key={meta.id}

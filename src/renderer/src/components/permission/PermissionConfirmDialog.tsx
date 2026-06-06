@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogTitle,
   DialogFooter,
 } from '../ui/dialog'
@@ -37,7 +38,6 @@ export function PermissionConfirmDialog() {
       allowed: true,
       rememberSession,
     })
-    setRememberSession(false)
   }
 
   const handleDeny = () => {
@@ -46,7 +46,6 @@ export function PermissionConfirmDialog() {
       allowed: false,
       rememberSession,
     })
-    setRememberSession(false)
   }
 
   const RiskIcon = riskIcons[pendingConfirm.riskLevel]
@@ -61,34 +60,36 @@ export function PermissionConfirmDialog() {
           </DialogTitle>
         </DialogHeader>
 
-        <div className='space-y-3'>
-          <div className='rounded-md border p-3 text-sm'>
-            <div className='font-medium mb-1'>{t('permission.toolName')}</div>
-            <div className='text-muted-foreground'>{pendingConfirm.toolName}</div>
-          </div>
-
-          {pendingConfirm.pattern && (
-            <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm'>
-              <div className='font-medium mb-1 text-destructive'>{t('permission.riskWarning')}</div>
-              <div>{pendingConfirm.pattern}</div>
+        <DialogBody>
+          <div className='space-y-3'>
+            <div className='rounded-md border p-3 text-sm'>
+              <div className='font-medium mb-1'>{t('permission.toolName')}</div>
+              <div className='text-muted-foreground'>{pendingConfirm.toolName}</div>
             </div>
-          )}
 
-          <div className='rounded-md border p-3 text-sm'>
-            <div className='font-medium mb-1'>{t('permission.parameters')}</div>
-            <pre className='text-xs text-muted-foreground overflow-auto max-h-32'>
-              {JSON.stringify(pendingConfirm.parameters, null, 2)}
-            </pre>
+            {pendingConfirm.pattern && (
+              <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm'>
+                <div className='font-medium mb-1 text-destructive'>{t('permission.riskWarning')}</div>
+                <div>{pendingConfirm.pattern}</div>
+              </div>
+            )}
+
+            <div className='rounded-md border p-3 text-sm'>
+              <div className='font-medium mb-1'>{t('permission.parameters')}</div>
+              <pre className='text-xs text-muted-foreground overflow-auto max-h-32'>
+                {JSON.stringify(pendingConfirm.parameters, null, 2)}
+              </pre>
+            </div>
+
+            <label className='flex items-center gap-2 text-sm'>
+              <Checkbox
+                checked={rememberSession}
+                onCheckedChange={(checked) => setRememberSession(checked === true)}
+              />
+              {t('permission.rememberSession')}
+            </label>
           </div>
-
-          <label className='flex items-center gap-2 text-sm'>
-            <Checkbox
-              checked={rememberSession}
-              onCheckedChange={(checked) => setRememberSession(checked === true)}
-            />
-            {t('permission.rememberSession')}
-          </label>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant='outline' onClick={handleDeny}>

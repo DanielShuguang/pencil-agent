@@ -49,8 +49,10 @@ let workflowEngine: WorkflowEngine
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1024,
+    height: 768,
+    minWidth: 1024,
+    minHeight: 768,
     show: false,
     frame: false,
     ...(process.platform === 'linux' ? { icon } : {}),

@@ -16,6 +16,19 @@ vi.mock('../../chat/ModelSelector', () => ({
   ModelSelector: () => <div data-testid='model-selector'>Model Selector</div>,
 }))
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'status.connected': '已连接',
+        'status.disconnected': '已断开',
+        'status.checking': '检查中...',
+      }
+      return translations[key] || key
+    },
+  }),
+}))
+
 describe('StatusBar', () => {
   const mockCheckConnection = vi.fn()
   const mockSyncFromAgentStore = vi.fn()

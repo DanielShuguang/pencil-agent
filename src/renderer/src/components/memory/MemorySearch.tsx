@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
 import { useMemoryStore } from '../../stores/memory-store'
 
 interface MemorySearchProps {
@@ -8,6 +11,7 @@ interface MemorySearchProps {
 export function MemorySearch({ onResultSelect }: MemorySearchProps) {
   const { searchResults, isLoading, searchMemory } = useMemoryStore()
   const [query, setQuery] = useState('')
+  const { t } = useTranslation()
 
   const handleSearch = () => {
     if (query.trim()) {
@@ -18,21 +22,19 @@ export function MemorySearch({ onResultSelect }: MemorySearchProps) {
   return (
     <div className='flex flex-col gap-2'>
       <div className='flex gap-2'>
-        <input
-          type='text'
-          className='flex-1 px-3 py-1.5 text-sm border rounded-md bg-background'
-          placeholder='Search memories...'
+        <Input
+          placeholder={t('memory.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
-        <button
-          className='px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50'
+        <Button
+          size='sm'
           onClick={handleSearch}
           disabled={!query.trim() || isLoading}
         >
-          {isLoading ? 'Searching...' : 'Search'}
-        </button>
+          {isLoading ? t('memory.searching') : t('memory.search')}
+        </Button>
       </div>
 
       {searchResults.length > 0 && (
@@ -52,7 +54,7 @@ export function MemorySearch({ onResultSelect }: MemorySearchProps) {
                 ))}
                 {result.score !== undefined && (
                   <span className='text-xs text-muted-foreground'>
-                    Score: {result.score.toFixed(2)}
+                    {t('memory.score')}: {result.score.toFixed(2)}
                   </span>
                 )}
               </div>

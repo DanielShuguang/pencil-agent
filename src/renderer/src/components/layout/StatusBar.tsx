@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 import { Bot, Coins, Wifi, WifiOff, Loader2, Info } from 'lucide-react'
+import { match } from 'ts-pattern'
 import { cn } from '../../lib/utils'
 import { useStatusStore } from '../../stores/status-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { ModelSelector } from '../chat/ModelSelector'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { UpdateNotification } from '../settings/UpdateNotification'
+import { useTranslation } from 'react-i18next'
 
 export function StatusBar() {
   const {
@@ -19,42 +21,31 @@ export function StatusBar() {
   } = useStatusStore()
 
   const { currentModel: agentModel, isGenerating: agentIsGenerating } = useAgentStore()
+  const { t } = useTranslation()
 
   useEffect(() => {
     syncFromAgentStore(agentModel, agentIsGenerating)
   }, [agentModel, agentIsGenerating, syncFromAgentStore])
 
-  const getConnectionIcon = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return <Wifi className='h-3 w-3 text-green-500' />
-      case 'disconnected':
-        return <WifiOff className='h-3 w-3 text-red-500' />
-      case 'checking':
-        return <Loader2 className='h-3 w-3 text-yellow-500 animate-spin' />
-    }
-  }
+  const getConnectionIcon = () =>
+    match(connectionStatus)
+      .with('connected', () => <Wifi className='h-3 w-3 text-green-500' />)
+      .with('disconnected', () => <WifiOff className='h-3 w-3 text-red-500' />)
+      .with('checking', () => <Loader2 className='h-3 w-3 text-yellow-500 animate-spin' />)
+      .exhaustive()
 
-  const getConnectionText = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return '已连接'
-      case 'disconnected':
-        return '已断开'
-      case 'checking':
-        return '检查中...'
-    }
-  }
+  const getConnectionText = () =>
+    match(connectionStatus)
+      .with('connected', () => t('status.connected'))
+      .with('disconnected', () => t('status.disconnected'))
+      .with('checking', () => t('status.checking'))
+      .exhaustive()
 
-  const formatTokenCount = (count: number) => {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`
-    }
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`
-    }
-    return count.toString()
-  }
+  const formatTokenCount = (count: number) =>
+    match(count)
+      .when((c) => c >= 1000000, (c) => `${(c / 1000000).toFixed(1)}M`)
+      .when((c) => c >= 1000, (c) => `${(c / 1000).toFixed(1)}K`)
+      .otherwise((c) => c.toString())
 
   return (
     <footer className='flex h-6 shrink-0 items-center justify-between border-t border-border bg-muted/50 px-4 text-xs text-muted-foreground'>

@@ -24,7 +24,7 @@ interface MessageBubbleProps {
 }
 
 const markdownComponents = {
-  code({ node, className, children, ...props }: any) {
+  code({ node: _node, className, children, ...props }: any) {
     const match = /language-(\w+)/.exec(className || '')
     const isInline = !match && !String(children).includes('\n')
 

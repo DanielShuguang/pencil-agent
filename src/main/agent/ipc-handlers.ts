@@ -1,10 +1,12 @@
-import type { AgentRole, ThemeMode } from '@shared/ipc'
+import type { AgentRole, ThemeMode, ToolPermissionConfig, ConfirmRequest, ConfirmResponse } from '@shared/ipc'
 import { ipcMain, safeStorage, nativeTheme, type BrowserWindow } from 'electron'
 import { appStore } from '../lib/store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
 import { RoleManager } from './role-manager'
 import { ModelConfigManager } from './model-config'
+import type { PermissionManager } from './permission-manager'
+import type { AuditLogger } from './audit-logger'
 
 let roleManager: RoleManager | null = null
 function getRoleManager(): RoleManager {
@@ -27,6 +29,8 @@ export function registerAgentHandlers(
   mainWindow: BrowserWindow,
   toolRegistry: ToolRegistry,
   sharedModelConfigManager?: ModelConfigManager,
+  permissionManager?: PermissionManager,
+  auditLogger?: AuditLogger,
 ): void {
   if (sharedModelConfigManager) {
     modelConfigManager = sharedModelConfigManager
@@ -257,4 +261,45 @@ export function registerAgentHandlers(
       mainWindow.webContents.send('theme:changed', state)
     }
   })
+
+  // 权限管理 handlers
+  if (permissionManager) {
+    ipcMain.handle('permission:getConfig', () => {
+      return permissionManager.getConfig()
+    })
+
+    ipcMain.handle('permission:setConfig', (_, config: Partial<ToolPermissionConfig>) => {
+      permissionManager.updateConfig(config)
+    })
+
+    // 确认请求-响应机制
+    const pendingConfirms = new Map<string, (response: ConfirmResponse) => void>()
+
+    ipcMain.handle('permission:confirm-response', (_, response: ConfirmResponse) => {
+      const resolve = pendingConfirms.get(response.id)
+      if (resolve) {
+        resolve(response)
+        pendingConfirms.delete(response.id)
+      }
+    })
+
+    // 暴露确认请求方法供权限管理器调用
+    ;(mainWindow as any).__requestConfirm = (request: ConfirmRequest): Promise<ConfirmResponse> => {
+      return new Promise((resolve) => {
+        pendingConfirms.set(request.id, resolve)
+        mainWindow.webContents.send('permission:confirm-request', request)
+      })
+    }
+  }
+
+  // 审计日志 handlers
+  if (auditLogger) {
+    ipcMain.handle('audit:getLogs', (_, sessionId: string) => {
+      return auditLogger.getLogs(sessionId)
+    })
+
+    ipcMain.handle('audit:clearLogs', () => {
+      auditLogger.clearAll()
+    })
+  }
 }

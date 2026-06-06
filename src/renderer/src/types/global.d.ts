@@ -108,6 +108,18 @@ interface MemoryAPI {
   clearAll: () => Promise<void>
 }
 
+interface PermissionAPI {
+  getConfig: () => Promise<{ mode: string; disabledTools: string[]; dangerousPatternOverrides: string[] }>
+  setConfig: (config: Record<string, unknown>) => Promise<void>
+  onConfirmRequest: (cb: (request: unknown) => void) => () => void
+  submitConfirmResponse: (response: Record<string, unknown>) => Promise<void>
+}
+
+interface AuditAPI {
+  getLogs: (sessionId: string) => Promise<unknown[]>
+  clearLogs: () => Promise<void>
+}
+
 interface ElectronAPI {
   agent: AgentAPI
   tool: ToolAPI
@@ -120,6 +132,8 @@ interface ElectronAPI {
   app: AppAPI
   modelConfig: ModelConfigAPI
   theme: ThemeAPI
+  permission: PermissionAPI
+  audit: AuditAPI
   updater: UpdaterAPI
 }
 

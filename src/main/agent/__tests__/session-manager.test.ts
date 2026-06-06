@@ -6,13 +6,20 @@ const mocks = vi.hoisted(() => ({
   mockPrompt: vi.fn(),
   mockAbort: vi.fn(),
   mockDispose: vi.fn(),
+  mockReload: vi.fn(),
 }))
 
-vi.mock('@earendil-works/pi-coding-agent', () => ({
-  createAgentSession: mocks.mockCreateAgentSession,
-  AuthStorage: { inMemory: () => ({}) },
-  ModelRegistry: { inMemory: () => ({}) },
-}))
+vi.mock('@earendil-works/pi-coding-agent', () => {
+  class MockDefaultResourceLoader {
+    reload = mocks.mockReload
+  }
+  return {
+    createAgentSession: mocks.mockCreateAgentSession,
+    AuthStorage: { inMemory: () => ({}) },
+    ModelRegistry: { inMemory: () => ({}) },
+    DefaultResourceLoader: MockDefaultResourceLoader,
+  }
+})
 
 vi.mock('@earendil-works/pi-ai', () => ({
   getModel: vi.fn(() => ({ id: 'gpt-4', provider: 'openai' })),
@@ -47,6 +54,7 @@ describe('AgentSessionManager', () => {
         model: { id: 'gpt-4', provider: 'openai' },
         authStorage: expect.any(Object),
         modelRegistry: expect.any(Object),
+        resourceLoader: expect.any(Object),
       })
     })
 

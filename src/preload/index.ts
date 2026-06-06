@@ -190,6 +190,23 @@ const themeAPI = {
   },
 }
 
+const permissionAPI = {
+  getConfig: () => ipcRenderer.invoke('permission:getConfig'),
+  setConfig: (config: Record<string, unknown>) => ipcRenderer.invoke('permission:setConfig', config),
+  onConfirmRequest: (cb: (request: unknown) => void) => {
+    const handler = (_: unknown, request: unknown) => cb(request)
+    ipcRenderer.on('permission:confirm-request', handler)
+    return () => ipcRenderer.removeListener('permission:confirm-request', handler)
+  },
+  submitConfirmResponse: (response: Record<string, unknown>) =>
+    ipcRenderer.invoke('permission:confirm-response', response),
+}
+
+const auditAPI = {
+  getLogs: (sessionId: string) => ipcRenderer.invoke('audit:getLogs', sessionId),
+  clearLogs: () => ipcRenderer.invoke('audit:clearLogs'),
+}
+
 const updaterAPI = {
   check: () => ipcRenderer.invoke('updater:check'),
   download: () => ipcRenderer.invoke('updater:download'),
@@ -254,6 +271,8 @@ const api: {
   app: typeof appAPI
   modelConfig: typeof modelConfigAPI
   theme: typeof themeAPI
+  permission: typeof permissionAPI
+  audit: typeof auditAPI
   updater: typeof updaterAPI
 } = {
   agent: agentAPI,
@@ -267,6 +286,8 @@ const api: {
   app: appAPI,
   modelConfig: modelConfigAPI,
   theme: themeAPI,
+  permission: permissionAPI,
+  audit: auditAPI,
   updater: updaterAPI,
 }
 

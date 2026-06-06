@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiKeyForm } from './ApiKeyForm'
 import { ModelConfigPanel } from './ModelConfigPanel'
+import { PermissionPanel } from './PermissionPanel'
+import { AuditLogPanel } from '../audit/AuditLogPanel'
 import { UpdateDialog } from './UpdateDialog'
 import { useAgentStore } from '../../stores/agent-store'
 import { useThemeStore } from '../../stores/theme-store'
@@ -10,7 +12,7 @@ import { themeRegistry } from '../../themes/theme-registry'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 
-type SettingsTab = 'api-keys' | 'models' | 'language' | 'theme'
+type SettingsTab = 'api-keys' | 'models' | 'permission' | 'audit' | 'language' | 'theme'
 
 interface SettingsDialogProps {
   isOpen: boolean
@@ -20,6 +22,8 @@ interface SettingsDialogProps {
 const TAB_KEYS: Record<SettingsTab, string> = {
   'api-keys': 'apiKeys',
   models: 'models',
+  permission: 'permission',
+  audit: 'auditLog',
   language: 'language',
   theme: 'theme',
 }
@@ -58,7 +62,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className='flex gap-2 mb-4 border-b'>
-          {(['api-keys', 'models', 'language', 'theme'] as SettingsTab[]).map((tab) => (
+          {(['api-keys', 'models', 'permission', 'audit', 'language', 'theme'] as SettingsTab[]).map((tab) => (
             <Button
               key={tab}
               variant={activeTab === tab ? 'default' : 'ghost'}
@@ -80,6 +84,8 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
         {activeTab === 'api-keys' && <ApiKeyForm />}
         {activeTab === 'models' && <ModelConfigPanel />}
+        {activeTab === 'permission' && <PermissionPanel />}
+        {activeTab === 'audit' && <AuditLogPanel />}
         {activeTab === 'language' && (
           <div className='space-y-4'>
             <div className='flex gap-2'>

@@ -20,7 +20,7 @@
 
   // 不使用任何格式化程序
   "[typescript]": {
-    "editor.defaultFormatter": null
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": null

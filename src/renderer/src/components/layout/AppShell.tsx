@@ -7,6 +7,8 @@ import { SettingsDialog } from '../settings/SettingsDialog'
 import { StatusBar } from './StatusBar'
 import { Loading } from '../ui/loading'
 import { ResizeHandle } from '../ui/resize-handle'
+import { PermissionConfirmDialog } from '../permission/PermissionConfirmDialog'
+import { usePermissionStore } from '../../stores/permission-store'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useUpdateStore } from '../../stores/update-store'
 import type { WorkflowNode } from '@shared/ipc'
@@ -104,6 +106,16 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     window.api.window.isMaximized().then(setIsMaximized)
     const cleanup = window.api.window.onMaximizedChanged(setIsMaximized)
+    return cleanup
+  }, [])
+
+  // 权限确认请求监听
+  useEffect(() => {
+    const { fetchConfig, handleConfirmRequest } = usePermissionStore.getState()
+    fetchConfig()
+    const cleanup = window.api.permission.onConfirmRequest((request) => {
+      handleConfirmRequest(request as any)
+    })
     return cleanup
   }, [])
 
@@ -245,6 +257,7 @@ export function AppShell({ children }: AppShellProps) {
       </main>
       <StatusBar />
       <SettingsDialog isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <PermissionConfirmDialog />
     </div>
   )
 }

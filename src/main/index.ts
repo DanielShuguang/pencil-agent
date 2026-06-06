@@ -13,10 +13,15 @@ import { registerWorkflowHandlers } from './workflow/ipc-handlers'
 import { registerMemoryHandlers } from './memory/ipc-handlers'
 import { Updater } from './updater'
 import { ModelConfigManager } from './agent/model-config'
+import { PermissionManager } from './agent/permission-manager'
+import { AuditLogger } from './agent/audit-logger'
+import { createPermissionExtension } from './agent/permission-extension'
 import { safeStorage } from 'electron'
 import { appStore } from './lib/store'
 
 const modelConfigManager = new ModelConfigManager()
+const permissionManager = new PermissionManager()
+const auditLogger = new AuditLogger()
 
 let mainWindow: BrowserWindow | null = null
 const agentManager = new AgentSessionManager((provider) => {
@@ -64,8 +69,21 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  // 注册权限控制扩展
+  agentManager.addExtension(
+    createPermissionExtension(
+      permissionManager,
+      auditLogger,
+      () => mainWindow,
+      () => 'default',
+    ),
+  )
+
   // Register agent IPC handlers
-  registerAgentHandlers(agentManager, mainWindow, toolRegistry, modelConfigManager)
+  registerAgentHandlers(agentManager, mainWindow, toolRegistry, modelConfigManager, permissionManager, auditLogger)
+
+  // 启动时清理过期审计日志
+  auditLogger.cleanup()
 
   // Register sandbox IPC handlers
   registerSandboxHandlers(sandbox, mainWindow)

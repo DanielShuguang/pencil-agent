@@ -383,3 +383,49 @@ export interface UpdaterAPI {
   onError: (callback: (data: { error: string }) => void) => () => void
   onProgress: (callback: (progress: UpdateProgress) => void) => () => void
 }
+
+// 权限控制相关
+export type PermissionMode = 'auto' | 'prompt' | 'smart'
+
+export interface ToolPermissionConfig {
+  mode: PermissionMode
+  disabledTools: string[]
+  dangerousPatternOverrides: string[]
+}
+
+export interface ConfirmRequest {
+  id: string
+  toolName: string
+  parameters: Record<string, unknown>
+  riskLevel: 'low' | 'medium' | 'high'
+  pattern?: string
+}
+
+export interface ConfirmResponse {
+  id: string
+  allowed: boolean
+  rememberSession?: boolean
+}
+
+export interface AuditLogEntry {
+  id: string
+  sessionId: string
+  timestamp: number
+  toolName: string
+  parameters: Record<string, unknown>
+  status: 'success' | 'error' | 'denied'
+  result?: unknown
+  error?: string
+  duration: number
+}
+
+export interface PermissionAPI {
+  confirm: (request: ConfirmRequest) => Promise<ConfirmResponse>
+  getConfig: () => Promise<ToolPermissionConfig>
+  setConfig: (config: Partial<ToolPermissionConfig>) => Promise<void>
+}
+
+export interface AuditAPI {
+  getLogs: (sessionId: string) => Promise<AuditLogEntry[]>
+  clearLogs: () => Promise<void>
+}

@@ -1,7 +1,9 @@
 import {
   createAgentSession,
+  DefaultResourceLoader,
   type AgentSession,
   type AgentSessionEvent,
+  type ExtensionFactory,
   AuthStorage,
   ModelRegistry,
 } from '@earendil-works/pi-coding-agent'
@@ -25,11 +27,17 @@ export class AgentSessionManager {
   private authStorage: AuthStorage
   private modelRegistry: ModelRegistry
   private getApiKey: (provider: string) => string | null
+  private extensionFactories: ExtensionFactory[] = []
 
   constructor(getApiKey: (provider: string) => string | null = () => null) {
     this.getApiKey = getApiKey
     this.authStorage = AuthStorage.inMemory()
     this.modelRegistry = ModelRegistry.inMemory(this.authStorage)
+  }
+
+  // 注册扩展工厂函数（在 create 时注入到每个 session）
+  addExtension(factory: ExtensionFactory): void {
+    this.extensionFactories.push(factory)
   }
 
   async create(config: SessionConfig): Promise<void> {
@@ -43,10 +51,19 @@ export class AgentSessionManager {
       this.authStorage.setRuntimeApiKey(provider, apiKey)
     }
 
+    // 创建 ResourceLoader 并注入扩展
+    const resourceLoader = new DefaultResourceLoader({
+      cwd: process.cwd(),
+      agentDir: '~/.pi/agent',
+      extensionFactories: this.extensionFactories,
+    })
+    await resourceLoader.reload()
+
     const { session } = await createAgentSession({
       model,
       authStorage: this.authStorage,
       modelRegistry: this.modelRegistry,
+      resourceLoader,
     })
 
     this.sessions.set(config.sessionId, session)

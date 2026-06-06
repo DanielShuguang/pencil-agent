@@ -24,8 +24,10 @@ export class AgentSessionManager {
   private sessions = new Map<string, AgentSession>()
   private authStorage: AuthStorage
   private modelRegistry: ModelRegistry
+  private getApiKey: (provider: string) => string | null
 
-  constructor() {
+  constructor(getApiKey: (provider: string) => string | null = () => null) {
+    this.getApiKey = getApiKey
     this.authStorage = AuthStorage.inMemory()
     this.modelRegistry = ModelRegistry.inMemory(this.authStorage)
   }
@@ -34,6 +36,12 @@ export class AgentSessionManager {
     const provider = config.model.provider as KnownProvider
     const modelId = config.model.id as never
     const model = getModel(provider, modelId)
+
+    // 注入 API Key 到 AuthStorage
+    const apiKey = this.getApiKey(provider)
+    if (apiKey) {
+      this.authStorage.setRuntimeApiKey(provider, apiKey)
+    }
 
     const { session } = await createAgentSession({
       model,
@@ -44,10 +52,21 @@ export class AgentSessionManager {
     this.sessions.set(config.sessionId, session)
   }
 
-  async *prompt(sessionId: string, message: string): AsyncGenerator<AgentChunk> {
-    const session = this.sessions.get(sessionId)
+  async *prompt(
+    sessionId: string,
+    message: string,
+    model?: { id: string; provider: string },
+  ): AsyncGenerator<AgentChunk> {
+    let session = this.sessions.get(sessionId)
     if (!session) {
-      throw new Error(`Session ${sessionId} not found`)
+      // 会话不存在时自动重建（应用重启后主进程内存丢失的情况）
+      if (model) {
+        await this.create({ sessionId, model })
+        session = this.sessions.get(sessionId)
+      }
+      if (!session) {
+        throw new Error(`Session ${sessionId} not found`)
+      }
     }
 
     let resolveNext: ((value: IteratorResult<AgentChunk>) => void) | null = null
@@ -56,21 +75,18 @@ export class AgentSessionManager {
 
     const unsubscribe = session.subscribe((event: AgentSessionEvent) => {
       if (event.type === 'message_update') {
-        const message = event.message
-        if (message.role === 'assistant' && 'content' in message) {
-          const textContent = (message.content as any[]).find((c: any) => c.type === 'text')
-          if (textContent && 'text' in textContent) {
-            const chunk: AgentChunk = {
-              type: 'text',
-              content: textContent.text,
-            }
-            if (resolveNext) {
-              const r = resolveNext
-              resolveNext = null
-              r({ value: chunk, done: false })
-            } else {
-              chunks.push(chunk)
-            }
+        const assistantEvent = (event as any).assistantMessageEvent
+        if (assistantEvent?.type === 'text_delta' && assistantEvent.delta) {
+          const chunk: AgentChunk = {
+            type: 'text',
+            content: assistantEvent.delta,
+          }
+          if (resolveNext) {
+            const r = resolveNext
+            resolveNext = null
+            r({ value: chunk, done: false })
+          } else {
+            chunks.push(chunk)
           }
         }
       } else if (event.type === 'message_end') {

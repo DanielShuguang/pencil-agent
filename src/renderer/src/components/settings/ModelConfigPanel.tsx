@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, TestTube, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, TestTube, Download, Eye, EyeOff, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 import { useModelConfigStore } from '../../stores/model-config-store'
 import { Button } from '../ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +28,9 @@ export function ModelConfigPanel() {
     deleteProvider,
     saveModel,
     deleteModel,
+    toggleVisibility,
     testConnection,
+    fetchModels,
   } = useModelConfigStore()
   const { t } = useTranslation()
 
@@ -41,6 +44,7 @@ export function ModelConfigPanel() {
   const [testResults, setTestResults] = useState<
     Record<string, { success: boolean; error?: string }>
   >({})
+  const [fetchingModels, setFetchingModels] = useState<Set<string>>(new Set())
   const [deleteProviderConfirm, setDeleteProviderConfirm] = useState<string | null>(null)
   const [deleteModelConfirm, setDeleteModelConfirm] = useState<{
     providerId: string
@@ -55,6 +59,31 @@ export function ModelConfigPanel() {
     await saveProvider(provider)
     setEditingProvider(null)
     setIsAddingProvider(false)
+    // 保存后自动获取可用模型
+    handleFetchModels(provider.id)
+  }
+
+  const handleFetchModels = async (providerId: string) => {
+    setFetchingModels((prev) => new Set(prev).add(providerId))
+    try {
+      const result = await fetchModels(providerId)
+      if (result.models.length > 0) {
+        // 保存获取到的模型（不覆盖已有的）
+        const existingProvider = providers.find((p) => p.id === providerId)
+        const existingIds = new Set(existingProvider?.models.map((m) => m.id) || [])
+        for (const model of result.models) {
+          if (!existingIds.has(model.id)) {
+            await saveModel(providerId, model)
+          }
+        }
+      }
+    } finally {
+      setFetchingModels((prev) => {
+        const next = new Set(prev)
+        next.delete(providerId)
+        return next
+      })
+    }
   }
 
   const handleDeleteProvider = async (providerId: string) => {
@@ -187,25 +216,58 @@ export function ModelConfigPanel() {
                     </span>
                   )}
 
-                  <Button
-                    size='sm'
-                    variant='ghost'
-                    onClick={() => handleTestConnection(provider.id)}
-                  >
-                    <TestTube className='h-4 w-4' />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => handleTestConnection(provider.id)}
+                      >
+                        <TestTube className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('settings.testConnection')}</TooltipContent>
+                  </Tooltip>
 
-                  <Button size='sm' variant='ghost' onClick={() => setEditingProvider(provider)}>
-                    <Pencil className='h-4 w-4' />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => handleFetchModels(provider.id)}
+                        disabled={fetchingModels.has(provider.id)}
+                      >
+                        {fetchingModels.has(provider.id) ? (
+                          <Loader2 className='h-4 w-4 animate-spin' />
+                        ) : (
+                          <Download className='h-4 w-4' />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('settings.fetchModels')}</TooltipContent>
+                  </Tooltip>
 
-                  <Button
-                    size='sm'
-                    variant='ghost'
-                    onClick={() => handleDeleteProvider(provider.id)}
-                  >
-                    <Trash2 className='h-4 w-4' />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size='sm' variant='ghost' onClick={() => setEditingProvider(provider)}>
+                        <Pencil className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('settings.editProvider')}</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => handleDeleteProvider(provider.id)}
+                      >
+                        <Trash2 className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('common.delete')}</TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
 
@@ -230,29 +292,61 @@ export function ModelConfigPanel() {
                       {provider.models.map((model) => (
                         <div
                           key={model.id}
-                          className='flex items-center justify-between rounded-md p-2 hover:bg-muted'
+                          className={`flex items-center justify-between rounded-md p-2 hover:bg-muted ${model.visible === false ? 'opacity-50' : ''}`}
                         >
                           <div>
                             <span className='font-medium'>{model.name}</span>
                             <span className='ml-2 text-sm text-muted-foreground'>{model.id}</span>
+                            {model.visible === false && (
+                              <span className='ml-2 text-xs text-muted-foreground'>(已隐藏)</span>
+                            )}
                           </div>
 
                           <div className='flex items-center gap-1'>
-                            <Button
-                              size='sm'
-                              variant='ghost'
-                              onClick={() => setEditingModel({ providerId: provider.id, model })}
-                            >
-                              <Pencil className='h-3 w-3' />
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size='sm'
+                                  variant='ghost'
+                                  onClick={() => toggleVisibility(provider.id, model.id)}
+                                >
+                                  {model.visible === false ? (
+                                    <EyeOff className='h-3 w-3' />
+                                  ) : (
+                                    <Eye className='h-3 w-3' />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {model.visible === false ? t('settings.showModel') : t('settings.hideModel')}
+                              </TooltipContent>
+                            </Tooltip>
 
-                            <Button
-                              size='sm'
-                              variant='ghost'
-                              onClick={() => handleDeleteModel(provider.id, model.id)}
-                            >
-                              <Trash2 className='h-3 w-3' />
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size='sm'
+                                  variant='ghost'
+                                  onClick={() => setEditingModel({ providerId: provider.id, model })}
+                                >
+                                  <Pencil className='h-3 w-3' />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t('settings.editModel')}</TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size='sm'
+                                  variant='ghost'
+                                  onClick={() => handleDeleteModel(provider.id, model.id)}
+                                >
+                                  <Trash2 className='h-3 w-3' />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t('common.delete')}</TooltipContent>
+                            </Tooltip>
                           </div>
                         </div>
                       ))}

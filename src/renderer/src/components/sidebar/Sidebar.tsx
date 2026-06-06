@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { SessionList } from './SessionList'
 import { useAgentStore } from '../../stores/agent-store'
 
-export function Sidebar() {
+interface SidebarProps {
+  width?: number
+}
+
+export function Sidebar({ width = 256 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { createSession } = useAgentStore()
   const { t } = useTranslation()
@@ -54,7 +58,7 @@ export function Sidebar() {
   }
 
   return (
-    <div className='w-64 border-r bg-muted/30 flex flex-col'>
+    <div className='border-r bg-muted/30 flex flex-col' style={{ width }}>
       <div className='flex items-center justify-between p-2 border-b'>
         <button
           className='p-2 hover:bg-accent rounded-lg transition-colors text-sm font-medium'

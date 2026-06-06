@@ -6,6 +6,7 @@ import { Sidebar } from '../sidebar/Sidebar'
 import { SettingsDialog } from '../settings/SettingsDialog'
 import { StatusBar } from './StatusBar'
 import { Loading } from '../ui/loading'
+import { ResizeHandle } from '../ui/resize-handle'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useUpdateStore } from '../../stores/update-store'
 import type { WorkflowNode } from '@shared/ipc'
@@ -41,8 +42,23 @@ export function AppShell({ children }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<PanelTab>('chat')
   const [isTerminalCollapsed, setIsTerminalCollapsed] = useState(true)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [sidebarWidth, setSidebarWidth] = useState(256)
+  const [fileTreeWidth, setFileTreeWidth] = useState(192)
+  const [nodeConfigWidth, setNodeConfigWidth] = useState(288)
   const { selectedNodeId, setExecuting, updateNodeStatus } = useWorkflowStore()
   const { t } = useTranslation()
+
+  const handleSidebarResize = useCallback((delta: number) => {
+    setSidebarWidth((prev) => Math.max(180, Math.min(480, prev + delta)))
+  }, [])
+
+  const handleFileTreeResize = useCallback((delta: number) => {
+    setFileTreeWidth((prev) => Math.max(120, Math.min(400, prev + delta)))
+  }, [])
+
+  const handleNodeConfigResize = useCallback((delta: number) => {
+    setNodeConfigWidth((prev) => Math.max(200, Math.min(500, prev + delta)))
+  }, [])
 
   const handleExecute = useCallback(async () => {
     const { nodes: currentNodes, edges: currentEdges } = useWorkflowStore.getState()
@@ -178,14 +194,19 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </header>
       <main className='flex-1 overflow-hidden flex'>
-        {activeTab === 'chat' && <Sidebar />}
+        {activeTab === 'chat' && (
+          <>
+            <Sidebar width={sidebarWidth} />
+            <ResizeHandle direction='horizontal' onResize={handleSidebarResize} />
+          </>
+        )}
         <div className='flex-1 flex flex-col overflow-hidden'>
           {activeTab === 'chat' ? (
             children
           ) : activeTab === 'editor' ? (
             <Suspense fallback={<Loading />}>
               <div className='flex-1 flex overflow-hidden'>
-                <div className='w-48 border-r bg-muted/20 overflow-auto'>
+                <div className='border-r bg-muted/20 overflow-auto' style={{ width: fileTreeWidth }}>
                   <div className='p-2'>
                     <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
                       {t('app.file')}
@@ -193,6 +214,7 @@ export function AppShell({ children }: AppShellProps) {
                     <FileTree />
                   </div>
                 </div>
+                <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
                 <div className='flex-1 flex flex-col overflow-hidden'>
                   <TabBar />
                   <EditorPanel className='flex-1' />
@@ -209,7 +231,12 @@ export function AppShell({ children }: AppShellProps) {
                 <WorkflowToolbar onExecute={handleExecute} />
                 <div className='flex-1 flex overflow-hidden'>
                   <WorkflowCanvas className='flex-1' />
-                  {selectedNodeId && <NodeConfigPanel className='w-72' />}
+                  {selectedNodeId && (
+                    <>
+                      <ResizeHandle direction='horizontal' onResize={handleNodeConfigResize} />
+                      <NodeConfigPanel style={{ width: nodeConfigWidth }} />
+                    </>
+                  )}
                 </div>
               </div>
             </Suspense>

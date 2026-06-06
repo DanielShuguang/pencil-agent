@@ -26,7 +26,11 @@ export function registerAgentHandlers(
   manager: AgentSessionManager,
   mainWindow: BrowserWindow,
   toolRegistry: ToolRegistry,
+  sharedModelConfigManager?: ModelConfigManager,
 ): void {
+  if (sharedModelConfigManager) {
+    modelConfigManager = sharedModelConfigManager
+  }
   ipcMain.handle('agent:create', async (_, config) => {
     try {
       await manager.create(config)
@@ -36,9 +40,9 @@ export function registerAgentHandlers(
     }
   })
 
-  ipcMain.on('agent:prompt', async (_, { sessionId, message }) => {
+  ipcMain.on('agent:prompt', async (_, { sessionId, message, model }) => {
     try {
-      for await (const chunk of manager.prompt(sessionId, message)) {
+      for await (const chunk of manager.prompt(sessionId, message, model)) {
         mainWindow.webContents.send('agent:chunk', chunk)
       }
       mainWindow.webContents.send('agent:done')
@@ -104,6 +108,13 @@ export function registerAgentHandlers(
 
   ipcMain.handle('settings:checkConnection', async (_, { provider }: { provider: string }) => {
     try {
+      // 优先使用 ModelConfigManager 的 testConnection（支持自定义 baseUrl/apiFormat）
+      const result = await getModelConfigManager().testConnection(provider)
+      if (result.success || result.error !== 'Provider not found') {
+        return result.success
+      }
+
+      // 兼容旧的 api-keys 存储
       const stored = appStore.get(`api-keys.${provider}`) as string | undefined
       if (!stored) return false
 
@@ -195,12 +206,20 @@ export function registerAgentHandlers(
     return getModelConfigManager().testConnection(providerId)
   })
 
+  ipcMain.handle('model-config:fetch-models', async (_, { providerId }) => {
+    return getModelConfigManager().fetchModels(providerId)
+  })
+
   ipcMain.handle('model-config:save-model', (_, { providerId, model }) => {
     getModelConfigManager().saveModel(providerId, model)
   })
 
   ipcMain.handle('model-config:delete-model', (_, { providerId, modelId }) => {
     getModelConfigManager().deleteModel(providerId, modelId)
+  })
+
+  ipcMain.handle('model-config:toggle-visibility', (_, { providerId, modelId }) => {
+    getModelConfigManager().toggleModelVisibility(providerId, modelId)
   })
 
   // 主题相关 handlers

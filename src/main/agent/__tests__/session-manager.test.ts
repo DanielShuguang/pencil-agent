@@ -89,11 +89,11 @@ describe('AgentSessionManager', () => {
       // Fire events while generator is waiting
       subscribeCb({
         type: 'message_update',
-        message: { role: 'assistant', content: [{ type: 'text', text: 'Hello' }] },
+        assistantMessageEvent: { type: 'text_delta', delta: 'Hello' },
       })
       subscribeCb({
         type: 'message_update',
-        message: { role: 'assistant', content: [{ type: 'text', text: ' World' }] },
+        assistantMessageEvent: { type: 'text_delta', delta: ' World' },
       })
       subscribeCb({ type: 'message_end' })
 

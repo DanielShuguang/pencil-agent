@@ -93,7 +93,10 @@ describe('agent-store', () => {
     expect(messages).toHaveLength(1)
     expect(messages[0].role).toBe('user')
     expect(messages[0].content).toBe('Hello')
-    expect(window.api.agent.prompt).toHaveBeenCalledWith('session-1', 'Hello')
+    expect(window.api.agent.prompt).toHaveBeenCalledWith('session-1', 'Hello', {
+      id: 'claude-sonnet-4-20250514',
+      provider: 'anthropic',
+    })
   })
 
   it('sendMessage sets isGenerating to true', () => {

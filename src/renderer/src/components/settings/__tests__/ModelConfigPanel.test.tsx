@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { TooltipProvider } from '../../ui/tooltip'
 import { ModelConfigPanel } from '../ModelConfigPanel'
 
 const mockFetchProviders = vi.fn()
@@ -9,6 +10,7 @@ const mockDeleteProvider = vi.fn()
 const mockSaveModel = vi.fn()
 const mockDeleteModel = vi.fn()
 const mockTestConnection = vi.fn()
+const mockFetchModels = vi.fn().mockResolvedValue({ models: [] })
 
 vi.mock('../../../stores/model-config-store', () => ({
   useModelConfigStore: vi.fn(() => ({
@@ -21,6 +23,7 @@ vi.mock('../../../stores/model-config-store', () => ({
     saveModel: mockSaveModel,
     deleteModel: mockDeleteModel,
     testConnection: mockTestConnection,
+    fetchModels: mockFetchModels,
   })),
 }))
 
@@ -110,11 +113,12 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
   })
 
   it('should fetch providers on mount', () => {
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
     expect(mockFetchProviders).toHaveBeenCalledTimes(1)
   })
 
@@ -129,14 +133,15 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
     expect(screen.getByText('加载中...')).toBeInTheDocument()
   })
 
   it('should show empty state', () => {
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
     expect(screen.getByText('暂无供应商')).toBeInTheDocument()
   })
 
@@ -151,9 +156,10 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
     expect(screen.getByText('Network error')).toBeInTheDocument()
   })
 
@@ -177,16 +183,17 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
     expect(screen.getByText('OpenAI')).toBeInTheDocument()
     expect(screen.getByText('（1 个模型）')).toBeInTheDocument()
   })
 
   it('should show ProviderForm when adding provider', async () => {
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     await user.click(screen.getByText('添加供应商'))
     expect(screen.getByTestId('provider-form')).toBeInTheDocument()
@@ -195,7 +202,7 @@ describe('ModelConfigPanel', () => {
 
   it('should save provider and close form', async () => {
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     await user.click(screen.getByText('添加供应商'))
     await user.click(screen.getByText('Save Provider'))
@@ -206,7 +213,7 @@ describe('ModelConfigPanel', () => {
 
   it('should cancel adding provider', async () => {
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     await user.click(screen.getByText('添加供应商'))
     await user.click(screen.getByText('Cancel Provider'))
@@ -234,10 +241,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     await user.click(screen.getByText('OpenAI'))
     expect(screen.getByText('模型列表')).toBeInTheDocument()
@@ -264,10 +272,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     await user.click(screen.getByText('OpenAI'))
     await user.click(screen.getByText('添加模型'))
@@ -295,10 +304,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     const editButtons = screen.getAllByRole('button')
     const editButton = editButtons.find((btn) => btn.querySelector('.lucide-pencil'))
@@ -328,10 +338,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     const testButtons = screen.getAllByRole('button')
     const testButton = testButtons.find((btn) => btn.querySelector('.lucide-test-tube'))
@@ -360,10 +371,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     const deleteButtons = screen.getAllByRole('button')
     const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
@@ -392,10 +404,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     const deleteButtons = screen.getAllByRole('button')
     const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
@@ -427,10 +440,11 @@ describe('ModelConfigPanel', () => {
       saveModel: mockSaveModel,
       deleteModel: mockDeleteModel,
       testConnection: mockTestConnection,
+      fetchModels: mockFetchModels,
     })
 
     const user = userEvent.setup()
-    render(<ModelConfigPanel />)
+    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
 
     const deleteButtons = screen.getAllByRole('button')
     const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))

@@ -6,9 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 interface NodeConfigPanelProps {
   className?: string
+  style?: React.CSSProperties
 }
 
-export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
+export function NodeConfigPanel({ className, style }: NodeConfigPanelProps) {
   const { nodes, selectedNodeId, updateNodeData, selectNode } = useWorkflowStore()
   const { tools } = useToolStore()
   const { t } = useTranslation()
@@ -28,7 +29,7 @@ export function NodeConfigPanel({ className }: NodeConfigPanelProps) {
   }
 
   return (
-    <div className={`border-l bg-background p-4 overflow-auto ${className}`}>
+    <div className={`border-l bg-background p-4 overflow-auto ${className}`} style={style}>
       <div className='flex items-center justify-between mb-4'>
         <h3 className='font-medium text-sm'>{t('workflow.nodeConfig')}</h3>
         <button onClick={() => selectNode(null)} className='p-1 hover:bg-muted rounded'>

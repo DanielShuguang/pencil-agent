@@ -27,8 +27,9 @@ export class ModelConfigManager {
     const stored = appStore.get('modelProviders') as StoredProvider[] | undefined
     if (!stored) return
 
+    // safeStorage 在 app.whenReady() 之前不可用，跳过加载
     if (!safeStorage.isEncryptionAvailable()) {
-      throw new Error('System encryption is not available, cannot load API keys securely')
+      return
     }
 
     for (const item of stored) {
@@ -76,9 +77,20 @@ export class ModelConfigManager {
     appStore.set('modelProviders', stored)
   }
 
+  // 重新从存储加载（用于 app.whenReady() 后 safeStorage 可用时）
+  reload(): void {
+    this.providers.clear()
+    this.loadFromStorage()
+  }
+
   // 获取所有 Provider 列表（不包含 API Key）
   list(): ModelProviderInfo[] {
     return Array.from(this.providers.values()).map(({ apiKey: _, ...rest }) => rest)
+  }
+
+  // 获取指定 Provider 的 API Key
+  getApiKey(providerId: string): string | null {
+    return this.providers.get(providerId)?.apiKey ?? null
   }
 
   // 保存 Provider 配置（新增或更新）
@@ -134,10 +146,105 @@ export class ModelConfigManager {
     this.saveToStorage()
   }
 
+  // 切换模型可见性
+  toggleModelVisibility(providerId: string, modelId: string): void {
+    const provider = this.providers.get(providerId)
+    if (!provider) {
+      throw new Error(`Provider '${providerId}' not found`)
+    }
+
+    const model = provider.models.find((m) => m.id === modelId)
+    if (!model) {
+      throw new Error(`Model '${modelId}' not found`)
+    }
+
+    model.visible = model.visible === false ? true : false
+    provider.updatedAt = Date.now()
+    this.saveToStorage()
+  }
+
+  // 构建 Provider 的请求信息（URL + Headers）
+  private buildRequestInfo(
+    providerId: string,
+    path: string,
+  ): { url: string; headers: Record<string, string> } | null {
+    const provider = this.providers.get(providerId)
+    if (!provider) return null
+
+    const isOpenAI = provider.apiFormat === 'openai'
+    const url = `${provider.baseUrl}${path}`
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+
+    if (isOpenAI) {
+      headers['Authorization'] = `Bearer ${provider.apiKey}`
+    } else {
+      headers['x-api-key'] = provider.apiKey
+    }
+    return { url, headers }
+  }
+
+  // 从 Provider API 获取可用模型列表
+  async fetchModels(providerId: string): Promise<{ models: ModelConfig[]; error?: string }> {
+    const provider = this.providers.get(providerId)
+    if (!provider) {
+      return { models: [], error: 'Provider not found' }
+    }
+
+    const isOpenAI = provider.apiFormat === 'openai'
+    const requestInfo = this.buildRequestInfo(providerId, isOpenAI ? '/models' : '/v1/models')
+    if (!requestInfo) {
+      return { models: [], error: 'Provider not found' }
+    }
+
+    // anthropic 格式需要额外 header
+    if (!isOpenAI) {
+      requestInfo.headers['anthropic-version'] = '2023-06-01'
+    }
+
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+
+      const response = await fetch(requestInfo.url, {
+        method: 'GET',
+        headers: requestInfo.headers,
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        return { models: [], error: (errorData as any).error?.message || `HTTP ${response.status}` }
+      }
+
+      const data = await response.json() as any
+      const rawModels: any[] = data.data || data.models || []
+
+      const models: ModelConfig[] = rawModels.map((m: any) => ({
+        id: m.id || m.name || m.model,
+        name: m.id || m.name || m.model,
+        providerId,
+      })).filter((m: ModelConfig) => m.id)
+
+      return { models }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return { models: [], error: 'Connection timeout' }
+      }
+      return { models: [], error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
   // 测试 Provider 连接（支持 OpenAI 和 Anthropic 格式）
   async testConnection(providerId: string): Promise<{ success: boolean; error?: string }> {
     const provider = this.providers.get(providerId)
     if (!provider) {
+      return { success: false, error: 'Provider not found' }
+    }
+
+    const isOpenAI = provider.apiFormat === 'openai'
+    const requestInfo = this.buildRequestInfo(providerId, isOpenAI ? '/models' : '/v1/models')
+    if (!requestInfo) {
       return { success: false, error: 'Provider not found' }
     }
 
@@ -146,22 +253,9 @@ export class ModelConfigManager {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000)
 
-      // 根据 API 格式选择不同的端点和请求头
-      const isOpenAI = provider.apiFormat === 'openai'
-      const url = isOpenAI ? `${provider.baseUrl}/models` : `${provider.baseUrl}/v1/models`
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      }
-
-      if (isOpenAI) {
-        headers['Authorization'] = `Bearer ${provider.apiKey}`
-      } else {
-        headers['x-api-key'] = provider.apiKey
-      }
-
-      const response = await fetch(url, {
+      const response = await fetch(requestInfo.url, {
         method: 'GET',
-        headers,
+        headers: requestInfo.headers,
         signal: controller.signal,
       })
 

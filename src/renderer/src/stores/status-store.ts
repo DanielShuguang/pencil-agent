@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { ConnectionStatus, TokenUsage } from '@shared/ipc'
 
 let tokenListenerInitialized = false
+let connectionTimer: ReturnType<typeof setInterval> | null = null
 
 interface StatusState {
   currentModel: { id: string; provider: string }
@@ -64,6 +65,8 @@ export const useStatusStore = create<StatusState>((set, get) => ({
     const { currentModel } = get()
     if (currentModel.id !== model.id || currentModel.provider !== model.provider) {
       set({ currentModel: model })
+      // 模型变化后重新检查连接状态
+      get().checkConnection()
     }
     set({ isGenerating })
   },
@@ -86,7 +89,8 @@ export const useStatusStore = create<StatusState>((set, get) => ({
       }) as EventListener)
     }
 
-    setInterval(() => {
+    if (connectionTimer) clearInterval(connectionTimer)
+    connectionTimer = setInterval(() => {
       checkConnection()
     }, 60000)
   },

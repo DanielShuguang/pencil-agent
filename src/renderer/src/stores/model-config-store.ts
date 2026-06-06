@@ -11,7 +11,9 @@ interface ModelConfigState {
   deleteProvider: (providerId: string) => Promise<void>
   saveModel: (providerId: string, model: ModelConfig) => Promise<void>
   deleteModel: (providerId: string, modelId: string) => Promise<void>
+  toggleVisibility: (providerId: string, modelId: string) => Promise<void>
   testConnection: (providerId: string) => Promise<{ success: boolean; error?: string }>
+  fetchModels: (providerId: string) => Promise<{ models: ModelConfig[]; error?: string }>
 }
 
 export const useModelConfigStore = create<ModelConfigState>((set, get) => ({
@@ -84,6 +86,17 @@ export const useModelConfigStore = create<ModelConfigState>((set, get) => ({
     }
   },
 
+  toggleVisibility: async (providerId, modelId) => {
+    try {
+      await window.api.modelConfig.toggleVisibility(providerId, modelId)
+      await get().fetchProviders()
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to toggle visibility',
+      })
+    }
+  },
+
   testConnection: async (providerId) => {
     try {
       const result = await window.api.modelConfig.testConnection({ providerId })
@@ -92,6 +105,17 @@ export const useModelConfigStore = create<ModelConfigState>((set, get) => ({
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Connection test failed',
+      }
+    }
+  },
+
+  fetchModels: async (providerId) => {
+    try {
+      return await window.api.modelConfig.fetchModels(providerId)
+    } catch (error) {
+      return {
+        models: [],
+        error: error instanceof Error ? error.message : 'Failed to fetch models',
       }
     }
   },

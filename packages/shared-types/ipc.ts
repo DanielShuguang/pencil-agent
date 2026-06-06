@@ -318,6 +318,7 @@ export interface ModelConfig {
   id: string
   name: string
   providerId: string
+  visible?: boolean
   maxTokens?: number
   temperature?: number
 }
@@ -339,7 +340,9 @@ export interface ModelConfigAPI {
   delete: (providerId: string) => Promise<void>
   saveModel: (providerId: string, model: ModelConfig) => Promise<void>
   deleteModel: (providerId: string, modelId: string) => Promise<void>
+  toggleVisibility: (providerId: string, modelId: string) => Promise<void>
   testConnection: (request: TestConnectionRequest) => Promise<TestConnectionResponse>
+  fetchModels: (providerId: string) => Promise<{ models: ModelConfig[]; error?: string }>
 }
 
 // 主题 API

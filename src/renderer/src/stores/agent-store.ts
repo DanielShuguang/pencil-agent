@@ -37,6 +37,7 @@ interface AgentState {
   language: 'zh' | 'en'
 
   initFromStorage: () => void
+  syncModelWithProviders: () => Promise<void>
   createSession: () => Promise<string>
   deleteSession: (id: string) => void
   sendMessage: (content: string) => void
@@ -164,6 +165,28 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     set({ sessions, sessionMetas, activeSessionId })
   },
 
+  // 检查当前模型的 provider 是否有配置，没有则自动切换到第一个可用的
+  syncModelWithProviders: async () => {
+    const { currentModel } = get()
+    try {
+      const providers = await window.api.modelConfig.list()
+      if (providers.length === 0) return
+
+      const hasCurrentProvider = providers.some((p) => p.id === currentModel.provider)
+      if (!hasCurrentProvider) {
+        const firstProvider = providers[0]
+        const firstModel = firstProvider.models[0]
+        if (firstModel) {
+          const newModel = { id: firstModel.id, provider: firstProvider.id }
+          setStorageItem('currentModel', newModel)
+          set({ currentModel: newModel })
+        }
+      }
+    } catch {
+      // 忽略错误，使用当前模型
+    }
+  },
+
   createSession: async () => {
     const { currentModel } = get()
     const id = `session-${Date.now()}`
@@ -214,7 +237,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   },
 
   sendMessage: (content: string) => {
-    const { activeSessionId } = get()
+    const { activeSessionId, currentModel } = get()
     if (!activeSessionId) return
 
     const sessions = new Map(get().sessions)
@@ -246,7 +269,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }
 
     set({ sessions, sessionMetas: metas, isGenerating: true })
-    window.api.agent.prompt(activeSessionId, content)
+    window.api.agent.prompt(activeSessionId, content, currentModel)
   },
 
   appendChunk: (chunk: AgentChunk) => {

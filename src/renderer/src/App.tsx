@@ -7,9 +7,10 @@ import { useStatusStore } from './stores/status-store'
 import { useThemeStore } from './stores/theme-store'
 import { applyTheme } from './themes/apply-theme'
 import { Button } from './components/ui/button'
+import { TooltipProvider } from './components/ui/tooltip'
 
 function App(): React.JSX.Element {
-  const { activeSessionId, createSession, initFromStorage } = useAgentStore()
+  const { activeSessionId, createSession, initFromStorage, syncModelWithProviders } = useAgentStore()
   const { init: initStatusStore } = useStatusStore()
   const { initFromStorage: initTheme, currentTheme } = useThemeStore()
   const { t } = useTranslation()
@@ -18,7 +19,8 @@ function App(): React.JSX.Element {
     initFromStorage()
     initStatusStore()
     initTheme()
-  }, [initFromStorage, initStatusStore, initTheme])
+    syncModelWithProviders()
+  }, [initFromStorage, initStatusStore, initTheme, syncModelWithProviders])
 
   useEffect(() => {
     applyTheme(currentTheme)
@@ -39,17 +41,19 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <AppShell>
-      {!activeSessionId ? (
-        <div className='flex h-full flex-col items-center justify-center gap-4'>
-          <h1 className='text-2xl font-bold'>Pencil Agent</h1>
-          <p className='text-muted-foreground'>{t('app.startNewConversation')}</p>
-          <Button onClick={handleNewSession}>{t('sidebar.newSession')}</Button>
-        </div>
-      ) : (
-        <ChatPanel />
-      )}
-    </AppShell>
+    <TooltipProvider>
+      <AppShell>
+        {!activeSessionId ? (
+          <div className='flex h-full flex-col items-center justify-center gap-4'>
+            <h1 className='text-2xl font-bold'>Pencil Agent</h1>
+            <p className='text-muted-foreground'>{t('app.startNewConversation')}</p>
+            <Button onClick={handleNewSession}>{t('sidebar.newSession')}</Button>
+          </div>
+        ) : (
+          <ChatPanel />
+        )}
+      </AppShell>
+    </TooltipProvider>
   )
 }
 

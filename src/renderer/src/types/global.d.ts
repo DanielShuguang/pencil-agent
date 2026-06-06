@@ -15,7 +15,7 @@ interface AgentAPI {
     model: { id: string; provider: string }
     systemPrompt?: string
   }) => Promise<string>
-  prompt: (sessionId: string, message: string) => void
+  prompt: (sessionId: string, message: string, model?: { id: string; provider: string }) => void
   stop: (sessionId: string) => void
   onChunk: (cb: (chunk: AgentChunk) => void) => () => void
   onDone: (cb: () => void) => () => void
@@ -66,7 +66,9 @@ interface ModelConfigAPI {
   delete: (providerId: string) => Promise<void>
   saveModel: (providerId: string, model: ModelConfig) => Promise<void>
   deleteModel: (providerId: string, modelId: string) => Promise<void>
+  toggleVisibility: (providerId: string, modelId: string) => Promise<void>
   testConnection: (request: TestConnectionRequest) => Promise<TestConnectionResponse>
+  fetchModels: (providerId: string) => Promise<{ models: ModelConfig[]; error?: string }>
 }
 
 interface ThemeAPI {

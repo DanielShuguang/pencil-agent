@@ -12,9 +12,32 @@ import { WorkflowEngine } from './workflow/engine'
 import { registerWorkflowHandlers } from './workflow/ipc-handlers'
 import { registerMemoryHandlers } from './memory/ipc-handlers'
 import { Updater } from './updater'
+import { ModelConfigManager } from './agent/model-config'
+import { safeStorage } from 'electron'
+import { appStore } from './lib/store'
+
+const modelConfigManager = new ModelConfigManager()
 
 let mainWindow: BrowserWindow | null = null
-const agentManager = new AgentSessionManager()
+const agentManager = new AgentSessionManager((provider) => {
+  // 优先从 ModelConfigManager 获取
+  const key = modelConfigManager.getApiKey(provider)
+  if (key) return key
+
+  // 兼容旧的 api-keys 存储
+  const stored = appStore.get(`api-keys.${provider}`) as string | undefined
+  if (!stored) return null
+
+  try {
+    if (safeStorage.isEncryptionAvailable()) {
+      const buffer = Buffer.from(stored, 'base64')
+      return safeStorage.decryptString(buffer)
+    }
+    return stored
+  } catch {
+    return null
+  }
+})
 const toolRegistry = createToolRegistry()
 let sandbox: SandboxExecutor
 let workflowEngine: WorkflowEngine
@@ -42,7 +65,7 @@ function createWindow(): void {
   })
 
   // Register agent IPC handlers
-  registerAgentHandlers(agentManager, mainWindow, toolRegistry)
+  registerAgentHandlers(agentManager, mainWindow, toolRegistry, modelConfigManager)
 
   // Register sandbox IPC handlers
   registerSandboxHandlers(sandbox, mainWindow)
@@ -111,6 +134,9 @@ function registerAppHandlers(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  // safeStorage 此时可用，重新加载加密的 API Key
+  modelConfigManager.reload()
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 

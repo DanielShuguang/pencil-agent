@@ -31,7 +31,7 @@ interface AgentAPI {
     model: { id: string; provider: string }
     systemPrompt?: string
   }) => Promise<string>
-  prompt: (sessionId: string, message: string) => void
+  prompt: (sessionId: string, message: string, model?: { id: string; provider: string }) => void
   stop: (sessionId: string) => void
   onChunk: (cb: (chunk: AgentChunk) => void) => () => void
   onDone: (cb: () => void) => () => void

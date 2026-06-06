@@ -28,8 +28,8 @@ const agentAPI = {
     systemPrompt?: string
   }) => ipcRenderer.invoke('agent:create', config),
 
-  prompt: (sessionId: string, message: string) =>
-    ipcRenderer.send('agent:prompt', { sessionId, message }),
+  prompt: (sessionId: string, message: string, model?: { id: string; provider: string }) =>
+    ipcRenderer.send('agent:prompt', { sessionId, message, model }),
 
   stop: (sessionId: string) => ipcRenderer.send('agent:stop', sessionId),
 
@@ -171,8 +171,12 @@ const modelConfigAPI = {
     ipcRenderer.invoke('model-config:save-model', { providerId, model }),
   deleteModel: (providerId: string, modelId: string) =>
     ipcRenderer.invoke('model-config:delete-model', { providerId, modelId }),
+  toggleVisibility: (providerId: string, modelId: string) =>
+    ipcRenderer.invoke('model-config:toggle-visibility', { providerId, modelId }),
   testConnection: (request: TestConnectionRequest) =>
     ipcRenderer.invoke('model-config:test-connection', request),
+  fetchModels: (providerId: string) =>
+    ipcRenderer.invoke('model-config:fetch-models', { providerId }),
 }
 
 const themeAPI = {

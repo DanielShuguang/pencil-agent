@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, TestTube, Download, Eye, EyeOff, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
+import { cn } from '../../lib/utils'
 import { useModelConfigStore } from '../../stores/model-config-store'
 import { Button } from '../ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -273,8 +274,15 @@ export function ModelConfigPanel() {
                 </div>
               </div>
 
-              {expandedProviders.has(provider.id) && (
-                <div className='border-t p-3'>
+              <div
+                className={cn(
+                  'grid transition-all duration-200 ease-out border-t',
+                  expandedProviders.has(provider.id)
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0',
+                )}
+              >
+                <div className='overflow-hidden'><div className='p-3'>
                   <div className='mb-2 flex items-center justify-between'>
                     <span className='text-sm text-muted-foreground'>{t('settings.modelList')}</span>
                     <Button
@@ -354,8 +362,8 @@ export function ModelConfigPanel() {
                       ))}
                     </div>
                   )}
-                </div>
-              )}
+                </div></div>
+              </div>
             </div>
           ))}
         </div>

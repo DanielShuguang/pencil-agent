@@ -214,6 +214,7 @@ export function AppShell({ children }: AppShellProps) {
           </>
         )}
         <div className='flex-1 flex flex-col overflow-hidden'>
+          <div key={activeTab} className='flex-1 flex flex-col overflow-hidden animate-in fade-in-0 slide-in-from-bottom-2 duration-150'>
           {match(activeTab)
             .with('chat', () => children)
             .with('editor', () => (
@@ -256,6 +257,7 @@ export function AppShell({ children }: AppShellProps) {
               </Suspense>
             ))
             .exhaustive()}
+          </div>
         </div>
       </main>
       <StatusBar />

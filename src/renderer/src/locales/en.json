@@ -40,7 +40,11 @@
   },
   "editor": {
     "noOpenFiles": "No open files",
-    "openFileToEdit": "Open a file to start editing"
+    "openFileToEdit": "Open a file to start editing",
+    "terminal": "Terminal",
+    "clearAll": "Clear All",
+    "processExit": "Process exited, code: {{code}}",
+    "waiting": "Waiting for execution..."
   },
   "chat": {
     "inputPlaceholder": "Type a message...",

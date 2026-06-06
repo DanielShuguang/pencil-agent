@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { Terminal, X, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Terminal, X, Trash2, ChevronUp } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useSandboxStore } from '../../stores/sandbox-store'
 
@@ -11,6 +12,7 @@ interface TerminalPanelProps {
 export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: TerminalPanelProps) {
   const { executions, activeExecutionId, clearAll } = useSandboxStore()
   const outputRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   const activeExecution = activeExecutionId ? executions.get(activeExecutionId) : null
 
@@ -27,24 +29,17 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
     return unsubscribe
   }, [])
 
-  if (isCollapsed) {
-    return (
-      <button
-        onClick={onToggleCollapse}
-        className='flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 border-t w-full'
-      >
-        <Terminal className='h-3.5 w-3.5' />
-        终端
-      </button>
-    )
-  }
-
   return (
-    <div className='border-t flex flex-col h-48'>
-      <div className='flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b'>
+    <div
+      className={cn(
+        'border-t transition-all duration-200 ease-out flex flex-col',
+        isCollapsed ? 'h-8' : 'h-48',
+      )}
+    >
+      <div className='flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b shrink-0'>
         <div className='flex items-center gap-2'>
           <Terminal className='h-3.5 w-3.5 text-muted-foreground' />
-          <span className='text-xs font-medium'>终端</span>
+          <span className='text-xs font-medium'>{t('editor.terminal')}</span>
           {activeExecution && (
             <span className='text-xs text-muted-foreground'>{activeExecution.language}</span>
           )}
@@ -54,7 +49,7 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
             <button
               onClick={clearAll}
               className='p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground'
-              title='清除所有'
+              title={t('editor.clearAll')}
             >
               <Trash2 className='h-3.5 w-3.5' />
             </button>
@@ -62,14 +57,23 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
           <button
             onClick={onToggleCollapse}
             className='p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground'
-            title='收起'
           >
-            <X className='h-3.5 w-3.5' />
+            {isCollapsed ? (
+              <ChevronUp className='h-3.5 w-3.5 rotate-180' />
+            ) : (
+              <X className='h-3.5 w-3.5' />
+            )}
           </button>
         </div>
       </div>
 
-      <div ref={outputRef} className='flex-1 overflow-auto bg-[#0d1117] p-2 font-mono text-xs'>
+      <div
+        ref={outputRef}
+        className={cn(
+          'flex-1 overflow-auto bg-[#0d1117] p-2 font-mono text-xs transition-opacity duration-200',
+          isCollapsed && 'opacity-0',
+        )}
+      >
         {activeExecution ? (
           <>
             {activeExecution.output.map((line, i) => (
@@ -83,7 +87,7 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
               >
                 {line.type === 'exit' ? (
                   <span className={cn(line.exitCode === 0 ? 'text-green-400' : 'text-red-400')}>
-                    进程退出，退出码: {line.exitCode}
+                    {t('editor.processExit', { code: line.exitCode })}
                   </span>
                 ) : (
                   line.content
@@ -95,9 +99,7 @@ export function TerminalPanel({ isCollapsed = false, onToggleCollapse }: Termina
             )}
           </>
         ) : (
-          <div className='text-gray-500 flex items-center justify-center h-full'>
-            暂无运行中的进程
-          </div>
+          <div className='text-gray-500 italic'>{t('editor.waiting')}</div>
         )}
       </div>
     </div>

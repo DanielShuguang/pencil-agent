@@ -84,7 +84,9 @@ export function NodeConfigPanel({ className, style }: NodeConfigPanelProps) {
             </div>
 
             <div>
-              <label className='text-xs font-medium text-muted-foreground'>System Prompt</label>
+              <label className='text-xs font-medium text-muted-foreground'>
+                {t('workflow.systemPromptLabel')}
+              </label>
               <textarea
                 className='w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm min-h-[100px]'
                 value={(config.systemPrompt as string) ?? ''}
@@ -94,7 +96,9 @@ export function NodeConfigPanel({ className, style }: NodeConfigPanelProps) {
             </div>
 
             <div>
-              <label className='text-xs font-medium text-muted-foreground'>Temperature</label>
+              <label className='text-xs font-medium text-muted-foreground'>
+                {t('workflow.temperature')}
+              </label>
               <input
                 type='range'
                 className='w-full mt-1'

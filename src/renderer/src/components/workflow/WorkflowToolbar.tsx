@@ -87,7 +87,7 @@ export function WorkflowToolbar({ className, onExecute }: WorkflowToolbarProps) 
           title={t('workflow.addAgent')}
         >
           <Plus className='h-3 w-3' />
-          Agent
+          {t('workflow.agent')}
         </button>
         <button
           onClick={() => handleAddNode('tool')}

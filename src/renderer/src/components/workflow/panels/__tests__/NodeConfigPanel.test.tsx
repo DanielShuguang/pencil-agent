@@ -63,8 +63,8 @@ describe('NodeConfigPanel', () => {
 
     render(<NodeConfigPanel />)
     expect(screen.getByText('模型')).toBeInTheDocument()
-    expect(screen.getByText('System Prompt')).toBeInTheDocument()
-    expect(screen.getByText('Temperature')).toBeInTheDocument()
+    expect(screen.getByText('系统提示词')).toBeInTheDocument()
+    expect(screen.getByText('温度')).toBeInTheDocument()
   })
 
   it('renders tool-specific fields', () => {

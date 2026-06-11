@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ApiFormat, ModelProvider, ModelProviderInfo } from '@shared/ipc'
 import { Button } from '../ui/button'
@@ -8,19 +8,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 interface ProviderFormProps {
   provider?: ModelProviderInfo
+  maskedApiKey?: string
   onSave: (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) => void
   onCancel: () => void
 }
 
-export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) {
+export function ProviderForm({ provider, maskedApiKey, onSave, onCancel }: ProviderFormProps) {
   const [id, setId] = useState(provider?.id || '')
   const [name, setName] = useState(provider?.name || '')
   const [baseUrl, setBaseUrl] = useState(provider?.baseUrl || '')
-  const [apiKey, setApiKey] = useState('')
+  const [apiKey, setApiKey] = useState(maskedApiKey || '')
   const [apiFormat, setApiFormat] = useState<ApiFormat>(provider?.apiFormat || 'openai')
   const [urlError, setUrlError] = useState('')
   const [apiKeyWarning, setApiKeyWarning] = useState('')
   const { t } = useTranslation()
+
+  useEffect(() => {
+    if (maskedApiKey) {
+      setApiKey(maskedApiKey)
+    }
+  }, [maskedApiKey])
 
   const validateUrl = (url: string): boolean => {
     if (!url) return true
@@ -149,6 +156,11 @@ export function ProviderForm({ provider, onSave, onCancel }: ProviderFormProps) 
         />
         {apiKeyWarning && (
           <p className='text-sm text-yellow-600 dark:text-yellow-500'>{apiKeyWarning}</p>
+        )}
+        {provider && maskedApiKey && apiKey === maskedApiKey && (
+          <p className='text-xs text-muted-foreground'>
+            {t('settings.editMaskedKey')}
+          </p>
         )}
       </div>
 

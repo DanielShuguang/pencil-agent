@@ -39,6 +39,7 @@ export function ModelConfigPanel() {
 
   const [editingProvider, setEditingProvider] = useState<ModelProviderInfo | null>(null)
   const [isAddingProvider, setIsAddingProvider] = useState(false)
+  const [maskedApiKey, setMaskedApiKey] = useState<string | undefined>(undefined)
   const [editingModel, setEditingModel] = useState<{
     providerId: string
     model?: ModelConfig
@@ -58,10 +59,24 @@ export function ModelConfigPanel() {
     fetchProviders()
   }, [fetchProviders])
 
+  const handleEditProvider = async (provider: ModelProviderInfo) => {
+    // 先获取加密的 API key
+    try {
+      const masked = await window.api.settings.getMaskedKey(provider.id)
+      setMaskedApiKey(masked || undefined)
+    } catch (error) {
+      console.error('Failed to get masked API key:', error)
+      setMaskedApiKey(undefined)
+    }
+    // 再设置 editingProvider
+    setEditingProvider(provider)
+  }
+
   const handleSaveProvider = async (provider: Omit<ModelProvider, 'createdAt' | 'updatedAt'>) => {
     await saveProvider(provider)
     setEditingProvider(null)
     setIsAddingProvider(false)
+    setMaskedApiKey(undefined)
     // 保存后自动获取可用模型
     handleFetchModels(provider.id)
   }
@@ -144,10 +159,12 @@ export function ModelConfigPanel() {
         </h3>
         <ProviderForm
           provider={editingProvider || undefined}
+          maskedApiKey={maskedApiKey}
           onSave={handleSaveProvider}
           onCancel={() => {
             setEditingProvider(null)
             setIsAddingProvider(false)
+            setMaskedApiKey(undefined)
           }}
         />
       </div>
@@ -252,7 +269,7 @@ export function ModelConfigPanel() {
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size='sm' variant='ghost' onClick={() => setEditingProvider(provider)}>
+                      <Button size='sm' variant='ghost' onClick={() => handleEditProvider(provider)}>
                         <Pencil className='h-4 w-4' />
                       </Button>
                     </TooltipTrigger>
@@ -332,18 +349,18 @@ export function ModelConfigPanel() {
                               </TooltipContent>
                             </Tooltip>
 
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size='sm'
-                                  variant='ghost'
-                                  onClick={() => setEditingModel({ providerId: provider.id, model })}
-                                >
-                                  <Pencil className='h-3 w-3' />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t('settings.editModel')}</TooltipContent>
-                            </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => handleEditProvider(provider)}
+                      >
+                        <Pencil className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('settings.editProvider')}</TooltipContent>
+                  </Tooltip>
 
                             <Tooltip>
                               <TooltipTrigger asChild>

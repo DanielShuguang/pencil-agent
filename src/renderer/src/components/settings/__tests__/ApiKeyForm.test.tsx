@@ -10,7 +10,23 @@ vi.mock('../../../stores/settings-store', () => ({
 const { useSettingsStore } = await import('../../../stores/settings-store')
 const mockUseSettingsStore = vi.mocked(useSettingsStore)
 
+// 模拟 window.api.settings.getMaskedKey
+const mockGetMaskedKey = vi.fn().mockResolvedValue(null)
+
 beforeEach(() => {
+  vi.clearAllMocks()
+  mockGetMaskedKey.mockResolvedValue(null)
+  
+  // 设置 window.api 模拟
+  Object.defineProperty(window, 'api', {
+    value: {
+      settings: {
+        getMaskedKey: mockGetMaskedKey,
+      },
+    },
+    writable: true,
+  })
+
   mockUseSettingsStore.mockReturnValue({
     loadApiKey: vi.fn().mockResolvedValue(null),
     saveApiKey: vi.fn().mockResolvedValue(undefined),
@@ -32,6 +48,7 @@ describe('ApiKeyForm', () => {
   })
 
   it('shows saved state when key exists', async () => {
+    mockGetMaskedKey.mockResolvedValue('sk-s***key')
     mockUseSettingsStore.mockReturnValue({
       loadApiKey: vi.fn().mockResolvedValue('saved-key'),
       saveApiKey: vi.fn(),
@@ -40,7 +57,7 @@ describe('ApiKeyForm', () => {
 
     render(<ApiKeyForm />)
     await waitFor(() => {
-      expect(screen.getAllByText('已保存')).toHaveLength(2)
+      expect(screen.getAllByText('sk-s***key')).toHaveLength(2)
     })
   })
 
@@ -63,6 +80,7 @@ describe('ApiKeyForm', () => {
   })
 
   it('calls deleteApiKey on delete click', async () => {
+    mockGetMaskedKey.mockResolvedValue('sk-s***key')
     const deleteApiKey = vi.fn().mockResolvedValue(undefined)
     mockUseSettingsStore.mockReturnValue({
       loadApiKey: vi.fn().mockResolvedValue('saved-key'),
@@ -72,7 +90,7 @@ describe('ApiKeyForm', () => {
 
     render(<ApiKeyForm />)
     await waitFor(() => {
-      expect(screen.getAllByText('已保存')).toHaveLength(2)
+      expect(screen.getAllByText('sk-s***key')).toHaveLength(2)
     })
     fireEvent.click(screen.getAllByText('删除')[0])
 

@@ -139,6 +139,8 @@
     "nodeType": "Node Type",
     "model": "Model",
     "systemPrompt": "Enter system prompt...",
+    "systemPromptLabel": "System Prompt",
+    "temperature": "Temperature",
     "tool": "Tool",
     "selectTool": "Select tool...",
     "condition": "Condition Expression",

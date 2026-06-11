@@ -54,6 +54,7 @@ interface SettingsAPI {
   getKey: (provider: string) => Promise<string | null>
   deleteKey: (provider: string) => Promise<void>
   checkConnection: (provider: string) => Promise<boolean>
+  getMaskedKey: (provider: string) => Promise<string | null>
 }
 
 interface AppAPI {

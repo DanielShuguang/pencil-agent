@@ -69,6 +69,8 @@
     "nodeType": "节点类型",
     "model": "模型",
     "systemPrompt": "输入系统提示词...",
+    "systemPromptLabel": "系统提示词",
+    "temperature": "温度",
     "tool": "工具",
     "selectTool": "选择工具...",
     "condition": "条件表达式",

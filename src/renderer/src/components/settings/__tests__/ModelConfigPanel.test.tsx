@@ -103,6 +103,17 @@ import { useModelConfigStore } from '../../../stores/model-config-store'
 describe('ModelConfigPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    
+    // 模拟 window.api
+    Object.defineProperty(window, 'api', {
+      value: {
+        settings: {
+          getMaskedKey: vi.fn().mockResolvedValue(null),
+        },
+      },
+      writable: true,
+    })
+
     vi.mocked(useModelConfigStore).mockReturnValue({
       providers: [],
       isLoading: false,

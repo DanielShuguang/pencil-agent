@@ -244,6 +244,9 @@ const settingsAPI = {
 
   checkConnection: (provider: string) =>
     ipcRenderer.invoke('settings:checkConnection', { provider }),
+
+  getMaskedKey: (provider: string) =>
+    ipcRenderer.invoke('settings:get-masked-key', { provider }),
 }
 
 const windowAPI = {

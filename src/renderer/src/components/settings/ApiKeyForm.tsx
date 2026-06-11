@@ -11,6 +11,7 @@ export function ApiKeyForm() {
   const { loadApiKey, saveApiKey, deleteApiKey } = useSettingsStore()
   const [keys, setKeys] = useState<Record<string, string>>({})
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
+  const [maskedKeys, setMaskedKeys] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState<string | null>(null)
   const { t } = useTranslation()
 
@@ -19,6 +20,11 @@ export function ApiKeyForm() {
       loadApiKey(provider.id).then((key) => {
         if (key) {
           setSavedKeys((prev) => ({ ...prev, [provider.id]: true }))
+          window.api.settings.getMaskedKey(provider.id).then((maskedKey) => {
+            if (maskedKey) {
+              setMaskedKeys((prev) => ({ ...prev, [provider.id]: maskedKey }))
+            }
+          })
         }
       })
     }
@@ -33,6 +39,10 @@ export function ApiKeyForm() {
       await saveApiKey(provider, key)
       setSavedKeys((prev) => ({ ...prev, [provider]: true }))
       setKeys((prev) => ({ ...prev, [provider]: '' }))
+      const maskedKey = await window.api.settings.getMaskedKey(provider)
+      if (maskedKey) {
+        setMaskedKeys((prev) => ({ ...prev, [provider]: maskedKey }))
+      }
     } catch (error) {
       console.error('Failed to save API key:', error)
     } finally {
@@ -57,7 +67,9 @@ export function ApiKeyForm() {
           <label className='text-sm text-muted-foreground'>{provider.name}</label>
           {savedKeys[provider.id] ? (
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-muted-foreground'>{t('common.saved')}</span>
+              <span className='text-sm text-muted-foreground font-mono'>
+                {maskedKeys[provider.id] || t('common.saved')}
+              </span>
               <button
                 className='text-xs text-destructive hover:underline'
                 onClick={() => handleDelete(provider.id)}

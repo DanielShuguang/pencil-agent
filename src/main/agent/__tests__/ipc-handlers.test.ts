@@ -19,6 +19,7 @@ const modelConfigMocks = vi.hoisted(() => ({
   mockModelConfigTestConnection: vi.fn(),
   mockModelConfigSaveModel: vi.fn(),
   mockModelConfigDeleteModel: vi.fn(),
+  mockModelConfigGetApiKey: vi.fn(),
 }))
 
 const appStoreMocks = vi.hoisted(() => ({
@@ -75,6 +76,7 @@ vi.mock('../model-config', () => ({
       testConnection: modelConfigMocks.mockModelConfigTestConnection,
       saveModel: modelConfigMocks.mockModelConfigSaveModel,
       deleteModel: modelConfigMocks.mockModelConfigDeleteModel,
+      getApiKey: modelConfigMocks.mockModelConfigGetApiKey,
     }
   },
 }))
@@ -217,6 +219,38 @@ describe('registerAgentHandlers', () => {
       const handler = ipcHandlers.get('settings:get-key')!
       const result = await handler({}, { provider: 'unknown' })
       expect(result).toBeNull()
+    })
+  })
+
+  describe('settings:get-masked-key', () => {
+    it('should return masked API key', async () => {
+      // 让 ModelConfigManager 返回 null，然后检查 api-keys 存储
+      modelConfigMocks.mockModelConfigGetApiKey.mockReturnValue(null)
+      // 修改 mock 返回更长的 key
+      appStoreMocks.mockAppStoreGet.mockReturnValueOnce(
+        Buffer.from('encrypted:sk-real-api-key-1234').toString('base64'),
+      )
+      const handler = ipcHandlers.get('settings:get-masked-key')!
+      const result = await handler({}, { provider: 'openai' })
+      expect(result).toBe('sk-r***1234')
+    })
+
+    it('should return null for missing key', async () => {
+      modelConfigMocks.mockModelConfigGetApiKey.mockReturnValue(null)
+      appStoreMocks.mockAppStoreGet.mockReturnValueOnce(undefined)
+      const handler = ipcHandlers.get('settings:get-masked-key')!
+      const result = await handler({}, { provider: 'unknown' })
+      expect(result).toBeNull()
+    })
+
+    it('should mask short keys completely', async () => {
+      modelConfigMocks.mockModelConfigGetApiKey.mockReturnValue(null)
+      appStoreMocks.mockAppStoreGet.mockReturnValueOnce(
+        Buffer.from('encrypted:short').toString('base64'),
+      )
+      const handler = ipcHandlers.get('settings:get-masked-key')!
+      const result = await handler({}, { provider: 'short' })
+      expect(result).toBe('*****')
     })
   })
 

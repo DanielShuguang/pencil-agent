@@ -174,4 +174,53 @@ describe('ProviderForm', () => {
     expect(screen.getByLabelText('供应商名称')).toHaveValue('OpenAI')
     expect(screen.getByLabelText('接口地址')).toHaveValue('https://api.openai.com/v1')
   })
+
+  it('should display masked API key when editing existing provider', () => {
+    const provider = {
+      id: 'openai',
+      name: 'OpenAI',
+      baseUrl: 'https://api.openai.com/v1',
+      apiFormat: 'openai' as const,
+      models: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+
+    render(
+      <ProviderForm
+        provider={provider}
+        maskedApiKey="sk-a***1234"
+        onSave={mockOnSave}
+        onCancel={mockOnCancel}
+      />,
+    )
+
+    expect(screen.getByLabelText('API 密钥')).toHaveValue('sk-a***1234')
+  })
+
+  it('should allow modifying masked API key', () => {
+    const provider = {
+      id: 'openai',
+      name: 'OpenAI',
+      baseUrl: 'https://api.openai.com/v1',
+      apiFormat: 'openai' as const,
+      models: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+
+    render(
+      <ProviderForm
+        provider={provider}
+        maskedApiKey="sk-a***1234"
+        onSave={mockOnSave}
+        onCancel={mockOnCancel}
+      />,
+    )
+
+    const apiKeyInput = screen.getByLabelText('API 密钥')
+    fireEvent.change(apiKeyInput, { target: { value: 'sk-new-key-1234567890' } })
+
+    expect(apiKeyInput).toHaveValue('sk-new-key-1234567890')
+  })
 })

@@ -110,6 +110,45 @@ export function registerAgentHandlers(
     }
   })
 
+  ipcMain.handle('settings:get-masked-key', (_, { provider }: { provider: string }) => {
+    try {
+      // 首先检查 ModelConfigManager 中的自定义 provider
+      const modelConfigApiKey = getModelConfigManager().getApiKey(provider)
+      
+      if (modelConfigApiKey) {
+        const key = modelConfigApiKey
+        // 加密显示：前4字符 + *** + 后4字符
+        if (key.length <= 8) {
+          return '*'.repeat(key.length)
+        }
+        return `${key.slice(0, 4)  }***${  key.slice(-4)}`
+      }
+
+      // 如果 ModelConfigManager 中没有，检查 api-keys 存储
+      const stored = appStore.get(`api-keys.${provider}`) as string | undefined
+      if (!stored) {
+        return null
+      }
+
+      let key: string
+      if (safeStorage.isEncryptionAvailable()) {
+        const buffer = Buffer.from(stored, 'base64')
+        key = safeStorage.decryptString(buffer)
+      } else {
+        key = stored
+      }
+
+      // 加密显示：前4字符 + *** + 后4字符
+      if (key.length <= 8) {
+        return '*'.repeat(key.length)
+      }
+      return `${key.slice(0, 4)  }***${  key.slice(-4)}`
+    } catch (error) {
+      console.error(`Failed to get masked API key for ${provider}:`, error)
+      return null
+    }
+  })
+
   ipcMain.handle('settings:checkConnection', async (_, { provider }: { provider: string }) => {
     try {
       // 优先使用 ModelConfigManager 的 testConnection（支持自定义 baseUrl/apiFormat）

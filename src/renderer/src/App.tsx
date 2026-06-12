@@ -8,12 +8,14 @@ import { useThemeStore } from './stores/theme-store'
 import { applyTheme } from './themes/apply-theme'
 import { Button } from './components/ui/button'
 import { TooltipProvider } from './components/ui/tooltip'
+import { useNewSession } from './hooks/useNewSession'
 
 function App(): React.JSX.Element {
-  const { activeSessionId, createSession, initFromStorage, syncModelWithProviders } = useAgentStore()
+  const { activeSessionId, initFromStorage, syncModelWithProviders } = useAgentStore()
   const { init: initStatusStore } = useStatusStore()
   const { initFromStorage: initTheme, currentTheme } = useThemeStore()
   const { t } = useTranslation()
+  const handleNewSession = useNewSession()
 
   useEffect(() => {
     initFromStorage()
@@ -35,13 +37,6 @@ function App(): React.JSX.Element {
     })
     return unsubscribe
   }, [])
-
-  const handleNewSession = async () => {
-    if (!window.api?.dialog?.selectDirectory) return
-    const result = await window.api.dialog.selectDirectory()
-    if (result.canceled || result.filePaths.length === 0) return
-    await createSession(result.filePaths[0])
-  }
 
   return (
     <TooltipProvider>

@@ -75,16 +75,6 @@ export function registerAgentHandlers(
     }
   })
 
-  // 校验工作空间目录是否存在且可读
-  ipcMain.handle('agent:validateCwd', async (_, { cwd }: { cwd: string }) => {
-    try {
-      await access(cwd, constants.R_OK)
-      return true
-    } catch {
-      return false
-    }
-  })
-
   // 目录选择
   ipcMain.handle('dialog:selectDirectory', async () => {
     const focusedWindow = BrowserWindow.getFocusedWindow()

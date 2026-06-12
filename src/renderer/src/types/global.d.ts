@@ -18,7 +18,6 @@ interface AgentAPI {
   }) => Promise<string>
   prompt: (sessionId: string, message: string, model?: { id: string; provider: string }) => void
   stop: (sessionId: string) => void
-  validateCwd: (cwd: string) => Promise<boolean>
   onChunk: (cb: (chunk: AgentChunk) => void) => () => void
   onDone: (cb: () => void) => () => void
   onError: (cb: (error: string) => void) => () => void

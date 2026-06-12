@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import Editor, { type OnMount } from '@monaco-editor/react'
+import Editor, { DiffEditor, type OnMount } from '@monaco-editor/react'
 import { useEditorStore } from '../../stores/editor-store'
 
 interface EditorPanelProps {
@@ -8,7 +8,7 @@ interface EditorPanelProps {
 }
 
 export function EditorPanel({ className }: EditorPanelProps) {
-  const { files, activeFilePath, updateFileContent } = useEditorStore()
+  const { files, activeFilePath } = useEditorStore()
   const editorRef = useRef<any>(null)
   const { t } = useTranslation()
 
@@ -18,18 +18,6 @@ export function EditorPanel({ className }: EditorPanelProps) {
     editorRef.current = editor
   }
 
-  const handleChange = (value: string | undefined) => {
-    if (activeFilePath && value !== undefined) {
-      updateFileContent(activeFilePath, value)
-    }
-  }
-
-  useEffect(() => {
-    if (editorRef.current && activeFile) {
-      editorRef.current.setValue(activeFile.content)
-    }
-  }, [activeFilePath, activeFile?.content])
-
   if (!activeFile) {
     return (
       <div className={`flex items-center justify-center text-muted-foreground ${className}`}>
@@ -38,27 +26,46 @@ export function EditorPanel({ className }: EditorPanelProps) {
     )
   }
 
+  const showDiff = activeFile.isModified && activeFile.originalContent !== undefined
+
   return (
     <div className={className}>
-      <Editor
-        height='100%'
-        language={activeFile.language}
-        value={activeFile.content}
-        onChange={handleChange}
-        onMount={handleEditorMount}
-        theme='vs-dark'
-        options={{
-          minimap: { enabled: false },
-          fontSize: 14,
-          lineNumbers: 'on',
-          roundedSelection: false,
-          scrollBeyondLastLine: false,
-          readOnly: false,
-          automaticLayout: true,
-          tabSize: 2,
-          wordWrap: 'on',
-        }}
-      />
+      {showDiff ? (
+        <DiffEditor
+          height='100%'
+          language={activeFile.language}
+          original={activeFile.originalContent!}
+          modified={activeFile.content}
+          theme='vs-dark'
+          options={{
+            readOnly: true,
+            renderSideBySide: true,
+            minimap: { enabled: false },
+            fontSize: 14,
+            automaticLayout: true,
+          }}
+        />
+      ) : (
+        <Editor
+          height='100%'
+          language={activeFile.language}
+          value={activeFile.content}
+          theme='vs-dark'
+          onMount={handleEditorMount}
+          options={{
+            readOnly: true,
+            minimap: { enabled: false },
+            fontSize: 14,
+            lineNumbers: 'on',
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 2,
+            wordWrap: 'on',
+            domReadOnly: true,
+          }}
+        />
+      )}
     </div>
   )
 }

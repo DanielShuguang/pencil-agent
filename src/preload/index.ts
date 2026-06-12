@@ -34,8 +34,6 @@ const agentAPI = {
 
   stop: (sessionId: string) => ipcRenderer.send('agent:stop', sessionId),
 
-  validateCwd: (cwd: string) => ipcRenderer.invoke('agent:validateCwd', { cwd }),
-
   onChunk: (cb: (chunk: AgentChunk) => void) => {
     const handler = (_: unknown, chunk: AgentChunk) => cb(chunk)
     ipcRenderer.on('agent:chunk', handler)

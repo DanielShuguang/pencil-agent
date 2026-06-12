@@ -5,7 +5,8 @@ interface FileNode {
   name: string
   content: string
   language: string
-  isDirty: boolean
+  originalContent?: string
+  isModified: boolean
 }
 
 interface EditorState {
@@ -16,8 +17,7 @@ interface EditorState {
   openFile: (path: string, content: string, language: string) => void
   closeFile: (path: string) => void
   setActiveFile: (path: string) => void
-  updateFileContent: (path: string, content: string) => void
-  markDirty: (path: string, isDirty: boolean) => void
+  updateFileContent: (path: string, newContent: string) => void
   getFile: (path: string) => FileNode | undefined
 }
 
@@ -75,14 +75,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   openFile: (path, content, language) => {
     set((state) => {
       const files = new Map(state.files)
+      const existing = files.get(path)
 
-      if (!files.has(path)) {
+      if (existing) {
+        // 已存在：更新内容，保留原始内容用于 diff
+        files.set(path, {
+          ...existing,
+          content,
+          isModified: existing.originalContent !== undefined && existing.originalContent !== content,
+        })
+      } else {
         files.set(path, {
           path,
           name: path.split('/').pop() || path,
           content,
           language,
-          isDirty: false,
+          isModified: false,
         })
       }
 
@@ -110,23 +118,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ activeFilePath: path })
   },
 
-  updateFileContent: (path, content) => {
+  updateFileContent: (path, newContent) => {
     set((state) => {
       const files = new Map(state.files)
       const file = files.get(path)
       if (file) {
-        files.set(path, { ...file, content, isDirty: true })
-      }
-      return { files }
-    })
-  },
-
-  markDirty: (path, isDirty) => {
-    set((state) => {
-      const files = new Map(state.files)
-      const file = files.get(path)
-      if (file) {
-        files.set(path, { ...file, isDirty })
+        files.set(path, {
+          ...file,
+          originalContent: file.originalContent ?? file.content,
+          content: newContent,
+          isModified: true,
+        })
       }
       return { files }
     })

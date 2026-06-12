@@ -55,7 +55,7 @@ describe('editor-store', () => {
   })
 
   describe('updateFileContent', () => {
-    it('should update file content and mark as dirty', () => {
+    it('should update file content and mark as modified', () => {
       const { openFile, updateFileContent } = useEditorStore.getState()
       openFile('/test/file.js', 'original', 'javascript')
       updateFileContent('/test/file.js', 'modified')
@@ -63,7 +63,21 @@ describe('editor-store', () => {
       const state = useEditorStore.getState()
       const file = state.files.get('/test/file.js')
       expect(file?.content).toBe('modified')
-      expect(file?.isDirty).toBe(true)
+      expect(file?.isModified).toBe(true)
+      expect(file?.originalContent).toBe('original')
+    })
+
+    it('should preserve originalContent on multiple updates', () => {
+      const { openFile, updateFileContent } = useEditorStore.getState()
+      openFile('/test/file.js', 'v1', 'javascript')
+      updateFileContent('/test/file.js', 'v2')
+      updateFileContent('/test/file.js', 'v3')
+
+      const state = useEditorStore.getState()
+      const file = state.files.get('/test/file.js')
+      expect(file?.content).toBe('v3')
+      expect(file?.originalContent).toBe('v1')
+      expect(file?.isModified).toBe(true)
     })
   })
 

@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { AgentChunk, AgentToolCall, TokenUsage } from '@shared/ipc'
 import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/storage'
+import { useEditorStore, getLanguageFromPath } from './editor-store'
+import { useSandboxStore } from './sandbox-store'
 import i18n from '../i18n'
 
 // 每个会话最大消息数，超出后自动截断最早的消息
@@ -293,8 +295,49 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     if (chunk.type === 'tool_call') {
       newMessages = handleToolCallChunk(chunk, prev)
+      // bash 工具调用：在终端中启动执行
+      if (chunk.metadata?.toolName === 'bash') {
+        const command = (chunk.metadata?.parameters as Record<string, unknown>)?.command as string
+        if (command) {
+          useSandboxStore.getState().startExecution(`bash-${Date.now()}`, 'bash', command)
+        }
+      }
     } else if (chunk.type === 'tool_result') {
       newMessages = handleToolResultChunk(chunk, prev)
+      const toolName = chunk.metadata?.toolName as string
+      const params = chunk.metadata?.parameters as Record<string, unknown> | undefined
+      const filePath = params?.path as string | undefined
+
+      // bash 工具结果：同步到终端面板
+      if (toolName === 'bash') {
+        const sandboxStore = useSandboxStore.getState()
+        if (chunk.metadata?.error) {
+          sandboxStore.appendOutput({ type: 'stderr', content: chunk.metadata.error as string })
+        } else if (chunk.content) {
+          sandboxStore.appendOutput({ type: 'stdout', content: chunk.content })
+        }
+        sandboxStore.appendOutput({ type: 'exit', content: '', exitCode: chunk.metadata?.error ? 1 : 0 })
+      }
+
+      if (!chunk.metadata?.error && filePath) {
+        if (toolName === 'read' && chunk.content) {
+          // read 成功：在编辑器中打开文件
+          const language = getLanguageFromPath(filePath)
+          useEditorStore.getState().openFile(filePath, chunk.content, language)
+        } else if (toolName === 'write' && params?.content) {
+          // write 成功：更新编辑器中的文件内容（触发 diff 显示）
+          const editorStore = useEditorStore.getState()
+          if (editorStore.files.has(filePath)) {
+            editorStore.updateFileContent(filePath, params.content as string)
+          }
+        } else if (toolName === 'edit' && chunk.content) {
+          // edit 成功：用结果内容更新编辑器（触发 diff 显示）
+          const editorStore = useEditorStore.getState()
+          if (editorStore.files.has(filePath)) {
+            editorStore.updateFileContent(filePath, chunk.content)
+          }
+        }
+      }
     } else if (chunk.type === 'text') {
       newMessages = handleTextChunk(chunk, prev)
     } else {
@@ -332,12 +375,19 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     if (!meta?.cwd) {
       return false
     }
-    const valid = await window.api.agent.validateCwd(meta.cwd)
-    if (valid) {
+    // 通过 agent:create 校验路径（会抛出错误如果路径无效）
+    try {
+      await window.api.agent.create({
+        sessionId: id,
+        model: meta.model,
+        cwd: meta.cwd,
+      })
       setStorageItem('activeSessionId', id)
       set({ activeSessionId: id })
+      return true
+    } catch {
+      return false
     }
-    return valid
   },
 
   switchModel: (model: { id: string; provider: string }) => {

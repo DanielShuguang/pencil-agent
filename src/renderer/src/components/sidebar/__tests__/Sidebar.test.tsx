@@ -3,8 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { Sidebar } from '../Sidebar'
 import '../../../i18n'
 
+const mockHandleNewSession = vi.fn()
+
 vi.mock('../../../stores/agent-store', () => ({
   useAgentStore: vi.fn(),
+}))
+
+vi.mock('../../../hooks/useNewSession', () => ({
+  useNewSession: () => mockHandleNewSession,
 }))
 
 vi.mock('../SessionList', () => ({
@@ -15,6 +21,7 @@ const { useAgentStore } = await import('../../../stores/agent-store')
 const mockUseAgentStore = vi.mocked(useAgentStore)
 
 beforeEach(() => {
+  mockHandleNewSession.mockClear()
   vi.stubGlobal('window', {
     ...window,
     api: {
@@ -46,18 +53,11 @@ describe('Sidebar', () => {
     expect(addButtons.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('calls createSession on new session click after directory selection', async () => {
-    const createSession = vi.fn()
-    mockUseAgentStore.mockReturnValue({
-      createSession,
-      sessionMetas: new Map(),
-      activeSessionId: null,
-    } as unknown as ReturnType<typeof useAgentStore>)
-
+  it('calls handleNewSession on new session click', async () => {
     render(<Sidebar />)
     const buttons = screen.getAllByRole('button')
     await fireEvent.click(buttons[buttons.length - 1])
-    expect(createSession).toHaveBeenCalledWith('/tmp')
+    expect(mockHandleNewSession).toHaveBeenCalled()
   })
 
   it('collapses when sessions button is clicked', () => {

@@ -2,6 +2,37 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useAgentStore } from '../agent-store'
 import i18n from '../../i18n'
 
+const mockOpenFile = vi.fn()
+const mockUpdateFileContent = vi.fn()
+const mockFiles = new Map()
+
+const mockStartExecution = vi.fn()
+const mockSandboxAppendOutput = vi.fn()
+
+vi.mock('../editor-store', () => ({
+  useEditorStore: {
+    getState: () => ({
+      openFile: mockOpenFile,
+      updateFileContent: mockUpdateFileContent,
+      files: mockFiles,
+    }),
+  },
+  getLanguageFromPath: (path: string) => {
+    if (path.endsWith('.ts')) return 'typescript'
+    if (path.endsWith('.js')) return 'javascript'
+    return 'plaintext'
+  },
+}))
+
+vi.mock('../sandbox-store', () => ({
+  useSandboxStore: {
+    getState: () => ({
+      startExecution: mockStartExecution,
+      appendOutput: mockSandboxAppendOutput,
+    }),
+  },
+}))
+
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
@@ -29,7 +60,6 @@ beforeEach(() => {
         create: vi.fn().mockResolvedValue(undefined),
         prompt: vi.fn(),
         stop: vi.fn(),
-        validateCwd: vi.fn().mockResolvedValue(true),
       },
       dialog: {
         selectDirectory: vi.fn().mockResolvedValue({ canceled: false, filePaths: ['/tmp'] }),
@@ -40,6 +70,11 @@ beforeEach(() => {
     },
   })
   localStorageMock.clear()
+  mockOpenFile.mockClear()
+  mockUpdateFileContent.mockClear()
+  mockFiles.clear()
+  mockStartExecution.mockClear()
+  mockSandboxAppendOutput.mockClear()
   useAgentStore.setState({
     sessions: new Map(),
     sessionMetas: new Map(),
@@ -160,6 +195,107 @@ describe('agent-store', () => {
     const initialSessions = useAgentStore.getState().sessions
     useAgentStore.getState().appendChunk({ type: 'text', content: 'Hi' })
     expect(useAgentStore.getState().sessions).toBe(initialSessions)
+  })
+
+  it('appendChunk opens file in editor on successful read tool result', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({
+      type: 'tool_result',
+      content: 'const x = 1',
+      metadata: { toolName: 'read', parameters: { path: '/src/index.ts' } },
+    })
+    expect(mockOpenFile).toHaveBeenCalledWith('/src/index.ts', 'const x = 1', 'typescript')
+  })
+
+  it('appendChunk does not open file in editor on failed read tool result', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({
+      type: 'tool_result',
+      content: '',
+      metadata: { toolName: 'read', parameters: { path: '/src/index.ts' }, error: 'File not found' },
+    })
+    expect(mockOpenFile).not.toHaveBeenCalled()
+  })
+
+  it('appendChunk updates editor content on successful write tool result', () => {
+    mockFiles.set('/src/index.ts', { content: 'old' })
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' }, status: 'running' }, timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({
+      type: 'tool_result',
+      content: '',
+      metadata: { toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' } },
+    })
+    expect(mockUpdateFileContent).toHaveBeenCalledWith('/src/index.ts', 'new content')
+  })
+
+  it('appendChunk starts sandbox execution on bash tool call', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', []]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({
+      type: 'tool_call',
+      content: '',
+      metadata: { toolName: 'bash', parameters: { command: 'ls -la' } },
+    })
+    expect(mockStartExecution).toHaveBeenCalledWith(
+      expect.stringMatching(/^bash-/),
+      'bash',
+      'ls -la',
+    )
+  })
+
+  it('appendChunk syncs bash tool result to sandbox store', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'bash', parameters: { command: 'echo hi' }, status: 'running' }, timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({
+      type: 'tool_result',
+      content: 'hi\n',
+      metadata: { toolName: 'bash', parameters: { command: 'echo hi' } },
+    })
+    expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'stdout', content: 'hi\n' })
+    expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'exit', content: '', exitCode: 0 })
+  })
+
+  it('appendChunk syncs bash tool error to sandbox store', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'bash', parameters: { command: 'bad' }, status: 'running' }, timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({
+      type: 'tool_result',
+      content: '',
+      metadata: { toolName: 'bash', parameters: { command: 'bad' }, error: 'command not found' },
+    })
+    expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'stderr', content: 'command not found' })
+    expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'exit', content: '', exitCode: 1 })
   })
 
   it('stopGeneration calls window.api.agent.stop and sets isGenerating false', () => {

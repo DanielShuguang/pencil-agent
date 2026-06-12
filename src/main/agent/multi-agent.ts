@@ -177,7 +177,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: proposerSession,
       model: proposer.model,
-      cwd: process.cwd(),
+      cwd: cwd || process.cwd(),
       systemPrompt: proposer.systemPrompt,
       tools: proposer.tools,
     })
@@ -241,7 +241,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: judgeSession,
       model: judge.model,
-      cwd: process.cwd(),
+      cwd: cwd || process.cwd(),
       systemPrompt: judge.systemPrompt,
       tools: judge.tools,
     })
@@ -282,7 +282,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: managerSession,
       model: manager.model,
-      cwd: process.cwd(),
+      cwd: cwd || process.cwd(),
       systemPrompt: manager.systemPrompt,
       tools: manager.tools,
     })
@@ -341,7 +341,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: aggregationSession,
       model: manager.model,
-      cwd: process.cwd(),
+      cwd: cwd || process.cwd(),
       systemPrompt: manager.systemPrompt,
       tools: manager.tools,
     })

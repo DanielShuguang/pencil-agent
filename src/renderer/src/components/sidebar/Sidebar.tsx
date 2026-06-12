@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SessionList } from './SessionList'
-import { useAgentStore } from '../../stores/agent-store'
+import { useNewSession } from '../../hooks/useNewSession'
 import { cn } from '../../lib/utils'
 
 interface SidebarProps {
@@ -10,15 +10,8 @@ interface SidebarProps {
 
 export function Sidebar({ width = 256 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const { createSession } = useAgentStore()
+  const handleNewSession = useNewSession()
   const { t } = useTranslation()
-
-  const handleNewSession = async () => {
-    if (!window.api?.dialog?.selectDirectory) return
-    const result = await window.api.dialog.selectDirectory()
-    if (result.canceled || result.filePaths.length === 0) return
-    await createSession(result.filePaths[0])
-  }
 
   return (
     <div

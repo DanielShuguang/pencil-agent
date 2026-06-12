@@ -32,6 +32,7 @@ export class WorkflowEngine {
     workflow: WorkflowDefinition,
     input: Record<string, unknown>,
     onProgress: (progress: WorkflowProgress) => void,
+    cwd?: string,
   ): Promise<Record<string, unknown>> {
     const context: ExecutionContext = {
       workflowId: workflow.id,
@@ -56,7 +57,7 @@ export class WorkflowEngine {
       onProgress({ nodeId, status: 'running' })
 
       try {
-        const result = await this.executeNode(node, workflow.nodes, workflow.edges, context)
+        const result = await this.executeNode(node, workflow.nodes, workflow.edges, context, cwd)
         context.nodeOutputs.set(nodeId, result)
         context.status.set(nodeId, 'success')
         onProgress({ nodeId, status: 'success', result })
@@ -80,6 +81,7 @@ export class WorkflowEngine {
     nodes: WorkflowNode[],
     edges: WorkflowEdge[],
     context: ExecutionContext,
+    cwd?: string,
   ): Promise<unknown> {
     // Collect inputs from source nodes
     const inputEdges = edges.filter((e) => e.target === node.id)
@@ -105,13 +107,13 @@ export class WorkflowEngine {
       case 'end':
         return inputs[0] ?? {}
       case 'agent':
-        return this.executeAgentNode(node, inputs, context)
+        return this.executeAgentNode(node, inputs, context, cwd)
       case 'tool':
         return this.executeToolNode(node, inputs)
       case 'condition':
         return this.evaluateCondition(node, inputs, context)
       case 'multi-agent':
-        return this.executeMultiAgentNode(node, inputs, context)
+        return this.executeMultiAgentNode(node, inputs, context, cwd)
       default:
         throw new Error(`Unknown node type: ${node.type}`)
     }
@@ -121,6 +123,7 @@ export class WorkflowEngine {
     node: WorkflowNode,
     inputs: unknown[],
     context: ExecutionContext,
+    cwd?: string,
   ): Promise<string> {
     const config = node.data.config as
       | {
@@ -135,6 +138,7 @@ export class WorkflowEngine {
     await this.agents.create({
       sessionId,
       model,
+      cwd: cwd || process.cwd(),
       systemPrompt: config?.systemPrompt,
     })
 
@@ -171,6 +175,7 @@ export class WorkflowEngine {
     node: WorkflowNode,
     inputs: unknown[],
     _context: ExecutionContext,
+    cwd?: string,
   ): Promise<string> {
     if (!this.orchestrator) {
       throw new Error('Multi-agent orchestration requires a RoleManager')
@@ -190,6 +195,7 @@ export class WorkflowEngine {
     const input = String(inputs[0] ?? '')
 
     const result = await this.orchestrator.execute(mode, roleIds, input, {
+      cwd,
       maxRounds: config?.maxRounds,
       mergerRoleId: config?.mergerRoleId,
     })

@@ -61,7 +61,9 @@
     "newSession": "New Session",
     "deleteSession": "Delete Session",
     "renameSession": "Rename Session",
-    "noSessions": "No sessions yet"
+    "noSessions": "No sessions yet",
+    "workspaceMissing": "This session has no workspace. Please create a new one.",
+    "workspaceNotFound": "Workspace not found: {{path}}"
   },
   "settings": {
     "title": "Settings",

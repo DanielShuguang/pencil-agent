@@ -37,7 +37,10 @@ function App(): React.JSX.Element {
   }, [])
 
   const handleNewSession = async () => {
-    await createSession()
+    if (!window.api?.dialog?.selectDirectory) return
+    const result = await window.api.dialog.selectDirectory()
+    if (result.canceled || result.filePaths.length === 0) return
+    await createSession(result.filePaths[0])
   }
 
   return (

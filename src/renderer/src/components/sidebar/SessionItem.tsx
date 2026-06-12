@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Folder } from 'lucide-react'
 import type { SessionMeta } from '../../stores/agent-store'
 import { cn } from '../../lib/utils'
 import {
@@ -35,9 +36,16 @@ function formatTime(
   return date.toLocaleDateString(lang)
 }
 
+function getProjectName(cwd?: string): string | null {
+  if (!cwd) return null
+  const parts = cwd.replace(/[/\\]+$/, '').split(/[/\\]/)
+  return parts[parts.length - 1] || null
+}
+
 export function SessionItem({ meta, isActive, onClick, onDelete }: SessionItemProps) {
   const { t, i18n } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const projectName = getProjectName(meta.cwd)
 
   return (
     <>
@@ -50,6 +58,12 @@ export function SessionItem({ meta, isActive, onClick, onDelete }: SessionItemPr
       >
         <div className='flex-1 min-w-0'>
           <div className='text-sm font-medium truncate'>{meta.title}</div>
+          {projectName && (
+            <div className='flex items-center gap-1 text-xs text-muted-foreground' title={meta.cwd}>
+              <Folder className='h-3 w-3 shrink-0' />
+              <span className='truncate'>{projectName}</span>
+            </div>
+          )}
           <div className='flex items-center gap-2 text-xs text-muted-foreground'>
             <span>
               {meta.model.provider}/{meta.model.id}

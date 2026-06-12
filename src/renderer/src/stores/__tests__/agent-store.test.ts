@@ -29,6 +29,13 @@ beforeEach(() => {
         create: vi.fn().mockResolvedValue(undefined),
         prompt: vi.fn(),
         stop: vi.fn(),
+        validateCwd: vi.fn().mockResolvedValue(true),
+      },
+      dialog: {
+        selectDirectory: vi.fn().mockResolvedValue({ canceled: false, filePaths: ['/tmp'] }),
+      },
+      modelConfig: {
+        list: vi.fn().mockResolvedValue([]),
       },
     },
   })
@@ -55,18 +62,19 @@ describe('agent-store', () => {
   })
 
   it('createSession creates a new session and calls window.api.agent.create', async () => {
-    const id = await useAgentStore.getState().createSession()
+    const id = await useAgentStore.getState().createSession('/tmp')
     expect(id).toMatch(/^session-\d+$/)
     expect(window.api.agent.create).toHaveBeenCalledWith({
       sessionId: id,
       model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+      cwd: '/tmp',
     })
     expect(useAgentStore.getState().activeSessionId).toBe(id)
     expect(useAgentStore.getState().sessions.get(id)).toEqual([])
   })
 
   it('createSession sets the new session as active', async () => {
-    await useAgentStore.getState().createSession()
+    await useAgentStore.getState().createSession('/tmp')
     expect(useAgentStore.getState().activeSessionId).toBeTruthy()
   })
 
@@ -172,7 +180,7 @@ describe('agent-store', () => {
   })
 
   it('deleteSession removes session', async () => {
-    await useAgentStore.getState().createSession()
+    await useAgentStore.getState().createSession('/tmp')
     const id = useAgentStore.getState().activeSessionId!
     useAgentStore.getState().deleteSession(id)
     expect(useAgentStore.getState().sessions.has(id)).toBe(false)
@@ -180,10 +188,10 @@ describe('agent-store', () => {
   })
 
   it('deleteSession switches to another session if deleting active', async () => {
-    await useAgentStore.getState().createSession()
+    await useAgentStore.getState().createSession('/tmp')
     const firstId = useAgentStore.getState().activeSessionId!
     vi.advanceTimersByTime(100)
-    await useAgentStore.getState().createSession()
+    await useAgentStore.getState().createSession('/tmp')
     const secondId = useAgentStore.getState().activeSessionId!
 
     expect(firstId).not.toBe(secondId)
@@ -249,7 +257,7 @@ describe('agent-store', () => {
   })
 
   it('sendMessage updates session title from first message', async () => {
-    await useAgentStore.getState().createSession()
+    await useAgentStore.getState().createSession('/tmp')
     const id = useAgentStore.getState().activeSessionId!
     useAgentStore.getState().sendMessage('Hello this is a test message')
     const meta = useAgentStore.getState().sessionMetas.get(id)

@@ -61,7 +61,9 @@
     "newSession": "新建会话",
     "deleteSession": "删除会话",
     "renameSession": "重命名会话",
-    "noSessions": "暂无会话"
+    "noSessions": "暂无会话",
+    "workspaceMissing": "该会话未绑定工作空间，请重新创建",
+    "workspaceNotFound": "工作空间不存在：{{path}}"
   },
   "workflow": {
     "nodeConfig": "节点配置",

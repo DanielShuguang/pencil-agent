@@ -13,13 +13,14 @@ export function createPermissionExtension(
   auditLogger: AuditLogger,
   getMainWindow: () => BrowserWindow | null,
   getSessionId: () => string,
+  getSessionCwd: () => string,
 ): ExtensionFactory {
   return (pi: ExtensionAPI) => {
     pi.on('tool_call', async (event, _ctx) => {
       const toolName = event.toolName
       const parameters = event.input as Record<string, unknown>
       const sessionId = getSessionId()
-      const cwd = process.cwd()
+      const cwd = getSessionCwd()
       const startTime = Date.now()
 
       toolStartTimes.set(event.toolCallId, startTime)

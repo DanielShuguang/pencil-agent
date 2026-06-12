@@ -32,6 +32,15 @@ const appStoreMocks = vi.hoisted(() => ({
   mockAppStoreDelete: vi.fn(),
 }))
 
+vi.mock('fs/promises', () => ({
+  default: {
+    access: vi.fn().mockResolvedValue(undefined),
+    constants: { R_OK: 4 },
+  },
+  access: vi.fn().mockResolvedValue(undefined),
+  constants: { R_OK: 4 },
+}))
+
 vi.mock('electron', () => ({
   ipcMain: {
     handle: vi.fn((channel: string, handler: Function) => {
@@ -130,12 +139,13 @@ describe('registerAgentHandlers', () => {
       const handler = ipcHandlers.get('agent:create')!
       const result = await handler(
         {},
-        { sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' } },
+        { sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' },
       )
       expect(result).toBe('session-1')
       expect(mockManager.create).toHaveBeenCalledWith({
         sessionId: 'session-1',
         model: { id: 'gpt-4', provider: 'openai' },
+        cwd: '/tmp',
       })
     })
 
@@ -143,8 +153,8 @@ describe('registerAgentHandlers', () => {
       ;(mockManager.create as any).mockRejectedValue(new Error('Creation error'))
       const handler = ipcHandlers.get('agent:create')!
       await expect(
-        handler({}, { sessionId: 's1', model: { id: 'gpt-4', provider: 'openai' } }),
-      ).rejects.toThrow('Failed to create session: Error: Creation error')
+        handler({}, { sessionId: 's1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' }),
+      ).rejects.toThrow('Failed to create session')
     })
   })
 

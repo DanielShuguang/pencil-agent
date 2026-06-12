@@ -15,6 +15,15 @@ const { useAgentStore } = await import('../../../stores/agent-store')
 const mockUseAgentStore = vi.mocked(useAgentStore)
 
 beforeEach(() => {
+  vi.stubGlobal('window', {
+    ...window,
+    api: {
+      ...window.api,
+      dialog: {
+        selectDirectory: vi.fn().mockResolvedValue({ canceled: false, filePaths: ['/tmp'] }),
+      },
+    },
+  })
   mockUseAgentStore.mockReturnValue({
     createSession: vi.fn(),
     sessionMetas: new Map(),
@@ -37,7 +46,7 @@ describe('Sidebar', () => {
     expect(addButtons.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('calls createSession on new session click', () => {
+  it('calls createSession on new session click after directory selection', async () => {
     const createSession = vi.fn()
     mockUseAgentStore.mockReturnValue({
       createSession,
@@ -47,8 +56,8 @@ describe('Sidebar', () => {
 
     render(<Sidebar />)
     const buttons = screen.getAllByRole('button')
-    fireEvent.click(buttons[buttons.length - 1])
-    expect(createSession).toHaveBeenCalled()
+    await fireEvent.click(buttons[buttons.length - 1])
+    expect(createSession).toHaveBeenCalledWith('/tmp')
   })
 
   it('collapses when sessions button is clicked', () => {

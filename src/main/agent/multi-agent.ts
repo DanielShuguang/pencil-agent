@@ -19,6 +19,7 @@ export class MultiAgentOrchestrator {
     roleIds: string[],
     input: string,
     options: {
+      cwd?: string
       maxRounds?: number
       mergerRoleId?: string
       onProgress?: (agentId: string, output: string) => void
@@ -28,13 +29,13 @@ export class MultiAgentOrchestrator {
 
     switch (mode) {
       case 'sequential':
-        return this.executeSequential(roles, input, options.onProgress)
+        return this.executeSequential(roles, input, options.cwd, options.onProgress)
       case 'parallel':
-        return this.executeParallel(roles, input, options.mergerRoleId, options.onProgress)
+        return this.executeParallel(roles, input, options.cwd, options.mergerRoleId, options.onProgress)
       case 'debate':
-        return this.executeDebate(roles, input, options.maxRounds || 5, options.onProgress)
+        return this.executeDebate(roles, input, options.cwd, options.maxRounds || 5, options.onProgress)
       case 'hierarchical':
-        return this.executeHierarchical(roles, input, options.onProgress)
+        return this.executeHierarchical(roles, input, options.cwd, options.onProgress)
       default:
         throw new Error(`Unknown orchestration mode: ${mode}`)
     }
@@ -43,6 +44,7 @@ export class MultiAgentOrchestrator {
   private async executeSequential(
     roles: AgentRole[],
     input: string,
+    cwd: string | undefined,
     onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
     const results: { roleId: string; output: string }[] = []
@@ -53,6 +55,7 @@ export class MultiAgentOrchestrator {
       await this.agents.create({
         sessionId,
         model: role.model,
+        cwd: cwd || process.cwd(),
         systemPrompt: role.systemPrompt,
         tools: role.tools,
       })
@@ -82,6 +85,7 @@ export class MultiAgentOrchestrator {
   private async executeParallel(
     roles: AgentRole[],
     input: string,
+    cwd: string | undefined,
     mergerRoleId?: string,
     onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
@@ -97,6 +101,7 @@ export class MultiAgentOrchestrator {
           await this.agents.create({
             sessionId,
             model: role.model,
+        cwd: cwd || process.cwd(),
             systemPrompt: role.systemPrompt,
             tools: role.tools,
           })
@@ -126,6 +131,7 @@ export class MultiAgentOrchestrator {
         await this.agents.create({
           sessionId,
           model: mergerRole.model,
+          cwd: cwd || process.cwd(),
           systemPrompt: mergerRole.systemPrompt,
           tools: mergerRole.tools,
         })
@@ -153,6 +159,7 @@ export class MultiAgentOrchestrator {
   private async executeDebate(
     roles: AgentRole[],
     input: string,
+    cwd: string | undefined,
     maxRounds: number,
     onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
@@ -170,6 +177,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: proposerSession,
       model: proposer.model,
+      cwd: process.cwd(),
       systemPrompt: proposer.systemPrompt,
       tools: proposer.tools,
     })
@@ -190,6 +198,7 @@ export class MultiAgentOrchestrator {
       await this.agents.create({
         sessionId: opposerSession,
         model: opposer.model,
+        cwd: cwd || process.cwd(),
         systemPrompt: opposer.systemPrompt,
         tools: opposer.tools,
       })
@@ -210,6 +219,7 @@ export class MultiAgentOrchestrator {
       await this.agents.create({
         sessionId: proposerSession2,
         model: proposer.model,
+        cwd: cwd || process.cwd(),
         systemPrompt: proposer.systemPrompt,
         tools: proposer.tools,
       })
@@ -231,6 +241,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: judgeSession,
       model: judge.model,
+      cwd: process.cwd(),
       systemPrompt: judge.systemPrompt,
       tools: judge.tools,
     })
@@ -256,6 +267,7 @@ export class MultiAgentOrchestrator {
   private async executeHierarchical(
     roles: AgentRole[],
     input: string,
+    cwd: string | undefined,
     onProgress?: (agentId: string, output: string) => void,
   ): Promise<OrchestrationResult> {
     if (roles.length < 2) {
@@ -270,6 +282,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: managerSession,
       model: manager.model,
+      cwd: process.cwd(),
       systemPrompt: manager.systemPrompt,
       tools: manager.tools,
     })
@@ -305,6 +318,7 @@ export class MultiAgentOrchestrator {
         await this.agents.create({
           sessionId: workerSession,
           model: worker.model,
+          cwd: cwd || process.cwd(),
           systemPrompt: worker.systemPrompt,
           tools: worker.tools,
         })
@@ -327,6 +341,7 @@ export class MultiAgentOrchestrator {
     await this.agents.create({
       sessionId: aggregationSession,
       model: manager.model,
+      cwd: process.cwd(),
       systemPrompt: manager.systemPrompt,
       tools: manager.tools,
     })

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Bot, Coins, Wifi, WifiOff, Loader2, Info } from 'lucide-react'
+import { Bot, Coins, Wifi, WifiOff, Loader2, Info, Folder } from 'lucide-react'
 import { match } from 'ts-pattern'
 import { cn } from '../../lib/utils'
 import { useStatusStore } from '../../stores/status-store'
@@ -20,8 +20,10 @@ export function StatusBar() {
     syncFromAgentStore,
   } = useStatusStore()
 
-  const { currentModel: agentModel, isGenerating: agentIsGenerating } = useAgentStore()
+  const { currentModel: agentModel, isGenerating: agentIsGenerating, activeSessionId, sessionMetas } = useAgentStore()
   const { t } = useTranslation()
+
+  const activeCwd = activeSessionId ? sessionMetas.get(activeSessionId)?.cwd : undefined
 
   useEffect(() => {
     syncFromAgentStore(agentModel, agentIsGenerating)
@@ -50,6 +52,12 @@ export function StatusBar() {
   return (
     <footer className='flex h-6 shrink-0 items-center justify-between border-t border-border bg-muted/50 px-4 text-xs text-muted-foreground'>
       <div className='flex items-center gap-4'>
+        {activeCwd && (
+          <span className='flex items-center gap-1' title={activeCwd}>
+            <Folder className='h-3 w-3' />
+            <span className='max-w-[200px] truncate'>{activeCwd}</span>
+          </span>
+        )}
         <Popover>
           <PopoverTrigger asChild>
             <button

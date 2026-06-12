@@ -20,6 +20,7 @@ export interface SessionMeta {
   id: string
   title: string
   model: { id: string; provider: string }
+  cwd?: string
   createdAt: number
   updatedAt: number
   messageCount: number
@@ -38,11 +39,12 @@ interface AgentState {
 
   initFromStorage: () => void
   syncModelWithProviders: () => Promise<void>
-  createSession: () => Promise<string>
+  createSession: (cwd: string) => Promise<string>
   deleteSession: (id: string) => void
   sendMessage: (content: string) => void
   stopGeneration: () => void
   switchSession: (id: string) => void
+  validateAndSwitchSession: (id: string) => Promise<boolean>
   appendChunk: (chunk: AgentChunk) => void
   switchModel: (model: { id: string; provider: string }) => void
   createBranch: (messageId: string) => Promise<string | null>
@@ -187,18 +189,20 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }
   },
 
-  createSession: async () => {
+  createSession: async (cwd: string) => {
     const { currentModel } = get()
     const id = `session-${Date.now()}`
     await window.api.agent.create({
       sessionId: id,
       model: currentModel,
+      cwd,
     })
 
     const meta: SessionMeta = {
       id,
       title: i18n.t('app.newConversation'),
       model: currentModel,
+      cwd,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       messageCount: 0,
@@ -323,6 +327,19 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     set({ activeSessionId: id })
   },
 
+  validateAndSwitchSession: async (id: string) => {
+    const meta = get().sessionMetas.get(id)
+    if (!meta?.cwd) {
+      return false
+    }
+    const valid = await window.api.agent.validateCwd(meta.cwd)
+    if (valid) {
+      setStorageItem('activeSessionId', id)
+      set({ activeSessionId: id })
+    }
+    return valid
+  },
+
   switchModel: (model: { id: string; provider: string }) => {
     setStorageItem('currentModel', model)
     set({ currentModel: model })
@@ -338,10 +355,15 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     const branchMessages = messages.slice(0, branchIndex + 1)
     const branchId = `branch-${Date.now()}`
+    const parentMeta = sessionMetas.get(activeSessionId)
+    const branchCwd = parentMeta?.cwd
+
+    if (!branchCwd) return null
 
     await window.api.agent.create({
       sessionId: branchId,
       model: currentModel,
+      cwd: branchCwd,
     })
 
     const meta: SessionMeta = {
@@ -350,6 +372,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         title: sessionMetas.get(activeSessionId)?.title || i18n.t('app.newConversation'),
       }),
       model: currentModel,
+      cwd: branchCwd,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       messageCount: branchMessages.length,

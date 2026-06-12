@@ -25,6 +25,7 @@ const agentAPI = {
   create: (config: {
     sessionId: string
     model: { id: string; provider: string }
+    cwd: string
     systemPrompt?: string
   }) => ipcRenderer.invoke('agent:create', config),
 
@@ -32,6 +33,8 @@ const agentAPI = {
     ipcRenderer.send('agent:prompt', { sessionId, message, model }),
 
   stop: (sessionId: string) => ipcRenderer.send('agent:stop', sessionId),
+
+  validateCwd: (cwd: string) => ipcRenderer.invoke('agent:validateCwd', { cwd }),
 
   onChunk: (cb: (chunk: AgentChunk) => void) => {
     const handler = (_: unknown, chunk: AgentChunk) => cb(chunk)
@@ -261,6 +264,10 @@ const windowAPI = {
   },
 }
 
+const dialogAPI = {
+  selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
+}
+
 // Custom APIs for renderer
 const api: {
   agent: typeof agentAPI
@@ -271,6 +278,7 @@ const api: {
   memory: typeof memoryAPI
   settings: typeof settingsAPI
   window: typeof windowAPI
+  dialog: typeof dialogAPI
   app: typeof appAPI
   modelConfig: typeof modelConfigAPI
   theme: typeof themeAPI
@@ -286,6 +294,7 @@ const api: {
   memory: memoryAPI,
   settings: settingsAPI,
   window: windowAPI,
+  dialog: dialogAPI,
   app: appAPI,
   modelConfig: modelConfigAPI,
   theme: themeAPI,

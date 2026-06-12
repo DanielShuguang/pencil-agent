@@ -13,6 +13,13 @@ export function Sidebar({ width = 256 }: SidebarProps) {
   const { createSession } = useAgentStore()
   const { t } = useTranslation()
 
+  const handleNewSession = async () => {
+    if (!window.api?.dialog?.selectDirectory) return
+    const result = await window.api.dialog.selectDirectory()
+    if (result.canceled || result.filePaths.length === 0) return
+    await createSession(result.filePaths[0])
+  }
+
   return (
     <div
       className={cn(
@@ -44,7 +51,7 @@ export function Sidebar({ width = 256 }: SidebarProps) {
           </button>
           <button
             className='p-2 hover:bg-accent rounded-lg transition-colors'
-            onClick={() => createSession()}
+            onClick={handleNewSession}
           >
             <svg
               xmlns='http://www.w3.org/2000/svg'
@@ -73,7 +80,7 @@ export function Sidebar({ width = 256 }: SidebarProps) {
             </button>
             <button
               className='p-2 hover:bg-accent rounded-lg transition-colors'
-              onClick={() => createSession()}
+              onClick={handleNewSession}
             >
               <svg
                 xmlns='http://www.w3.org/2000/svg'

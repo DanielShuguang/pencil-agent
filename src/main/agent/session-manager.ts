@@ -18,6 +18,7 @@ interface AgentChunk {
 interface SessionConfig {
   sessionId: string
   model: { id: string; provider: string }
+  cwd: string
   systemPrompt?: string
   tools?: string[]
 }
@@ -35,9 +36,17 @@ export class AgentSessionManager {
     this.modelRegistry = ModelRegistry.inMemory(this.authStorage)
   }
 
+  // 会话 cwd 映射（供 permission-extension 等使用）
+  private sessionCwds = new Map<string, string>()
+
   // 注册扩展工厂函数（在 create 时注入到每个 session）
   addExtension(factory: ExtensionFactory): void {
     this.extensionFactories.push(factory)
+  }
+
+  // 获取会话的 cwd
+  getSessionCwd(sessionId: string): string | null {
+    return this.sessionCwds.get(sessionId) ?? null
   }
 
   async create(config: SessionConfig): Promise<void> {
@@ -53,7 +62,7 @@ export class AgentSessionManager {
 
     // 创建 ResourceLoader 并注入扩展
     const resourceLoader = new DefaultResourceLoader({
-      cwd: process.cwd(),
+      cwd: config.cwd,
       agentDir: '~/.pi/agent',
       extensionFactories: this.extensionFactories,
     })
@@ -67,18 +76,20 @@ export class AgentSessionManager {
     })
 
     this.sessions.set(config.sessionId, session)
+    this.sessionCwds.set(config.sessionId, config.cwd)
   }
 
   async *prompt(
     sessionId: string,
     message: string,
     model?: { id: string; provider: string },
+    cwd?: string,
   ): AsyncGenerator<AgentChunk> {
     let session = this.sessions.get(sessionId)
     if (!session) {
       // 会话不存在时自动重建（应用重启后主进程内存丢失的情况）
-      if (model) {
-        await this.create({ sessionId, model })
+      if (model && cwd) {
+        await this.create({ sessionId, model, cwd })
         session = this.sessions.get(sessionId)
       }
       if (!session) {
@@ -161,6 +172,7 @@ export class AgentSessionManager {
     if (session) {
       session.dispose()
       this.sessions.delete(sessionId)
+      this.sessionCwds.delete(sessionId)
     }
   }
 

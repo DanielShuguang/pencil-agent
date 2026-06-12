@@ -42,6 +42,7 @@ describe('preload API surface', () => {
     expect(api.agent.create).toBeInstanceOf(Function)
     expect(api.agent.prompt).toBeInstanceOf(Function)
     expect(api.agent.stop).toBeInstanceOf(Function)
+    expect(api.agent.validateCwd).toBeInstanceOf(Function)
     expect(api.agent.onChunk).toBeInstanceOf(Function)
     expect(api.agent.onDone).toBeInstanceOf(Function)
     expect(api.agent.onError).toBeInstanceOf(Function)

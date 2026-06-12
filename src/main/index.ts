@@ -78,6 +78,7 @@ function createWindow(): void {
       auditLogger,
       () => mainWindow,
       () => 'default',
+      () => agentManager.getSessionCwd('default') || process.cwd(),
     ),
   )
 

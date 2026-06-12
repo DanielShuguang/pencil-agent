@@ -93,6 +93,7 @@ describe('WorkflowEngine', () => {
     expect(agents.create).toHaveBeenCalledWith({
       sessionId: 'test-workflow-a',
       model: { id: 'test-model', provider: 'anthropic' },
+      cwd: expect.any(String),
       systemPrompt: undefined,
     })
   })

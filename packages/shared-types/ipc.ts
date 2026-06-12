@@ -21,6 +21,7 @@ export interface ToolCallResult {
 export interface AgentCreateRequest {
   sessionId: string
   model: { id: string; provider: string }
+  cwd: string
   systemPrompt?: string
   tools?: string[] // 可用工具名称列表
 }
@@ -178,6 +179,7 @@ export interface SandboxExecuteRequest {
   language: 'javascript' | 'typescript' | 'python' | 'bash'
   timeout?: number
   env?: Record<string, string>
+  cwd?: string
 }
 
 export interface SandboxOutput {
@@ -428,4 +430,10 @@ export interface PermissionAPI {
 export interface AuditAPI {
   getLogs: (sessionId: string) => Promise<AuditLogEntry[]>
   clearLogs: () => Promise<void>
+}
+
+// 目录选择相关
+export interface SelectDirectoryResponse {
+  canceled: boolean
+  filePaths: string[]
 }

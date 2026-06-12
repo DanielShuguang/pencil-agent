@@ -90,8 +90,8 @@ describe('SessionList', () => {
     expect(container.querySelector('.bg-accent')).toBeInTheDocument()
   })
 
-  it('calls switchSession on click', () => {
-    const switchSession = vi.fn()
+  it('calls validateAndSwitchSession on click', async () => {
+    const validateAndSwitchSession = vi.fn().mockResolvedValue(true)
     const sessions = new Map([
       [
         's1',
@@ -99,6 +99,7 @@ describe('SessionList', () => {
           id: 's1',
           title: 'Session',
           model: { id: 'm1', provider: 'p1' },
+          cwd: '/tmp',
           updatedAt: 1000,
           createdAt: 1000,
         },
@@ -108,12 +109,12 @@ describe('SessionList', () => {
     mockUseAgentStore.mockReturnValue({
       sessionMetas: sessions,
       activeSessionId: null,
-      switchSession,
+      validateAndSwitchSession,
       deleteSession: vi.fn(),
     } as unknown as ReturnType<typeof useAgentStore>)
 
     render(<SessionList />)
     fireEvent.click(screen.getByText('Session'))
-    expect(switchSession).toHaveBeenCalledWith('s1')
+    expect(validateAndSwitchSession).toHaveBeenCalledWith('s1')
   })
 })

@@ -13,10 +13,12 @@ interface AgentAPI {
   create: (config: {
     sessionId: string
     model: { id: string; provider: string }
+    cwd: string
     systemPrompt?: string
   }) => Promise<string>
   prompt: (sessionId: string, message: string, model?: { id: string; provider: string }) => void
   stop: (sessionId: string) => void
+  validateCwd: (cwd: string) => Promise<boolean>
   onChunk: (cb: (chunk: AgentChunk) => void) => () => void
   onDone: (cb: () => void) => () => void
   onError: (cb: (error: string) => void) => () => void
@@ -121,12 +123,17 @@ interface AuditAPI {
   clearLogs: () => Promise<void>
 }
 
+interface DialogAPI {
+  selectDirectory: () => Promise<{ canceled: boolean; filePaths: string[] }>
+}
+
 interface ElectronAPI {
   agent: AgentAPI
   tool: ToolAPI
   role: RoleAPI
   memory: MemoryAPI
   window: WindowAPI
+  dialog: DialogAPI
   workflow: WorkflowAPI
   sandbox: SandboxAPI
   settings: SettingsAPI

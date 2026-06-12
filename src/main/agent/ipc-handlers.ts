@@ -1,5 +1,6 @@
 import type { AgentRole, ThemeMode, ToolPermissionConfig, ConfirmRequest, ConfirmResponse } from '@shared/ipc'
-import { ipcMain, safeStorage, nativeTheme, type BrowserWindow } from 'electron'
+import { ipcMain, safeStorage, nativeTheme, dialog, BrowserWindow } from 'electron'
+import { access, constants } from 'fs/promises'
 import { appStore } from '../lib/store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
@@ -37,16 +38,27 @@ export function registerAgentHandlers(
   }
   ipcMain.handle('agent:create', async (_, config) => {
     try {
+      // 校验目录存在且可读
+      await access(config.cwd, constants.R_OK)
       await manager.create(config)
+      // 持久化会话 cwd
+      appStore.set(`session:${config.sessionId}.cwd`, config.cwd)
       return config.sessionId
     } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        throw new Error(`工作空间不存在：${config.cwd}`)
+      }
+      if ((error as NodeJS.ErrnoException).code === 'EACCES') {
+        throw new Error(`无权限访问工作空间：${config.cwd}`)
+      }
       throw new Error(`Failed to create session: ${error}`)
     }
   })
 
   ipcMain.on('agent:prompt', async (_, { sessionId, message, model }) => {
     try {
-      for await (const chunk of manager.prompt(sessionId, message, model)) {
+      const cwd = appStore.get(`session:${sessionId}.cwd`) as string | undefined
+      for await (const chunk of manager.prompt(sessionId, message, model, cwd)) {
         mainWindow.webContents.send('agent:chunk', chunk)
       }
       mainWindow.webContents.send('agent:done')
@@ -61,6 +73,28 @@ export function registerAgentHandlers(
     } catch (error) {
       console.error('Failed to stop agent:', error)
     }
+  })
+
+  // 校验工作空间目录是否存在且可读
+  ipcMain.handle('agent:validateCwd', async (_, { cwd }: { cwd: string }) => {
+    try {
+      await access(cwd, constants.R_OK)
+      return true
+    } catch {
+      return false
+    }
+  })
+
+  // 目录选择
+  ipcMain.handle('dialog:selectDirectory', async () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (!focusedWindow) {
+      return { canceled: true, filePaths: [] }
+    }
+    const result = await dialog.showOpenDialog(focusedWindow, {
+      properties: ['openDirectory'],
+    })
+    return result
   })
 
   // 工具相关 handlers

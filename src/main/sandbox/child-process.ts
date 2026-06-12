@@ -24,6 +24,7 @@ export class ChildProcessSandbox implements SandboxExecutor {
       const child = spawn(command, args, {
         shell: true,
         timeout,
+        cwd: req.cwd,
         env: { ...process.env, ...req.env },
       })
 

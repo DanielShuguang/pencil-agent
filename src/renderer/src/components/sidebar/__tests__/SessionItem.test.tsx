@@ -82,4 +82,22 @@ describe('SessionItem', () => {
     render(<SessionItem meta={meta} isActive={false} onClick={vi.fn()} onDelete={vi.fn()} />)
     expect(screen.getByText('5 分钟前')).toBeInTheDocument()
   })
+
+  it('shows project name when cwd is set', () => {
+    const meta = { ...baseMeta, cwd: '/Users/dev/projects/frontend' }
+    render(<SessionItem meta={meta} isActive={false} onClick={vi.fn()} onDelete={vi.fn()} />)
+    expect(screen.getByText('frontend')).toBeInTheDocument()
+  })
+
+  it('shows full cwd as tooltip', () => {
+    const meta = { ...baseMeta, cwd: '/Users/dev/projects/frontend' }
+    render(<SessionItem meta={meta} isActive={false} onClick={vi.fn()} onDelete={vi.fn()} />)
+    const folderRow = screen.getByText('frontend').closest('[title]')
+    expect(folderRow).toHaveAttribute('title', '/Users/dev/projects/frontend')
+  })
+
+  it('does not show project name when cwd is absent', () => {
+    render(<SessionItem meta={baseMeta} isActive={false} onClick={vi.fn()} onDelete={vi.fn()} />)
+    expect(screen.queryByRole('img', { hidden: true })).toBeNull()
+  })
 })

@@ -53,6 +53,10 @@ describe('StatusBar', () => {
     vi.mocked(useAgentStore).mockReturnValue({
       currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       isGenerating: false,
+      activeSessionId: 's1',
+      sessionMetas: new Map([
+        ['s1', { id: 's1', title: 'Test', model: { id: 'm', provider: 'p' }, cwd: '/Users/dev/frontend', updatedAt: 0, createdAt: 0, messageCount: 0 }],
+      ]),
     })
   })
 
@@ -160,5 +164,22 @@ describe('StatusBar', () => {
 
     const modelButton = screen.getByText('claude-sonnet-4-20250514').closest('button')
     expect(modelButton).toHaveClass('text-primary')
+  })
+
+  it('should display workspace path when active session has cwd', () => {
+    render(<StatusBar />)
+    expect(screen.getByText('/Users/dev/frontend')).toBeInTheDocument()
+  })
+
+  it('should not display workspace path when no active session', () => {
+    vi.mocked(useAgentStore).mockReturnValue({
+      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+      isGenerating: false,
+      activeSessionId: null,
+      sessionMetas: new Map(),
+    })
+
+    render(<StatusBar />)
+    expect(screen.queryByText('/Users/dev/frontend')).not.toBeInTheDocument()
   })
 })

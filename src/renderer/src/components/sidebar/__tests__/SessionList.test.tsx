@@ -117,4 +117,31 @@ describe('SessionList', () => {
     fireEvent.click(screen.getByText('Session'))
     expect(validateAndSwitchSession).toHaveBeenCalledWith('s1')
   })
+
+  it('shows toast when session has no cwd', () => {
+    const validateAndSwitchSession = vi.fn()
+    const sessions = new Map([
+      [
+        's1',
+        {
+          id: 's1',
+          title: 'Old Session',
+          model: { id: 'm1', provider: 'p1' },
+          updatedAt: 1000,
+          createdAt: 1000,
+        },
+      ],
+    ])
+
+    mockUseAgentStore.mockReturnValue({
+      sessionMetas: sessions,
+      activeSessionId: null,
+      validateAndSwitchSession,
+      deleteSession: vi.fn(),
+    } as unknown as ReturnType<typeof useAgentStore>)
+
+    render(<SessionList />)
+    fireEvent.click(screen.getByText('Old Session'))
+    expect(validateAndSwitchSession).not.toHaveBeenCalled()
+  })
 })

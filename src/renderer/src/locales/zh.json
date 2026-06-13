@@ -44,7 +44,9 @@
     "terminal": "终端",
     "clearAll": "清除所有",
     "processExit": "进程退出，退出码: {{code}}",
-    "waiting": "等待执行..."
+    "waiting": "等待执行...",
+    "acceptChanges": "接受修改",
+    "rejectChanges": "拒绝修改"
   },
   "chat": {
     "inputPlaceholder": "输入消息...",

@@ -1,14 +1,16 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Editor, { DiffEditor, type OnMount } from '@monaco-editor/react'
+import { Check, X } from 'lucide-react'
 import { useEditorStore } from '../../stores/editor-store'
+import { Button } from '../ui/button'
 
 interface EditorPanelProps {
   className?: string
 }
 
 export function EditorPanel({ className }: EditorPanelProps) {
-  const { files, activeFilePath } = useEditorStore()
+  const { files, activeFilePath, acceptChanges, rejectChanges } = useEditorStore()
   const editorRef = useRef<any>(null)
   const { t } = useTranslation()
 
@@ -30,6 +32,28 @@ export function EditorPanel({ className }: EditorPanelProps) {
 
   return (
     <div className={className}>
+      {showDiff && (
+        <div className='flex items-center justify-end gap-2 px-2 py-1 border-b bg-muted/30'>
+          <Button
+            size='sm'
+            variant='ghost'
+            className='h-7 text-xs'
+            onClick={() => activeFilePath && rejectChanges(activeFilePath)}
+          >
+            <X className='h-3.5 w-3.5 mr-1' />
+            {t('editor.rejectChanges')}
+          </Button>
+          <Button
+            size='sm'
+            variant='ghost'
+            className='h-7 text-xs text-green-500 hover:text-green-600'
+            onClick={() => activeFilePath && acceptChanges(activeFilePath)}
+          >
+            <Check className='h-3.5 w-3.5 mr-1' />
+            {t('editor.acceptChanges')}
+          </Button>
+        </div>
+      )}
       {showDiff ? (
         <DiffEditor
           height='100%'

@@ -6,6 +6,20 @@ import { useEditorStore, getLanguageFromPath } from './editor-store'
 import { useSandboxStore } from './sandbox-store'
 import i18n from '../i18n'
 
+// 生成唯一消息 ID，避免同一毫秒内冲突
+let messageCounter = 0
+function generateMessageId(): string {
+  messageCounter = (messageCounter + 1) % 10000
+  return `msg-${Date.now()}-${messageCounter}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+// 生成工具调用 ID
+let toolCallCounter = 0
+function generateToolCallId(): string {
+  toolCallCounter = (toolCallCounter + 1) % 10000
+  return `tc-${Date.now()}-${toolCallCounter}-${Math.random().toString(36).slice(2, 7)}`
+}
+
 // 每个会话最大消息数，超出后智能截断
 const MAX_MESSAGES_PER_SESSION = 300
 
@@ -90,13 +104,15 @@ function persistRemoveSession(id: string): void {
 
 // 处理工具调用块：创建新的工具调用消息
 function handleToolCallChunk(chunk: AgentChunk, prev: Message[]): Message[] {
+  const toolCallId = generateToolCallId()
   return [
     ...prev,
     {
-      id: `msg-${Date.now()}`,
+      id: generateMessageId(),
       role: 'assistant' as const,
       content: '',
       toolCall: {
+        id: toolCallId,
         toolName: (chunk.metadata?.toolName as string) || 'unknown',
         parameters: (chunk.metadata?.parameters as Record<string, unknown>) || {},
         status: 'running' as const,
@@ -108,8 +124,16 @@ function handleToolCallChunk(chunk: AgentChunk, prev: Message[]): Message[] {
 
 // 处理工具结果块：更新对应工具调用的状态
 function handleToolResultChunk(chunk: AgentChunk, prev: Message[]): Message[] {
-  // 查找最后一个正在运行的工具调用
-  const index = prev.findLastIndex((m) => m.toolCall?.status === 'running')
+  const toolCallId = chunk.metadata?.toolCallId as string | undefined
+  
+  // 优先使用 toolCallId 精确匹配，回退到最后一个 running 状态
+  let index = -1
+  if (toolCallId) {
+    index = prev.findLastIndex((m) => m.toolCall?.id === toolCallId)
+  }
+  if (index === -1) {
+    index = prev.findLastIndex((m) => m.toolCall?.status === 'running')
+  }
   if (index === -1) return prev
 
   const target = prev[index]
@@ -141,7 +165,7 @@ function handleTextChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   return [
     ...prev,
     {
-      id: `msg-${Date.now()}`,
+      id: generateMessageId(),
       role: 'assistant' as const,
       content: chunk.content,
       timestamp: Date.now(),
@@ -164,7 +188,7 @@ function handleThinkingChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   return [
     ...prev,
     {
-      id: `msg-${Date.now()}`,
+      id: generateMessageId(),
       role: 'assistant' as const,
       content: '',
       thinkingContent: chunk.content,
@@ -186,7 +210,7 @@ function handleCompactionChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   return [
     ...prev,
     {
-      id: `msg-${Date.now()}`,
+      id: generateMessageId(),
       role: 'system' as const,
       content: summary,
       timestamp: Date.now(),
@@ -206,26 +230,42 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   language: getStorageItem<'zh' | 'en'>('language', 'zh'),
 
   initFromStorage: () => {
-    const savedSessions = getStorageItem<string[]>('sessionIds', [])
-    const sessions = new Map<string, Message[]>()
-    const sessionMetas = new Map<string, SessionMeta>()
-    const lastActiveId = getStorageItem<string | null>('activeSessionId', null)
+    try {
+      const savedSessions = getStorageItem<string[]>('sessionIds', [])
+      const sessions = new Map<string, Message[]>()
+      const sessionMetas = new Map<string, SessionMeta>()
+      const lastActiveId = getStorageItem<string | null>('activeSessionId', null)
 
-    for (const id of savedSessions) {
-      const data = getStorageItem<{ meta: SessionMeta; messages: Message[] } | null>(
-        `session:${id}`,
-        null,
-      )
-      if (data) {
-        sessions.set(id, data.messages)
-        sessionMetas.set(id, data.meta)
+      for (const id of savedSessions) {
+        try {
+          const data = getStorageItem<{ meta: SessionMeta; messages: Message[] } | null>(
+            `session:${id}`,
+            null,
+          )
+          // 验证数据结构完整性
+          if (data && data.meta && Array.isArray(data.messages)) {
+            // 验证消息格式
+            const validMessages = data.messages.filter(
+              (m) => m && typeof m.id === 'string' && typeof m.role === 'string' && typeof m.content === 'string',
+            )
+            sessions.set(id, validMessages)
+            sessionMetas.set(id, data.meta)
+          }
+        } catch (err) {
+          console.warn(`Failed to load session ${id}:`, err)
+          // 单个会话加载失败不影响其他会话
+        }
       }
+
+      const activeSessionId =
+        lastActiveId && sessions.has(lastActiveId) ? lastActiveId : savedSessions[0] || null
+
+      set({ sessions, sessionMetas, activeSessionId })
+    } catch (err) {
+      console.error('Failed to init from storage:', err)
+      // 存储完全损坏时，使用空状态
+      set({ sessions: new Map(), sessionMetas: new Map(), activeSessionId: null })
     }
-
-    const activeSessionId =
-      lastActiveId && sessions.has(lastActiveId) ? lastActiveId : savedSessions[0] || null
-
-    set({ sessions, sessionMetas, activeSessionId })
   },
 
   // 检查当前模型的 provider 是否有配置，没有则自动切换到第一个可用的
@@ -311,7 +351,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const newMessages = [
       ...prev,
       {
-        id: `msg-${Date.now()}`,
+        id: generateMessageId(),
         role: 'user' as const,
         content,
         timestamp: Date.now(),
@@ -358,18 +398,24 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       if (chunk.metadata?.toolName === 'bash') {
         const command = (chunk.metadata?.parameters as Record<string, unknown>)?.command as string
         if (command) {
-          useSandboxStore.getState().startExecution(`bash-${Date.now()}`, 'bash', command)
+          const executionId = (chunk.metadata?.toolCallId as string) || `bash-${Date.now()}`
+          useSandboxStore.getState().startExecution(executionId, 'bash', command)
         }
       }
     } else if (chunk.type === 'tool_result') {
       newMessages = handleToolResultChunk(chunk, prev)
       const toolName = chunk.metadata?.toolName as string
+      const toolCallId = chunk.metadata?.toolCallId as string | undefined
       const params = chunk.metadata?.parameters as Record<string, unknown> | undefined
       const filePath = params?.path as string | undefined
 
       // bash 工具结果：同步到终端面板
       if (toolName === 'bash') {
         const sandboxStore = useSandboxStore.getState()
+        const executionId = toolCallId || sandboxStore.activeExecutionId
+        if (executionId) {
+          sandboxStore.setActiveExecution(executionId)
+        }
         if (chunk.metadata?.error) {
           sandboxStore.appendOutput({ type: 'stderr', content: chunk.metadata.error as string })
         } else if (chunk.content) {
@@ -405,7 +451,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       newMessages = [
         ...prev,
         {
-          id: `msg-${Date.now()}`,
+          id: generateMessageId(),
           role: 'system' as const,
           content: chunk.content,
           timestamp: Date.now(),

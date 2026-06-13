@@ -18,6 +18,8 @@ interface EditorState {
   closeFile: (path: string) => void
   setActiveFile: (path: string) => void
   updateFileContent: (path: string, newContent: string) => void
+  acceptChanges: (path: string) => void
+  rejectChanges: (path: string) => void
   getFile: (path: string) => FileNode | undefined
 }
 
@@ -78,16 +80,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const existing = files.get(path)
 
       if (existing) {
-        // 已存在：更新内容，保留原始内容用于 diff
+        // 已存在：更新内容和语言，保留原始内容用于 diff
         files.set(path, {
           ...existing,
           content,
+          language,  // 始终更新语言
           isModified: existing.originalContent !== undefined && existing.originalContent !== content,
         })
       } else {
         files.set(path, {
           path,
-          name: path.split('/').pop() || path,
+          name: path.split('/').pop() || path.split('\\').pop() || path,  // 兼容 Windows 路径
           content,
           language,
           isModified: false,
@@ -128,6 +131,37 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           originalContent: file.originalContent ?? file.content,
           content: newContent,
           isModified: true,
+        })
+      }
+      return { files }
+    })
+  },
+
+  acceptChanges: (path) => {
+    set((state) => {
+      const files = new Map(state.files)
+      const file = files.get(path)
+      if (file) {
+        files.set(path, {
+          ...file,
+          originalContent: undefined,
+          isModified: false,
+        })
+      }
+      return { files }
+    })
+  },
+
+  rejectChanges: (path) => {
+    set((state) => {
+      const files = new Map(state.files)
+      const file = files.get(path)
+      if (file && file.originalContent !== undefined) {
+        files.set(path, {
+          ...file,
+          content: file.originalContent,
+          originalContent: undefined,
+          isModified: false,
         })
       }
       return { files }

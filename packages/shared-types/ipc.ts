@@ -33,6 +33,7 @@ export interface AgentChunk {
 }
 
 export interface AgentToolCall {
+  id: string
   toolName: string
   parameters: Record<string, unknown>
   status: 'pending' | 'running' | 'success' | 'error'

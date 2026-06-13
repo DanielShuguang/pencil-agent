@@ -8,6 +8,7 @@ const mockFiles = new Map()
 
 const mockStartExecution = vi.fn()
 const mockSandboxAppendOutput = vi.fn()
+const mockSetActiveExecution = vi.fn()
 
 vi.mock('../editor-store', () => ({
   useEditorStore: {
@@ -29,6 +30,8 @@ vi.mock('../sandbox-store', () => ({
     getState: () => ({
       startExecution: mockStartExecution,
       appendOutput: mockSandboxAppendOutput,
+      setActiveExecution: mockSetActiveExecution,
+      activeExecutionId: null,
     }),
   },
 }))
@@ -201,14 +204,14 @@ describe('agent-store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-1', toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
       ]]]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: 'const x = 1',
-      metadata: { toolName: 'read', parameters: { path: '/src/index.ts' } },
+      metadata: { toolCallId: 'tc-1', toolName: 'read', parameters: { path: '/src/index.ts' } },
     })
     expect(mockOpenFile).toHaveBeenCalledWith('/src/index.ts', 'const x = 1', 'typescript')
   })
@@ -217,14 +220,14 @@ describe('agent-store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-2', toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
       ]]]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: '',
-      metadata: { toolName: 'read', parameters: { path: '/src/index.ts' }, error: 'File not found' },
+      metadata: { toolCallId: 'tc-2', toolName: 'read', parameters: { path: '/src/index.ts' }, error: 'File not found' },
     })
     expect(mockOpenFile).not.toHaveBeenCalled()
   })
@@ -234,14 +237,14 @@ describe('agent-store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' }, status: 'running' }, timestamp: Date.now() },
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-3', toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' }, status: 'running' }, timestamp: Date.now() },
       ]]]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: '',
-      metadata: { toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' } },
+      metadata: { toolCallId: 'tc-3', toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' } },
     })
     expect(mockUpdateFileContent).toHaveBeenCalledWith('/src/index.ts', 'new content')
   })
@@ -268,14 +271,14 @@ describe('agent-store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'bash', parameters: { command: 'echo hi' }, status: 'running' }, timestamp: Date.now() },
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-4', toolName: 'bash', parameters: { command: 'echo hi' }, status: 'running' }, timestamp: Date.now() },
       ]]]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: 'hi\n',
-      metadata: { toolName: 'bash', parameters: { command: 'echo hi' } },
+      metadata: { toolCallId: 'tc-4', toolName: 'bash', parameters: { command: 'echo hi' } },
     })
     expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'stdout', content: 'hi\n' })
     expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'exit', content: '', exitCode: 0 })
@@ -285,14 +288,14 @@ describe('agent-store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { toolName: 'bash', parameters: { command: 'bad' }, status: 'running' }, timestamp: Date.now() },
+        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-5', toolName: 'bash', parameters: { command: 'bad' }, status: 'running' }, timestamp: Date.now() },
       ]]]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: '',
-      metadata: { toolName: 'bash', parameters: { command: 'bad' }, error: 'command not found' },
+      metadata: { toolCallId: 'tc-5', toolName: 'bash', parameters: { command: 'bad' }, error: 'command not found' },
     })
     expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'stderr', content: 'command not found' })
     expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'exit', content: '', exitCode: 1 })

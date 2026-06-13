@@ -29,6 +29,7 @@ interface SessionConfig {
 
 export class AgentSessionManager {
   private sessions = new Map<string, AgentSession>()
+  private sessionConfigs = new Map<string, SessionConfig>()
   private authStorage: AuthStorage
   private modelRegistry: ModelRegistry
   private getApiKey: (provider: string) => string | null
@@ -114,6 +115,7 @@ Windows PowerShell 环境：
     })
 
     this.sessions.set(config.sessionId, session)
+    this.sessionConfigs.set(config.sessionId, config)
     this.sessionCwds.set(config.sessionId, config.cwd)
   }
 
@@ -126,8 +128,12 @@ Windows PowerShell 环境：
     let session = this.sessions.get(sessionId)
     if (!session) {
       // 会话不存在时自动重建（应用重启后主进程内存丢失的情况）
-      if (model && cwd) {
-        await this.create({ sessionId, model, cwd })
+      // 优先使用存储的配置，确保恢复一致性
+      const storedConfig = this.sessionConfigs.get(sessionId)
+      const configToUse = storedConfig || (model && cwd ? { sessionId, model, cwd } : null)
+      
+      if (configToUse) {
+        await this.create(configToUse)
         session = this.sessions.get(sessionId)
       }
       if (!session) {
@@ -138,6 +144,13 @@ Windows PowerShell 环境：
     let resolveNext: ((value: IteratorResult<AgentChunk>) => void) | null = null
     const chunks: AgentChunk[] = []
     let done = false
+    let currentToolCallId: string | null = null
+    let toolCallCounter = 0
+
+    const generateToolCallId = (): string => {
+      toolCallCounter++
+      return `tc-${sessionId}-${toolCallCounter}-${Date.now()}`
+    }
 
     const emitChunk = (chunk: AgentChunk) => {
       if (resolveNext) {
@@ -159,10 +172,11 @@ Windows PowerShell 环境：
         }
       } else if (event.type === 'tool_execution_start') {
         const e = event as any
+        currentToolCallId = generateToolCallId()
         emitChunk({
           type: 'tool_call',
           content: '',
-          metadata: { toolName: e.toolName, parameters: e.args },
+          metadata: { toolCallId: currentToolCallId, toolName: e.toolName, parameters: e.args },
         })
       } else if (event.type === 'tool_execution_end') {
         const e = event as any
@@ -170,10 +184,12 @@ Windows PowerShell 环境：
           type: 'tool_result',
           content: typeof e.result === 'string' ? e.result : JSON.stringify(e.result),
           metadata: {
+            toolCallId: currentToolCallId,
             toolName: e.toolName,
             error: e.isError ? (typeof e.result === 'string' ? e.result : 'Tool execution failed') : undefined,
           },
         })
+        currentToolCallId = null
       } else if (event.type === 'compaction_end') {
         const e = event as any
         const result = e.result
@@ -241,6 +257,7 @@ Windows PowerShell 环境：
     if (session) {
       session.dispose()
       this.sessions.delete(sessionId)
+      this.sessionConfigs.delete(sessionId)
       this.sessionCwds.delete(sessionId)
     }
   }

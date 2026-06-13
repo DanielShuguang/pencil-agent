@@ -44,7 +44,9 @@
     "terminal": "Terminal",
     "clearAll": "Clear All",
     "processExit": "Process exited, code: {{code}}",
-    "waiting": "Waiting for execution..."
+    "waiting": "Waiting for execution...",
+    "acceptChanges": "Accept Changes",
+    "rejectChanges": "Reject Changes"
   },
   "chat": {
     "inputPlaceholder": "Type a message...",

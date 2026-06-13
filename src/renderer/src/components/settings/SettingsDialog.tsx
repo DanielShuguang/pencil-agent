@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { match } from 'ts-pattern'
 import { ApiKeyForm } from './ApiKeyForm'
@@ -9,9 +9,11 @@ import { UpdateDialog } from './UpdateDialog'
 import { useAgentStore } from '../../stores/agent-store'
 import { useThemeStore } from '../../stores/theme-store'
 import { useUpdateStore } from '../../stores/update-store'
+import { useSystemFonts } from '../../hooks/useSystemFonts'
 import { themeRegistry } from '../../themes/theme-registry'
 import { Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
+import { FontSelect } from '../ui/font-select'
 
 type SettingsTab = 'api-keys' | 'models' | 'permission' | 'audit' | 'language' | 'theme'
 
@@ -44,6 +46,17 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const { status, checkForUpdates } = useUpdateStore()
 
   const themes = themeRegistry.getAllThemes()
+  const { fonts: fontOptions } = useSystemFonts()
+
+  const [currentFont, setCurrentFont] = useState(() => {
+    return localStorage.getItem('pencil-agent:font-family') || ''
+  })
+
+  const handleFontChange = useCallback((fontValue: string) => {
+    setCurrentFont(fontValue)
+    localStorage.setItem('pencil-agent:font-family', fontValue)
+    document.documentElement.style.setProperty('--font-family', fontValue)
+  }, [])
 
   const handleCheckUpdate = async () => {
     await checkForUpdates()
@@ -109,6 +122,15 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             ))
             .with('theme', () => (
               <div className='space-y-4'>
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium'>{t('settings.fontFamily')}</label>
+                  <FontSelect
+                    value={currentFont}
+                    onValueChange={handleFontChange}
+                    options={fontOptions}
+                    placeholder={t('settings.fontFamily')}
+                  />
+                </div>
                 <div className='space-y-2'>
                   <label className='text-sm font-medium'>{t('settings.themeMode')}</label>
                   <div className='flex gap-2'>

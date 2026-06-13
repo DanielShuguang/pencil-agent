@@ -29,6 +29,13 @@ function App(): React.JSX.Element {
   }, [currentTheme])
 
   useEffect(() => {
+    const savedFont = localStorage.getItem('pencil-agent:font-family')
+    if (savedFont) {
+      document.documentElement.style.setProperty('--font-family', savedFont)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!window.api?.theme) return
     const unsubscribe = window.api.theme.onThemeChanged((state) => {
       const { setDark, setThemeMode } = useThemeStore.getState()

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { flushSync } from 'react-dom'
 import type { AgentChunk, AgentToolCall, TokenUsage } from '@shared/ipc'
 import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/storage'
 import { useEditorStore, getLanguageFromPath } from './editor-store'
@@ -426,7 +427,10 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       persistSession(updatedMeta, newMessages)
     }
 
-    set({ sessions, sessionMetas: metas })
+    // 使用 flushSync 确保每次 chunk 立即触发渲染
+    flushSync(() => {
+      set({ sessions, sessionMetas: metas })
+    })
   },
 
   stopGeneration: () => {

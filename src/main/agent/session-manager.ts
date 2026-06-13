@@ -6,6 +6,10 @@ import {
   type ExtensionFactory,
   AuthStorage,
   ModelRegistry,
+  createBashTool,
+  createReadTool,
+  createWriteTool,
+  createEditTool,
 } from '@earendil-works/pi-coding-agent'
 import { getModel, type KnownProvider } from '@earendil-works/pi-ai'
 
@@ -60,19 +64,53 @@ export class AgentSessionManager {
       this.authStorage.setRuntimeApiKey(provider, apiKey)
     }
 
+    // 构建系统提示词，注入工作目录信息
+    const cwdInfo = `<working_directory>
+${config.cwd}
+</working_directory>
+
+重要：你的所有文件操作必须基于上述工作目录。当用户询问"当前目录"或"工作目录"时，回答：${config.cwd}`
+    
+    // Windows 平台提示使用 PowerShell 语法
+    const shellInfo = process.platform === 'win32'
+      ? `\n\n<shell_environment>
+Windows PowerShell 环境：
+- 使用 Get-ChildItem 或 ls（而非 dir）
+- 使用 Get-Content（而非 cat）
+- 使用 Set-Location 或 cd
+- 不要使用 bash 语法
+</shell_environment>`
+      : ''
+    
+    const baseSystemPrompt = config.systemPrompt || ''
+    const fullSystemPrompt = baseSystemPrompt
+      ? `${baseSystemPrompt}\n\n${cwdInfo}${shellInfo}`
+      : `${cwdInfo}${shellInfo}`
+
     // 创建 ResourceLoader 并注入扩展
     const resourceLoader = new DefaultResourceLoader({
       cwd: config.cwd,
       agentDir: '~/.pi/agent',
       extensionFactories: this.extensionFactories,
+      systemPrompt: fullSystemPrompt,
     })
     await resourceLoader.reload()
+
+    // Windows 上使用 PowerShell 避免 WSL bash 问题
+    const shellPath = process.platform === 'win32' ? 'powershell.exe' : undefined
 
     const { session } = await createAgentSession({
       model,
       authStorage: this.authStorage,
       modelRegistry: this.modelRegistry,
       resourceLoader,
+      noTools: 'builtin',
+      customTools: [
+        createReadTool(config.cwd),
+        createWriteTool(config.cwd),
+        createEditTool(config.cwd),
+        createBashTool(config.cwd, { shellPath }),
+      ],
     })
 
     this.sessions.set(config.sessionId, session)

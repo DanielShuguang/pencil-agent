@@ -18,6 +18,10 @@ vi.mock('@earendil-works/pi-coding-agent', () => {
     AuthStorage: { inMemory: () => ({}) },
     ModelRegistry: { inMemory: () => ({}) },
     DefaultResourceLoader: MockDefaultResourceLoader,
+    createBashTool: vi.fn(() => ({ name: 'bash' })),
+    createReadTool: vi.fn(() => ({ name: 'read' })),
+    createWriteTool: vi.fn(() => ({ name: 'write' })),
+    createEditTool: vi.fn(() => ({ name: 'edit' })),
   }
 })
 
@@ -56,6 +60,13 @@ describe('AgentSessionManager', () => {
         authStorage: expect.any(Object),
         modelRegistry: expect.any(Object),
         resourceLoader: expect.any(Object),
+        noTools: 'builtin',
+        customTools: expect.arrayContaining([
+          expect.objectContaining({ name: 'bash' }),
+          expect.objectContaining({ name: 'read' }),
+          expect.objectContaining({ name: 'write' }),
+          expect.objectContaining({ name: 'edit' }),
+        ]),
       })
     })
 

@@ -10,7 +10,7 @@ import {
 import { getModel, type KnownProvider } from '@earendil-works/pi-ai'
 
 interface AgentChunk {
-  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'compaction'
   content: string
   metadata?: Record<string, unknown>
 }
@@ -101,22 +101,53 @@ export class AgentSessionManager {
     const chunks: AgentChunk[] = []
     let done = false
 
+    const emitChunk = (chunk: AgentChunk) => {
+      if (resolveNext) {
+        const r = resolveNext
+        resolveNext = null
+        r({ value: chunk, done: false })
+      } else {
+        chunks.push(chunk)
+      }
+    }
+
     const unsubscribe = session.subscribe((event: AgentSessionEvent) => {
       if (event.type === 'message_update') {
         const assistantEvent = (event as any).assistantMessageEvent
         if (assistantEvent?.type === 'text_delta' && assistantEvent.delta) {
-          const chunk: AgentChunk = {
-            type: 'text',
-            content: assistantEvent.delta,
-          }
-          if (resolveNext) {
-            const r = resolveNext
-            resolveNext = null
-            r({ value: chunk, done: false })
-          } else {
-            chunks.push(chunk)
-          }
+          emitChunk({ type: 'text', content: assistantEvent.delta })
+        } else if (assistantEvent?.type === 'thinking_delta' && assistantEvent.delta) {
+          emitChunk({ type: 'thinking', content: assistantEvent.delta })
         }
+      } else if (event.type === 'tool_execution_start') {
+        const e = event as any
+        emitChunk({
+          type: 'tool_call',
+          content: '',
+          metadata: { toolName: e.toolName, parameters: e.args },
+        })
+      } else if (event.type === 'tool_execution_end') {
+        const e = event as any
+        emitChunk({
+          type: 'tool_result',
+          content: typeof e.result === 'string' ? e.result : JSON.stringify(e.result),
+          metadata: {
+            toolName: e.toolName,
+            error: e.isError ? (typeof e.result === 'string' ? e.result : 'Tool execution failed') : undefined,
+          },
+        })
+      } else if (event.type === 'compaction_end') {
+        const e = event as any
+        const result = e.result
+        emitChunk({
+          type: 'compaction',
+          content: result?.summary || '',
+          metadata: {
+            reason: e.reason,
+            tokensBefore: result?.tokensBefore,
+            aborted: e.aborted,
+          },
+        })
       } else if (event.type === 'message_end') {
         done = true
         if (resolveNext) {

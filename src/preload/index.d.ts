@@ -1,7 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 
 interface AgentChunk {
-  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'compaction'
   content: string
   metadata?: Record<string, unknown>
 }

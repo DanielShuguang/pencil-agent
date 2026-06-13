@@ -5,8 +5,30 @@ import { useEditorStore, getLanguageFromPath } from './editor-store'
 import { useSandboxStore } from './sandbox-store'
 import i18n from '../i18n'
 
-// 每个会话最大消息数，超出后自动截断最早的消息
-const MAX_MESSAGES_PER_SESSION = 100
+// 每个会话最大消息数，超出后智能截断
+const MAX_MESSAGES_PER_SESSION = 300
+
+// 截断消息列表：保留开头的 system 消息和所有 user 消息，只丢弃最早的 assistant/tool 消息
+function truncateMessages(messages: Message[]): Message[] {
+  if (messages.length <= MAX_MESSAGES_PER_SESSION) return messages
+  const excess = messages.length - MAX_MESSAGES_PER_SESSION
+  // 找到开头 system 消息的结束位置
+  let leadingSystemEnd = 0
+  while (leadingSystemEnd < messages.length && messages[leadingSystemEnd].role === 'system') {
+    leadingSystemEnd++
+  }
+  // 从 system 消息之后开始，收集可丢弃的 assistant/tool 消息索引
+  const droppable: number[] = []
+  for (let i = leadingSystemEnd; i < messages.length; i++) {
+    if (messages[i].role !== 'user' && messages[i].role !== 'system') {
+      droppable.push(i)
+    }
+    if (droppable.length >= excess) break
+  }
+  if (droppable.length < excess) return messages.slice(-MAX_MESSAGES_PER_SESSION)
+  const cutIndex = droppable[droppable.length - 1] + 1
+  return [...messages.slice(0, leadingSystemEnd), ...messages.slice(cutIndex)]
+}
 
 // 消息类型定义
 export interface Message {
@@ -14,6 +36,7 @@ export interface Message {
   role: 'user' | 'assistant' | 'system' | 'tool'
   content: string
   toolCall?: AgentToolCall
+  thinkingContent?: string
   timestamp: number
 }
 
@@ -62,12 +85,6 @@ function persistSession(meta: SessionMeta, messages: Message[]): void {
 // 从本地存储删除会话
 function persistRemoveSession(id: string): void {
   removeStorageItem(`session:${id}`)
-}
-
-// 截断消息列表，保持在最大限制内
-function truncateMessages(messages: Message[]): Message[] {
-  if (messages.length <= MAX_MESSAGES_PER_SESSION) return messages
-  return messages.slice(-MAX_MESSAGES_PER_SESSION)
 }
 
 // 处理工具调用块：创建新的工具调用消息
@@ -131,8 +148,49 @@ function handleTextChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   ]
 }
 
+// 处理思考块：追加到现有助手消息的 thinkingContent
+function handleThinkingChunk(chunk: AgentChunk, prev: Message[]): Message[] {
+  if (prev.length > 0) {
+    const last = prev[prev.length - 1]
+    if (last.role === 'assistant') {
+      return [
+        ...prev.slice(0, -1),
+        { ...last, thinkingContent: (last.thinkingContent || '') + chunk.content },
+      ]
+    }
+  }
+  // 没有现成助手消息时，创建一个仅含思考内容的占位消息
+  return [
+    ...prev,
+    {
+      id: `msg-${Date.now()}`,
+      role: 'assistant' as const,
+      content: '',
+      thinkingContent: chunk.content,
+      timestamp: Date.now(),
+    },
+  ]
+}
+
 function updateMessageMeta(meta: SessionMeta, messages: Message[]): SessionMeta {
   return { ...meta, updatedAt: Date.now(), messageCount: messages.length }
+}
+
+// 处理上下文压缩事件：插入系统消息提示用户
+function handleCompactionChunk(chunk: AgentChunk, prev: Message[]): Message[] {
+  const reason = chunk.metadata?.reason === 'overflow' ? '上下文溢出' : '上下文接近上限'
+  const summary = chunk.content
+    ? `上下文已压缩（${reason}）。摘要：${chunk.content.slice(0, 200)}${chunk.content.length > 200 ? '...' : ''}`
+    : `上下文已压缩（${reason}）`
+  return [
+    ...prev,
+    {
+      id: `msg-${Date.now()}`,
+      role: 'system' as const,
+      content: summary,
+      timestamp: Date.now(),
+    },
+  ]
 }
 
 export const useAgentStore = create<AgentState>((set, get) => ({
@@ -340,6 +398,20 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       }
     } else if (chunk.type === 'text') {
       newMessages = handleTextChunk(chunk, prev)
+    } else if (chunk.type === 'thinking') {
+      newMessages = handleThinkingChunk(chunk, prev)
+    } else if (chunk.type === 'error') {
+      newMessages = [
+        ...prev,
+        {
+          id: `msg-${Date.now()}`,
+          role: 'system' as const,
+          content: chunk.content,
+          timestamp: Date.now(),
+        },
+      ]
+    } else if (chunk.type === 'compaction') {
+      newMessages = handleCompactionChunk(chunk, prev)
     } else {
       newMessages = prev
     }

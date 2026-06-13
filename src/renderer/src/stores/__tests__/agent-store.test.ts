@@ -361,13 +361,17 @@ describe('agent-store', () => {
     expect(state.sessionMetas.get('session-1')?.title).toBe('Test Session')
   })
 
-  it('truncateMessages limits to 100 messages', () => {
-    const messages = Array.from({ length: 150 }, (_, i) => ({
-      id: `msg-${i}`,
-      role: 'user' as const,
-      content: `Message ${i}`,
-      timestamp: Date.now(),
-    }))
+  it('truncateMessages limits messages and preserves user/system messages', () => {
+    const messages: Array<{ id: string; role: 'user' | 'assistant' | 'system'; content: string; timestamp: number }> = Array.from(
+      { length: 350 },
+      (_, i) => ({
+        id: `msg-${i}`,
+        role: (i % 3 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
+        content: `Message ${i}`,
+        timestamp: Date.now(),
+      }),
+    )
+    messages.unshift({ id: 'msg-sys', role: 'system', content: 'System note', timestamp: Date.now() })
 
     useAgentStore.setState({
       activeSessionId: 'session-1',
@@ -381,7 +385,7 @@ describe('agent-store', () => {
             model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            messageCount: 150,
+            messageCount: 351,
           },
         ],
       ]),
@@ -389,7 +393,10 @@ describe('agent-store', () => {
 
     useAgentStore.getState().appendChunk({ type: 'text', content: 'New' })
     const result = useAgentStore.getState().sessions.get('session-1')!
-    expect(result.length).toBeLessThanOrEqual(100)
+    expect(result.length).toBeLessThanOrEqual(300)
+    // system 消息应被保留
+    const systemMsgs = result.filter((m) => m.role === 'system')
+    expect(systemMsgs.length).toBeGreaterThanOrEqual(1)
   })
 
   it('sendMessage updates session title from first message', async () => {
@@ -415,5 +422,61 @@ describe('agent-store', () => {
     expect(i18n.language).toBe('en')
     useAgentStore.getState().setLanguage('zh')
     expect(i18n.language).toBe('zh')
+  })
+
+  it('appendChunk handles thinking chunks by appending to thinkingContent', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant' as const, content: 'Answer', timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({ type: 'thinking', content: 'Let me think...' })
+    const messages = useAgentStore.getState().sessions.get('session-1')!
+    expect(messages).toHaveLength(1)
+    expect(messages[0].thinkingContent).toBe('Let me think...')
+    expect(messages[0].content).toBe('Answer')
+  })
+
+  it('appendChunk accumulates thinking chunks', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', [
+        { id: 'msg-1', role: 'assistant' as const, content: '', timestamp: Date.now() },
+      ]]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({ type: 'thinking', content: 'Part 1. ' })
+    useAgentStore.getState().appendChunk({ type: 'thinking', content: 'Part 2.' })
+    const messages = useAgentStore.getState().sessions.get('session-1')!
+    expect(messages[0].thinkingContent).toBe('Part 1. Part 2.')
+  })
+
+  it('appendChunk creates placeholder message for thinking when no assistant message exists', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', []]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({ type: 'thinking', content: 'Thinking...' })
+    const messages = useAgentStore.getState().sessions.get('session-1')!
+    expect(messages).toHaveLength(1)
+    expect(messages[0].role).toBe('assistant')
+    expect(messages[0].content).toBe('')
+    expect(messages[0].thinkingContent).toBe('Thinking...')
+  })
+
+  it('appendChunk handles error chunks by creating system message', () => {
+    useAgentStore.setState({
+      activeSessionId: 'session-1',
+      sessions: new Map([['session-1', []]]),
+      sessionMetas: new Map(),
+    })
+    useAgentStore.getState().appendChunk({ type: 'error', content: 'Something went wrong' })
+    const messages = useAgentStore.getState().sessions.get('session-1')!
+    expect(messages).toHaveLength(1)
+    expect(messages[0].role).toBe('system')
+    expect(messages[0].content).toBe('Something went wrong')
   })
 })

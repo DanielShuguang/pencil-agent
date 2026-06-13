@@ -16,11 +16,12 @@ export function createPermissionExtension(
   getSessionCwd: () => string,
 ): ExtensionFactory {
   return (pi: ExtensionAPI) => {
-    pi.on('tool_call', async (event, _ctx) => {
+    pi.on('tool_call', async (event, ctx) => {
       const toolName = event.toolName
       const parameters = event.input as Record<string, unknown>
       const sessionId = getSessionId()
-      const cwd = getSessionCwd()
+      // 优先使用扩展上下文的 cwd（来自 AgentSession，路径正确）
+      const cwd = ctx.cwd || getSessionCwd()
       const startTime = Date.now()
 
       toolStartTimes.set(event.toolCallId, startTime)
@@ -67,7 +68,7 @@ export function createPermissionExtension(
     })
 
     // 在 tool_result 中记录实际执行结果
-    pi.on('tool_result', (event) => {
+    pi.on('tool_result', (event, _ctx) => {
       const sessionId = getSessionId()
       const startTime = toolStartTimes.get(event.toolCallId)
       const duration = startTime ? Date.now() - startTime : 0

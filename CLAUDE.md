@@ -53,6 +53,7 @@ pnpm typecheck     # 类型检查
 
 - **组件文件**: PascalCase.tsx，**工具/库**: camelCase.ts，**Store**: kebab-case.ts
 - **注释语言**: 中文，关键逻辑处添加，避免冗余
+- **提交语言**: 中文（commit messages must be in Chinese）
 - **提交前必须**: `pnpm test:run` 全部通过
 - 详细规范见对应知识文件
 

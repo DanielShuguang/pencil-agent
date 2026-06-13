@@ -1,9 +1,10 @@
 import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, WorkflowProgress } from '@shared/ipc'
 import type { AgentSessionManager } from '../agent/session-manager'
 import type { ToolRegistry } from '../agent/tool-registry'
-import { topologicalSort } from './topological-sort'
+import { CycleError } from './topological-sort'
 import { MultiAgentOrchestrator } from '../agent/multi-agent'
 import { RoleManager } from '../agent/role-manager'
+import { evaluateSafeExpression } from './safe-evaluator'
 
 const MAX_AGENT_OUTPUT_LENGTH = 100_000
 const CONDITION_TYPES = new Set(['condition'])
@@ -22,6 +23,7 @@ export class WorkflowEngine {
     private agents: AgentSessionManager,
     private tools: ToolRegistry,
     roleManager?: RoleManager,
+    private toolExecutor?: (toolName: string, parameters: Record<string, unknown>, cwd?: string) => Promise<unknown>,
   ) {
     if (roleManager) {
       this.orchestrator = new MultiAgentOrchestrator(agents, roleManager)
@@ -41,39 +43,105 @@ export class WorkflowEngine {
       status: new Map(workflow.nodes.map((n) => [n.id, 'pending'])),
     }
 
-    // Topological sort
-    const executionOrder = topologicalSort(workflow.nodes, workflow.edges)
-
     const agentSessionIds: string[] = []
+    const executionLayers = this.calculateExecutionLayers(workflow.nodes, workflow.edges)
 
-    for (const nodeId of executionOrder) {
-      const node = workflow.nodes.find((n) => n.id === nodeId)!
+    for (const layer of executionLayers) {
+      const layerPromises = layer.map(async (nodeId) => {
+        const node = workflow.nodes.find((n) => n.id === nodeId)!
 
-      if (node.type === 'agent') {
-        agentSessionIds.push(`${context.workflowId}-${node.id}`)
-      }
+        if (node.type === 'agent') {
+          agentSessionIds.push(`${context.workflowId}-${node.id}`)
+        }
 
-      context.status.set(nodeId, 'running')
-      onProgress({ nodeId, status: 'running' })
+        context.status.set(nodeId, 'running')
+        onProgress({ nodeId, status: 'running' })
+
+        try {
+          const result = await this.executeNode(node, workflow.nodes, workflow.edges, context, cwd)
+          context.nodeOutputs.set(nodeId, result)
+          context.status.set(nodeId, 'success')
+          onProgress({ nodeId, status: 'success', result })
+        } catch (error) {
+          context.status.set(nodeId, 'error')
+          onProgress({ nodeId, status: 'error', error: String(error) })
+          throw error
+        }
+      })
 
       try {
-        const result = await this.executeNode(node, workflow.nodes, workflow.edges, context, cwd)
-        context.nodeOutputs.set(nodeId, result)
-        context.status.set(nodeId, 'success')
-        onProgress({ nodeId, status: 'success', result })
+        await Promise.all(layerPromises)
       } catch (error) {
-        context.status.set(nodeId, 'error')
-        onProgress({ nodeId, status: 'error', error: String(error) })
-        for (const sid of agentSessionIds) {
-          this.agents.destroy(sid)
-        }
+        await this.cleanupSessions(agentSessionIds)
         throw error
       }
     }
 
+    // Cleanup agent sessions on successful execution
+    await this.cleanupSessions(agentSessionIds)
+
     // Return end node output
     const endNode = workflow.nodes.find((n) => n.type === 'end')
     return endNode ? (context.nodeOutputs.get(endNode.id) as Record<string, unknown>) : {}
+  }
+
+  private async cleanupSessions(sessionIds: string[]): Promise<void> {
+    const cleanupPromises = sessionIds.map((sid) => {
+      try {
+        return this.agents.destroy(sid)
+      } catch {
+        // Ignore cleanup errors
+        return Promise.resolve()
+      }
+    })
+    await Promise.all(cleanupPromises)
+  }
+
+  private calculateExecutionLayers(nodes: WorkflowNode[], edges: WorkflowEdge[]): string[][] {
+    const inDegree = new Map<string, number>()
+    const adjacency = new Map<string, string[]>()
+
+    for (const node of nodes) {
+      inDegree.set(node.id, 0)
+      adjacency.set(node.id, [])
+    }
+
+    for (const edge of edges) {
+      const targetDegree = inDegree.get(edge.target) ?? 0
+      inDegree.set(edge.target, targetDegree + 1)
+      const neighbors = adjacency.get(edge.source) ?? []
+      neighbors.push(edge.target)
+      adjacency.set(edge.source, neighbors)
+    }
+
+    const layers: string[][] = []
+    const visited = new Set<string>()
+
+    while (visited.size < nodes.length) {
+      const currentLayer: string[] = []
+      
+      for (const [nodeId, degree] of inDegree) {
+        if (degree === 0 && !visited.has(nodeId)) {
+          currentLayer.push(nodeId)
+        }
+      }
+
+      if (currentLayer.length === 0) {
+        throw new CycleError('Workflow contains a cycle')
+      }
+
+      layers.push(currentLayer)
+
+      for (const nodeId of currentLayer) {
+        visited.add(nodeId)
+        for (const neighbor of adjacency.get(nodeId) ?? []) {
+          const degree = inDegree.get(neighbor)! - 1
+          inDegree.set(neighbor, degree)
+        }
+      }
+    }
+
+    return layers
   }
 
   private async executeNode(
@@ -109,7 +177,7 @@ export class WorkflowEngine {
       case 'agent':
         return this.executeAgentNode(node, inputs, context, cwd)
       case 'tool':
-        return this.executeToolNode(node, inputs)
+        return this.executeToolNode(node, inputs, cwd)
       case 'condition':
         return this.evaluateCondition(node, inputs, context)
       case 'multi-agent':
@@ -152,7 +220,7 @@ export class WorkflowEngine {
     return result
   }
 
-  private async executeToolNode(node: WorkflowNode, inputs: unknown[]): Promise<unknown> {
+  private async executeToolNode(node: WorkflowNode, _inputs: unknown[], cwd?: string): Promise<unknown> {
     const config = node.data.config as
       | {
           toolName?: string
@@ -166,9 +234,11 @@ export class WorkflowEngine {
     const tool = this.tools.get(toolName)
     if (!tool) throw new Error(`Tool not found: ${toolName}`)
 
-    // For now, return the input as tool output
-    // Real tool execution would use the sandbox or tool registry
-    return inputs[0]
+    if (!this.toolExecutor) {
+      throw new Error('Tool executor not provided')
+    }
+
+    return this.toolExecutor(toolName, config?.parameters ?? {}, cwd)
   }
 
   private async executeMultiAgentNode(
@@ -192,6 +262,18 @@ export class WorkflowEngine {
 
     const mode = config?.mode || 'sequential'
     const roleIds = config?.roleIds || []
+
+    // 验证 roleIds 不为空
+    if (roleIds.length === 0) {
+      throw new Error('Multi-agent node requires at least one roleId')
+    }
+
+    // 验证 mode 有效性
+    const validModes = ['sequential', 'parallel', 'debate', 'hierarchical']
+    if (!validModes.includes(mode)) {
+      throw new Error(`Invalid multi-agent mode: ${mode}`)
+    }
+
     const input = String(inputs[0] ?? '')
 
     const result = await this.orchestrator.execute(mode, roleIds, input, {
@@ -217,19 +299,8 @@ export class WorkflowEngine {
     const expression = config?.expression
     if (!expression) throw new Error('Condition node missing expression config')
 
-    // Simple evaluation - in production, use a safe expression evaluator
     const input = inputs[0]
-    let result: boolean
-
-    try {
-      // Basic expression evaluation (can be extended)
-      // Replace $input with actual value and evaluate
-      const evalExpression = expression.replace(/\$input/g, JSON.stringify(input))
-      // Use Function constructor instead of eval for slightly better safety
-      result = Boolean(new Function(`return ${evalExpression}`)())
-    } catch {
-      result = false
-    }
+    const result = evaluateSafeExpression(expression, input)
 
     return {
       trueOutput: result ? input : undefined,

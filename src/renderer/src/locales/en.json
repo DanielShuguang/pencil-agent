@@ -106,6 +106,7 @@
     "delete": "Delete",
     "showModel": "Show Model",
     "hideModel": "Hide Model",
+    "fontFamily": "Font Family",
     "theme": "Theme",
     "themeMode": "Theme Mode",
     "followSystem": "Follow System",

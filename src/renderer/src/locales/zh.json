@@ -137,6 +137,7 @@
     "delete": "删除",
     "showModel": "显示模型",
     "hideModel": "隐藏模型",
+    "fontFamily": "字体",
     "theme": "主题",
     "themeMode": "主题模式",
     "followSystem": "跟随系统",

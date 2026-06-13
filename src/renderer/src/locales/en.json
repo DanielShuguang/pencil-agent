@@ -54,7 +54,11 @@
     "generating": "Generating...",
     "noMessages": "No messages yet",
     "sendToStart": "Send a message to start conversation",
-    "startConversation": "Start conversation..."
+    "startConversation": "Start conversation...",
+    "thinkingProcess": "Thinking Process",
+    "rewindToHere": "Rewind to here",
+    "rewindTitle": "Rewind Conversation",
+    "rewindConfirm": "This will create a new branch session from this message. Continue?"
   },
   "sidebar": {
     "sessions": "Sessions",

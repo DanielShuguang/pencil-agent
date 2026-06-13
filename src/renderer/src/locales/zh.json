@@ -54,7 +54,11 @@
     "generating": "生成中...",
     "noMessages": "暂无消息",
     "sendToStart": "发送消息开始对话",
-    "startConversation": "开始对话..."
+    "startConversation": "开始对话...",
+    "thinkingProcess": "思考过程",
+    "rewindToHere": "回退到此处",
+    "rewindTitle": "回退对话",
+    "rewindConfirm": "将从此消息创建一个新的分支会话，是否继续？"
   },
   "sidebar": {
     "sessions": "会话",

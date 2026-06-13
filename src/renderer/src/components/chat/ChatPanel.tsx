@@ -5,6 +5,7 @@ import { VirtualMessageList } from './VirtualMessageList'
 import { InputBar } from './InputBar'
 import { ModelSelector } from './ModelSelector'
 import { BranchSelector } from './BranchSelector'
+import { TokenUsageBadge } from './TokenUsageBadge'
 
 const VIRTUAL_SCROLL_THRESHOLD = 50
 
@@ -25,7 +26,10 @@ export function ChatPanel() {
           <div className='text-sm font-medium truncate'>{activeMeta?.title || 'Pencil Agent'}</div>
           <BranchSelector />
         </div>
-        <ModelSelector />
+        <div className='flex items-center gap-2'>
+          <ModelSelector />
+          <TokenUsageBadge />
+        </div>
       </div>
       {shouldUseVirtualScroll ? <VirtualMessageList /> : <MessageList />}
       <InputBar

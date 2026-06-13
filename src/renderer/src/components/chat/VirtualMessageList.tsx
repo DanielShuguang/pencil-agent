@@ -6,21 +6,22 @@ import { MessageBubble } from './MessageBubble'
 
 type RowProps = {
   messages: Message[]
+  onRewind: (messageId: string) => void
 }
 
-function RowComponent({ index, messages, style }: RowComponentProps<RowProps>) {
+function RowComponent({ index, messages, onRewind, style }: RowComponentProps<RowProps>) {
   const message = messages[index]
   if (!message) return null
 
   return (
     <div style={style} className='px-4 py-2'>
-      <MessageBubble message={message} />
+      <MessageBubble message={message} onRewind={onRewind} />
     </div>
   )
 }
 
 export function VirtualMessageList() {
-  const { activeSessionId, sessions } = useAgentStore()
+  const { activeSessionId, sessions, createBranch } = useAgentStore()
   const messages = activeSessionId ? sessions.get(activeSessionId) || [] : []
   const { t } = useTranslation()
   const listRef = useListRef(null)
@@ -32,6 +33,10 @@ export function VirtualMessageList() {
       listRef.current.scrollToRow({ index: messages.length - 1, align: 'end' })
     }
   }, [messages, listRef])
+
+  const handleRewind = (messageId: string) => {
+    createBranch(messageId)
+  }
 
   if (messages.length === 0) {
     return (
@@ -48,7 +53,7 @@ export function VirtualMessageList() {
         rowComponent={RowComponent}
         rowCount={messages.length}
         rowHeight={rowHeight}
-        rowProps={{ messages }}
+        rowProps={{ messages, onRewind: handleRewind }}
         overscanCount={5}
         style={{ height: 600 }}
       />

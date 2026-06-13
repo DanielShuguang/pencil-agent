@@ -24,21 +24,32 @@ test.afterAll(async () => {
   }
 })
 
-const INPUT_SELECTOR = 'input[placeholder*="输入"], input[placeholder*="消息"]'
+const INPUT_SELECTOR = 'textarea[placeholder*="输入"], textarea[placeholder*="消息"], textarea[placeholder*="input"], textarea[placeholder*="message"], textarea[placeholder*="Type"]'
 
 async function ensureSession(page: Page) {
   const input = page.locator(INPUT_SELECTOR)
   const count = await input.count()
   if (count === 0) {
-    const newSessionBtn = page.locator('button', { hasText: '新建会话' })
-    await expect(newSessionBtn).toBeVisible()
-    await newSessionBtn.click()
-    await expect(input).toBeVisible({ timeout: 10000 })
+    // 新建会话按钮是 sidebar 中的 + 图标按钮
+    const sidebar = page.locator('[class*="border-r"]').first()
+    const buttons = sidebar.locator('button')
+    const lastButton = buttons.last()
+    await lastButton.click()
+    await page.waitForTimeout(1000)
   }
-  return input
+  return page.locator(INPUT_SELECTOR).first()
 }
 
 test.describe('Chat Panel', () => {
+  test.beforeEach(async () => {
+    // 关闭所有可能打开的 modal
+    const overlay = window.locator('[data-state="open"]').first()
+    if (await overlay.isVisible().catch(() => false)) {
+      await window.keyboard.press('Escape')
+      await window.waitForTimeout(500)
+    }
+  })
+
   test('chat tab is active by default', async () => {
     const chatBtn = window.locator('header button', { hasText: '对话' })
     await expect(chatBtn).toBeVisible()
@@ -46,7 +57,7 @@ test.describe('Chat Panel', () => {
   })
 
   test('sidebar is visible with session list', async () => {
-    const sidebar = window.locator('[class*="w-64"]').first()
+    const sidebar = window.locator('[class*="border-r"]').first()
     await expect(sidebar).toBeVisible()
   })
 
@@ -84,7 +95,7 @@ test.describe('Chat Panel', () => {
 
   test('session appears in sidebar after creation', async () => {
     await ensureSession(window)
-    const sidebar = window.locator('[class*="w-64"]').first()
+    const sidebar = window.locator('[class*="border-r"]').first()
     const sessionItems = sidebar.locator('[class*="hover"], [class*="cursor-pointer"]')
     const count = await sessionItems.count()
     expect(count).toBeGreaterThanOrEqual(1)

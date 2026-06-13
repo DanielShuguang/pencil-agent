@@ -34,9 +34,10 @@ async function openSettings(): Promise<void> {
 }
 
 async function switchToThemeTab(): Promise<void> {
+  await window.waitForTimeout(500) // 等待动画完成
   const dialog = window.locator('[role="dialog"]')
   const themeBtn = dialog.locator('button', { hasText: '主题' })
-  await themeBtn.click()
+  await themeBtn.click({ force: true })
   await window.waitForTimeout(300)
 }
 

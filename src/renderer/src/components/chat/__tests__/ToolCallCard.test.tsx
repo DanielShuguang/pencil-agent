@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ToolCallCard } from '../ToolCallCard'
+import '../../../i18n'
 
 describe('ToolCallCard', () => {
   it('should render tool name', () => {

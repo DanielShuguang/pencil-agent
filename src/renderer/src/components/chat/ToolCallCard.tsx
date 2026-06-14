@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight, CheckCircle, XCircle, Loader2, Wrench } from 'lucide-react'
 import { CodeBlock } from './CodeBlock'
 
@@ -16,6 +17,7 @@ interface ToolCallCardProps {
 
 export function ToolCallCard({ toolCall }: ToolCallCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const { t } = useTranslation()
 
   const statusIcon = {
     pending: <Loader2 className='h-4 w-4 animate-spin text-yellow-500' />,
@@ -25,10 +27,10 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
   }
 
   const statusText = {
-    pending: '等待中',
-    running: '执行中',
-    success: '成功',
-    error: '失败',
+    pending: t('chat.toolStatus.pending'),
+    running: t('chat.toolStatus.running'),
+    success: t('chat.toolStatus.success'),
+    error: t('chat.toolStatus.error'),
   }
 
   const formatParameters = (params: Record<string, unknown>): string => {
@@ -62,20 +64,20 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
       {isExpanded && (
         <div className='border-t px-3 py-2 space-y-2'>
           <div>
-            <p className='text-xs font-medium text-muted-foreground mb-1'>参数</p>
+            <p className='text-xs font-medium text-muted-foreground mb-1'>{t('permission.parameters')}</p>
             <CodeBlock code={formatParameters(toolCall.parameters)} language='json' />
           </div>
 
           {toolCall.result !== undefined && (
             <div>
-              <p className='text-xs font-medium text-muted-foreground mb-1'>结果</p>
+              <p className='text-xs font-medium text-muted-foreground mb-1'>{t('permission.result')}</p>
               <CodeBlock code={formatResult(toolCall.result)} language='json' />
             </div>
           )}
 
           {toolCall.error && (
             <div>
-              <p className='text-xs font-medium text-red-500 mb-1'>错误</p>
+              <p className='text-xs font-medium text-red-500 mb-1'>{t('permission.error')}</p>
               <pre className='rounded bg-red-500/10 p-2 text-xs text-red-600 overflow-x-auto'>
                 {toolCall.error}
               </pre>

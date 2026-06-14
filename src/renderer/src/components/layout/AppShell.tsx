@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense, useMemo, type ReactNode } from 'react'
 import { Minus, Square, X, Maximize2, MessageSquare, Code2, Workflow, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { match } from 'ts-pattern'
@@ -8,10 +8,13 @@ import { SettingsDialog } from '../settings/SettingsDialog'
 import { StatusBar } from './StatusBar'
 import { Loading } from '../ui/loading'
 import { ResizeHandle } from '../ui/resize-handle'
+import { ErrorBoundary } from '../ui/error-boundary'
 import { PermissionConfirmDialog } from '../permission/PermissionConfirmDialog'
 import { usePermissionStore } from '../../stores/permission-store'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useUpdateStore } from '../../stores/update-store'
+import { useGlobalShortcuts } from '../../hooks/useGlobalShortcuts'
+import { useNewSession } from '../../hooks/useNewSession'
 import type { WorkflowNode } from '@shared/ipc'
 
 const EditorPanel = lazy(() =>
@@ -50,6 +53,16 @@ export function AppShell({ children }: AppShellProps) {
   const [nodeConfigWidth, setNodeConfigWidth] = useState(288)
   const { selectedNodeId, setExecuting, updateNodeStatus } = useWorkflowStore()
   const { t } = useTranslation()
+  const handleNewSession = useNewSession()
+
+  const shortcuts = useMemo(
+    () => ({
+      n: () => handleNewSession(),
+      ',': () => setIsSettingsOpen((v) => !v),
+    }),
+    [handleNewSession],
+  )
+  useGlobalShortcuts(shortcuts)
 
   const handleSidebarResize = useCallback((delta: number) => {
     setSidebarWidth((prev) => Math.max(180, Math.min(480, prev + delta)))
@@ -216,45 +229,49 @@ export function AppShell({ children }: AppShellProps) {
         <div className='flex-1 flex flex-col overflow-hidden'>
           <div key={activeTab} className='flex-1 flex flex-col overflow-hidden animate-in fade-in-0 slide-in-from-bottom-2 duration-150'>
           {match(activeTab)
-            .with('chat', () => children)
+            .with('chat', () => <ErrorBoundary>{children}</ErrorBoundary>)
             .with('editor', () => (
-              <Suspense fallback={<Loading />}>
-                <div className='flex-1 flex overflow-hidden'>
-                  <div className='border-r bg-muted/20 overflow-auto' style={{ width: fileTreeWidth }}>
-                    <div className='p-2'>
-                      <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
-                        {t('app.file')}
-                      </h3>
-                      <FileTree />
+              <ErrorBoundary>
+                <Suspense fallback={<Loading />}>
+                  <div className='flex-1 flex overflow-hidden'>
+                    <div className='border-r bg-muted/20 overflow-auto' style={{ width: fileTreeWidth }}>
+                      <div className='p-2'>
+                        <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
+                          {t('app.file')}
+                        </h3>
+                        <FileTree />
+                      </div>
+                    </div>
+                    <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
+                    <div className='flex-1 flex flex-col overflow-hidden'>
+                      <TabBar />
+                      <EditorPanel className='flex-1' />
+                      <TerminalPanel
+                        isCollapsed={isTerminalCollapsed}
+                        onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
+                      />
                     </div>
                   </div>
-                  <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
-                  <div className='flex-1 flex flex-col overflow-hidden'>
-                    <TabBar />
-                    <EditorPanel className='flex-1' />
-                    <TerminalPanel
-                      isCollapsed={isTerminalCollapsed}
-                      onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
-                    />
-                  </div>
-                </div>
-              </Suspense>
+                </Suspense>
+              </ErrorBoundary>
             ))
             .with('workflow', () => (
-              <Suspense fallback={<Loading />}>
-                <div className='flex-1 flex flex-col overflow-hidden'>
-                  <WorkflowToolbar onExecute={handleExecute} />
-                  <div className='flex-1 flex overflow-hidden'>
-                    <WorkflowCanvas className='flex-1' />
-                    {selectedNodeId && (
-                      <>
-                        <ResizeHandle direction='horizontal' onResize={handleNodeConfigResize} />
-                        <NodeConfigPanel style={{ width: nodeConfigWidth }} />
-                      </>
-                    )}
+              <ErrorBoundary>
+                <Suspense fallback={<Loading />}>
+                  <div className='flex-1 flex flex-col overflow-hidden'>
+                    <WorkflowToolbar onExecute={handleExecute} />
+                    <div className='flex-1 flex overflow-hidden'>
+                      <WorkflowCanvas className='flex-1' />
+                      {selectedNodeId && (
+                        <>
+                          <ResizeHandle direction='horizontal' onResize={handleNodeConfigResize} />
+                          <NodeConfigPanel style={{ width: nodeConfigWidth }} />
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Suspense>
+                </Suspense>
+              </ErrorBoundary>
             ))
             .exhaustive()}
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAgentStore } from '../../stores/agent-store'
 import { useModelConfigStore } from '../../stores/model-config-store'
 import { ChevronDown } from 'lucide-react'
@@ -11,6 +12,7 @@ interface ModelSelectorProps {
 export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
   const { currentModel, switchModel } = useAgentStore()
   const { providers, fetchProviders } = useModelConfigStore()
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -45,7 +47,7 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
       <div className='p-2'>
         <input
           type='text'
-          placeholder='搜索模型...'
+          placeholder={t('settings.searchModels')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className='w-full px-3 py-1.5 text-sm border rounded-md bg-background'
@@ -54,7 +56,7 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
 
       <div className='max-h-64 overflow-y-auto'>
         {filteredProviders.length === 0 ? (
-          <div className='p-4 text-sm text-muted-foreground text-center'>未找到模型</div>
+          <div className='p-4 text-sm text-muted-foreground text-center'>{t('settings.noModelsFound')}</div>
         ) : (
           filteredProviders.map((provider) => (
             <div key={provider.id} className='p-2'>

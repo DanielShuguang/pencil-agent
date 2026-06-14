@@ -11,6 +11,19 @@ import {
 } from '@xyflow/react'
 import type { WorkflowProgress } from '@shared/ipc'
 
+const STORAGE_KEY = 'pencil-agent:workflow'
+
+function loadSaved(): { nodes: Node[]; edges: Edge[] } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const data = JSON.parse(raw)
+      return { nodes: data.nodes ?? [], edges: data.edges ?? [] }
+    }
+  } catch { /* ignore */ }
+  return { nodes: [], edges: [] }
+}
+
 interface WorkflowState {
   nodes: Node[]
   edges: Edge[]
@@ -32,39 +45,64 @@ interface WorkflowState {
   clearWorkflow: () => void
 }
 
+function persist(nodes: Node[], edges: Edge[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges }))
+  } catch { /* ignore */ }
+}
+
+const saved = loadSaved()
+
 export const useWorkflowStore = create<WorkflowState>((set, get) => ({
-  nodes: [],
-  edges: [],
+  nodes: saved.nodes,
+  edges: saved.edges,
   selectedNodeId: null,
   nodeStatus: new Map(),
   isExecuting: false,
 
-  setNodes: (nodes) => set({ nodes }),
-  setEdges: (edges) => set({ edges }),
+  setNodes: (nodes) => {
+    set({ nodes })
+    persist(nodes, get().edges)
+  },
+  setEdges: (edges) => {
+    set({ edges })
+    persist(get().nodes, edges)
+  },
 
   onNodesChange: (changes) => {
-    set({ nodes: applyNodeChanges(changes, get().nodes) })
+    const nodes = applyNodeChanges(changes, get().nodes)
+    set({ nodes })
+    persist(nodes, get().edges)
   },
 
   onEdgesChange: (changes) => {
-    set({ edges: applyEdgeChanges(changes, get().edges) })
+    const edges = applyEdgeChanges(changes, get().edges)
+    set({ edges })
+    persist(get().nodes, edges)
   },
 
   onConnect: (connection) => {
-    set({ edges: addEdge({ ...connection, id: `edge-${Date.now()}` }, get().edges) })
+    const edges = addEdge({ ...connection, id: `edge-${Date.now()}` }, get().edges)
+    set({ edges })
+    persist(get().nodes, edges)
   },
 
   addNode: (node) => {
-    set({ nodes: [...get().nodes, node] })
+    const nodes = [...get().nodes, node]
+    set({ nodes })
+    persist(nodes, get().edges)
   },
 
   removeNode: (nodeId) => {
     const { nodes, edges, selectedNodeId } = get()
+    const newNodes = nodes.filter((n) => n.id !== nodeId)
+    const newEdges = edges.filter((e) => e.source !== nodeId && e.target !== nodeId)
     set({
-      nodes: nodes.filter((n) => n.id !== nodeId),
-      edges: edges.filter((e) => e.source !== nodeId && e.target !== nodeId),
+      nodes: newNodes,
+      edges: newEdges,
       selectedNodeId: selectedNodeId === nodeId ? null : selectedNodeId,
     })
+    persist(newNodes, newEdges)
   },
 
   selectNode: (nodeId) => {
@@ -73,9 +111,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   updateNodeData: (nodeId, data) => {
     const { nodes } = get()
-    set({
-      nodes: nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n)),
-    })
+    const newNodes = nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n))
+    set({ nodes: newNodes })
+    persist(newNodes, get().edges)
   },
 
   setExecuting: (isExecuting) => set({ isExecuting }),
@@ -95,5 +133,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodeStatus: new Map(),
       isExecuting: false,
     })
+    localStorage.removeItem(STORAGE_KEY)
   },
 }))

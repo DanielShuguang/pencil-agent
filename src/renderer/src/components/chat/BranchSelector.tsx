@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { useAgentStore } from '../../stores/agent-store'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
 export function BranchSelector() {
   const { activeSessionId, sessionMetas, getBranches, switchSession } = useAgentStore()
+  const { t } = useTranslation()
   const branches = getBranches()
   const activeMeta = activeSessionId ? sessionMetas.get(activeSessionId) : null
 
@@ -17,7 +19,7 @@ export function BranchSelector() {
           className='text-xs text-muted-foreground hover:text-foreground transition-colors'
           onClick={() => switchSession(parentId)}
         >
-          ← 返回父会话
+          {t('chat.backToParent')}
         </button>
       )}
       {branches.length > 0 && (

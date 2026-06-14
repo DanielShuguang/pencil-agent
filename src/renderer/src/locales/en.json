@@ -36,7 +36,11 @@
   "status": {
     "connected": "Connected",
     "disconnected": "Disconnected",
-    "checking": "Checking..."
+    "checking": "Checking...",
+    "tokenUsage": "Token Usage",
+    "prompt": "Prompt:",
+    "completion": "Completion:",
+    "total": "Total:"
   },
   "editor": {
     "noOpenFiles": "No open files",
@@ -46,7 +50,9 @@
     "processExit": "Process exited, code: {{code}}",
     "waiting": "Waiting for execution...",
     "acceptChanges": "Accept Changes",
-    "rejectChanges": "Reject Changes"
+    "rejectChanges": "Reject Changes",
+    "saveFile": "Save File",
+    "modified": "Modified"
   },
   "chat": {
     "inputPlaceholder": "Type a message...",
@@ -57,10 +63,24 @@
     "noMessages": "No messages yet",
     "sendToStart": "Send a message to start conversation",
     "startConversation": "Start conversation...",
+    "searchMessages": "Search messages...",
+    "copyCode": "Copy code",
+    "copied": "Copied",
     "thinkingProcess": "Thinking Process",
     "rewindToHere": "Rewind to here",
     "rewindTitle": "Rewind Conversation",
-    "rewindConfirm": "This will create a new branch session from this message. Continue?"
+    "rewindConfirm": "This will create a new branch session from this message. Continue?",
+    "backToParent": "← Back to parent",
+    "exportChat": "Export Chat",
+    "exportMarkdown": "Export as Markdown",
+    "exportJSON": "Export as JSON",
+    "chatExported": "Chat exported",
+    "toolStatus": {
+      "pending": "Pending",
+      "running": "Running",
+      "success": "Success",
+      "error": "Failed"
+    }
   },
   "sidebar": {
     "sessions": "Sessions",
@@ -69,7 +89,14 @@
     "renameSession": "Rename Session",
     "noSessions": "No sessions yet",
     "workspaceMissing": "This session has no workspace. Please create a new one.",
-    "workspaceNotFound": "Workspace not found: {{path}}"
+    "workspaceNotFound": "Workspace not found: {{path}}",
+    "searchPlaceholder": "Search sessions..."
+  },
+  "shortcuts": {
+    "newSession": "New Session",
+    "toggleSettings": "Toggle Settings",
+    "searchMessages": "Search Messages",
+    "exportChat": "Export Chat"
   },
   "settings": {
     "title": "Settings",
@@ -77,6 +104,7 @@
     "models": "Models",
     "permission": "Permissions",
     "auditLog": "Audit Log",
+    "memory": "Memory",
     "language": "Language",
     "chinese": "中文",
     "english": "English",
@@ -117,7 +145,9 @@
     "darkMode": "Dark Mode",
     "selectTheme": "Select Theme",
     "maxTokensRange": "Max tokens must be between 1-1000000",
-    "temperatureRange": "Temperature must be between 0-2"
+    "temperatureRange": "Temperature must be between 0-2",
+    "searchModels": "Search models...",
+    "noModelsFound": "No models found"
   },
   "permission": {
     "confirmTitle": "Tool Execution Confirmation",
@@ -142,9 +172,15 @@
     "error": "Error"
   },
   "memory": {
+    "title": "Memory Search",
     "searchPlaceholder": "Search memories...",
     "search": "Search",
     "searching": "Searching...",
+    "noResults": "No results found",
+    "noMemories": "No memories yet",
+    "relevance": "Relevance: ",
+    "clearAll": "Clear All Memories",
+    "openPanel": "Open Memory Panel",
     "score": "Score"
   },
   "workflow": {

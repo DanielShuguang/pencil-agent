@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
-import { Folder } from 'lucide-react'
+import { useMemo, useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Folder, Download } from 'lucide-react'
 import { useAgentStore } from '../../stores/agent-store'
 import { MessageList } from './MessageList'
 import { VirtualMessageList } from './VirtualMessageList'
@@ -7,6 +8,8 @@ import { InputBar } from './InputBar'
 import { ModelSelector } from './ModelSelector'
 import { BranchSelector } from './BranchSelector'
 import { TokenUsageBadge } from './TokenUsageBadge'
+import { exportAsMarkdown, exportAsJSON } from '../../lib/export-chat'
+import { toast } from '../../lib/toast'
 
 const VIRTUAL_SCROLL_THRESHOLD = 50
 
@@ -14,11 +17,34 @@ export function ChatPanel() {
   const { activeSessionId, isGenerating, stopGeneration, sessionMetas, sessions } = useAgentStore()
   const activeMeta = activeSessionId ? sessionMetas.get(activeSessionId) : null
   const messages = activeSessionId ? sessions.get(activeSessionId) || [] : []
+  const { t } = useTranslation()
+  const [exportOpen, setExportOpen] = useState(false)
+  const exportRef = useRef<HTMLDivElement>(null)
 
   const shouldUseVirtualScroll = useMemo(
     () => messages.length > VIRTUAL_SCROLL_THRESHOLD,
     [messages.length],
   )
+
+  useEffect(() => {
+    if (!exportOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setExportOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [exportOpen])
+
+  const handleExport = (format: 'md' | 'json') => {
+    if (!messages.length) return
+    const title = activeMeta?.title || 'chat'
+    if (format === 'md') exportAsMarkdown(messages, title)
+    else exportAsJSON(messages, title)
+    toast.success(t('chat.chatExported'))
+    setExportOpen(false)
+  }
 
   return (
     <div className='flex h-full flex-col'>
@@ -34,6 +60,33 @@ export function ChatPanel() {
           <BranchSelector />
         </div>
         <div className='flex items-center gap-2'>
+          {messages.length > 0 && (
+            <div className='relative' ref={exportRef}>
+              <button
+                onClick={() => setExportOpen(!exportOpen)}
+                className='p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors'
+                title={t('chat.exportChat')}
+              >
+                <Download className='h-4 w-4' />
+              </button>
+              {exportOpen && (
+                <div className='absolute right-0 top-full mt-1 bg-popover border rounded-md shadow-md py-1 z-50 min-w-[140px]'>
+                  <button
+                    onClick={() => handleExport('md')}
+                    className='w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors'
+                  >
+                    {t('chat.exportMarkdown')}
+                  </button>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className='w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors'
+                  >
+                    {t('chat.exportJSON')}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <ModelSelector />
           <TokenUsageBadge />
         </div>

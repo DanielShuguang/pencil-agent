@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMemoryStore } from '../../stores/memory-store'
 
 export function MemoryPanel() {
@@ -12,6 +13,7 @@ export function MemoryPanel() {
     clearAllMemories,
   } = useMemoryStore()
   const [localQuery, setLocalQuery] = useState('')
+  const { t } = useTranslation()
 
   const handleSearch = () => {
     if (localQuery.trim()) {
@@ -24,12 +26,12 @@ export function MemoryPanel() {
   return (
     <div className='flex flex-col h-full'>
       <div className='p-4 border-b'>
-        <h3 className='text-sm font-medium mb-2'>记忆搜索</h3>
+        <h3 className='text-sm font-medium mb-2'>{t('memory.title')}</h3>
         <div className='flex gap-2'>
           <input
             type='text'
             className='flex-1 px-3 py-1.5 text-sm border rounded-md bg-background'
-            placeholder='搜索记忆...'
+            placeholder={t('memory.searchPlaceholder')}
             value={localQuery}
             onChange={(e) => setLocalQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -39,17 +41,17 @@ export function MemoryPanel() {
             onClick={handleSearch}
             disabled={!localQuery.trim() || isLoading}
           >
-            搜索
+            {t('memory.search')}
           </button>
         </div>
       </div>
 
       <div className='flex-1 overflow-auto p-4'>
         {isLoading ? (
-          <div className='text-sm text-muted-foreground text-center'>加载中...</div>
+          <div className='text-sm text-muted-foreground text-center'>{t('common.loading')}</div>
         ) : displayItems.length === 0 ? (
           <div className='text-sm text-muted-foreground text-center'>
-            {searchQuery ? '未找到结果' : '暂无记忆'}
+            {searchQuery ? t('memory.noResults') : t('memory.noMemories')}
           </div>
         ) : (
           <div className='space-y-3'>
@@ -65,7 +67,7 @@ export function MemoryPanel() {
                     ))}
                     {item.score !== undefined && (
                       <span className='text-xs text-muted-foreground'>
-                        相关度：{item.score.toFixed(2)}
+                        {t('memory.relevance')}{item.score.toFixed(2)}
                       </span>
                     )}
                   </div>
@@ -73,7 +75,7 @@ export function MemoryPanel() {
                     className='text-xs text-destructive hover:underline'
                     onClick={() => deleteMemory(item.id)}
                   >
-                    删除
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>
@@ -88,7 +90,7 @@ export function MemoryPanel() {
             className='w-full px-3 py-1.5 text-sm text-destructive border border-destructive rounded-md hover:bg-destructive/10'
             onClick={clearAllMemories}
           >
-            清空所有记忆
+            {t('memory.clearAll')}
           </button>
         </div>
       )}

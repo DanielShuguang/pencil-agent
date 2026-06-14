@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import Editor, { DiffEditor, type OnMount } from '@monaco-editor/react'
+import Editor, { DiffEditor, type OnMount, type OnChange } from '@monaco-editor/react'
 import { Check, X } from 'lucide-react'
 import { useEditorStore } from '../../stores/editor-store'
 import { Button } from '../ui/button'
@@ -10,7 +10,7 @@ interface EditorPanelProps {
 }
 
 export function EditorPanel({ className }: EditorPanelProps) {
-  const { files, activeFilePath, acceptChanges, rejectChanges } = useEditorStore()
+  const { files, activeFilePath, updateFileContent, acceptChanges, rejectChanges } = useEditorStore()
   const editorRef = useRef<any>(null)
   const { t } = useTranslation()
 
@@ -18,6 +18,12 @@ export function EditorPanel({ className }: EditorPanelProps) {
 
   const handleEditorMount: OnMount = (editor) => {
     editorRef.current = editor
+  }
+
+  const handleEditorChange: OnChange = (value) => {
+    if (activeFilePath && value !== undefined) {
+      updateFileContent(activeFilePath, value)
+    }
   }
 
   if (!activeFile) {
@@ -76,8 +82,9 @@ export function EditorPanel({ className }: EditorPanelProps) {
           value={activeFile.content}
           theme='vs-dark'
           onMount={handleEditorMount}
+          onChange={handleEditorChange}
           options={{
-            readOnly: true,
+            readOnly: false,
             minimap: { enabled: false },
             fontSize: 14,
             lineNumbers: 'on',
@@ -86,7 +93,7 @@ export function EditorPanel({ className }: EditorPanelProps) {
             automaticLayout: true,
             tabSize: 2,
             wordWrap: 'on',
-            domReadOnly: true,
+            domReadOnly: false,
           }}
         />
       )}

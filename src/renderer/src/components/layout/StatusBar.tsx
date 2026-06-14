@@ -85,19 +85,19 @@ export function StatusBar() {
           <PopoverContent side='top' align='start' className='w-48'>
             <div className='flex items-center gap-1.5 mb-2'>
               <Info className='h-3 w-3' />
-              <span className='font-medium'>Token 用量</span>
+              <span className='font-medium'>{t('status.tokenUsage')}</span>
             </div>
             <div className='space-y-1'>
               <div className='flex justify-between gap-4'>
-                <span>提示：</span>
+                <span>{t('status.prompt')}</span>
                 <span>{formatTokenCount(tokenUsage.prompt)}</span>
               </div>
               <div className='flex justify-between gap-4'>
-                <span>补全：</span>
+                <span>{t('status.completion')}</span>
                 <span>{formatTokenCount(tokenUsage.completion)}</span>
               </div>
               <div className='flex justify-between gap-4 border-t pt-1'>
-                <span>总计：</span>
+                <span>{t('status.total')}</span>
                 <span>{formatTokenCount(tokenUsage.total)}</span>
               </div>
             </div>

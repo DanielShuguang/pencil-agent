@@ -23,6 +23,10 @@ vi.mock('react-i18next', () => ({
         'status.connected': '已连接',
         'status.disconnected': '已断开',
         'status.checking': '检查中...',
+        'status.tokenUsage': 'Token 用量',
+        'status.prompt': '提示：',
+        'status.completion': '补全：',
+        'status.total': '总计：',
       }
       return translations[key] || key
     },

@@ -5,6 +5,7 @@ import { ApiKeyForm } from './ApiKeyForm'
 import { ModelConfigPanel } from './ModelConfigPanel'
 import { PermissionPanel } from './PermissionPanel'
 import { AuditLogPanel } from '../audit/AuditLogPanel'
+import { MemoryPanel } from '../memory/MemoryPanel'
 import { UpdateDialog } from './UpdateDialog'
 import { useAgentStore } from '../../stores/agent-store'
 import { useThemeStore } from '../../stores/theme-store'
@@ -15,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle } from '..
 import { Button } from '../ui/button'
 import { FontSelect } from '../ui/font-select'
 
-type SettingsTab = 'api-keys' | 'models' | 'permission' | 'audit' | 'language' | 'theme'
+type SettingsTab = 'api-keys' | 'models' | 'permission' | 'audit' | 'memory' | 'language' | 'theme'
 
 interface SettingsDialogProps {
   isOpen: boolean
@@ -27,6 +28,7 @@ const TAB_KEYS: Record<SettingsTab, string> = {
   models: 'models',
   permission: 'permission',
   audit: 'auditLog',
+  memory: 'memory',
   language: 'language',
   theme: 'theme',
 }
@@ -77,7 +79,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
         <DialogBody>
           <div className='flex gap-2 mb-4 border-b'>
-            {(['api-keys', 'models', 'permission', 'audit', 'language', 'theme'] as SettingsTab[]).map((tab) => (
+            {(['api-keys', 'models', 'permission', 'audit', 'memory', 'language', 'theme'] as SettingsTab[]).map((tab) => (
               <Button
                 key={tab}
                 variant={activeTab === tab ? 'default' : 'ghost'}
@@ -102,6 +104,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             .with('models', () => <ModelConfigPanel />)
             .with('permission', () => <PermissionPanel />)
             .with('audit', () => <AuditLogPanel />)
+            .with('memory', () => <MemoryPanel />)
             .with('language', () => (
               <div className='space-y-4'>
                 <div className='flex gap-2'>

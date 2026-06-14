@@ -121,7 +121,7 @@ export function AuditLogPanel() {
 
                       {log.result !== null && log.result !== undefined && (
                         <div>
-                          <div className='text-xs font-medium mb-1'>结果</div>
+                          <div className='text-xs font-medium mb-1'>{t('permission.result')}</div>
                           <pre className='text-xs text-muted-foreground bg-muted p-2 rounded overflow-auto max-h-32'>
                             {formatResult(log.result)}
                           </pre>
@@ -130,7 +130,7 @@ export function AuditLogPanel() {
 
                       {log.error && (
                         <div>
-                          <div className='text-xs font-medium mb-1 text-destructive'>错误</div>
+                          <div className='text-xs font-medium mb-1 text-destructive'>{t('permission.error')}</div>
                           <div className='text-xs text-destructive bg-destructive/10 p-2 rounded'>
                             {log.error}
                           </div>

@@ -3,6 +3,19 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { ApiKeyForm } from '../ApiKeyForm'
 import '../../../i18n'
 
+vi.mock('../../ui/alert-dialog', () => ({
+  AlertDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
+    open ? <div data-testid='alert-dialog'>{children}</div> : null,
+  AlertDialogAction: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) =>
+    <button onClick={onClick}>{children}</button>,
+  AlertDialogCancel: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
+  AlertDialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AlertDialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  AlertDialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AlertDialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AlertDialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+}))
+
 vi.mock('../../../stores/settings-store', () => ({
   useSettingsStore: vi.fn(),
 }))
@@ -93,6 +106,12 @@ describe('ApiKeyForm', () => {
       expect(screen.getAllByText('sk-s***key')).toHaveLength(2)
     })
     fireEvent.click(screen.getAllByText('删除')[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('确定删除此 API Key？')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByText('确定'))
 
     await waitFor(() => {
       expect(deleteApiKey).toHaveBeenCalledWith('openai')

@@ -102,6 +102,7 @@
     "connected": "Connected",
     "deleteProviderConfirm": "Are you sure to delete this provider?",
     "deleteModelConfirm": "Are you sure to delete this model?",
+    "deleteApiKeyConfirm": "Are you sure to delete this API key?",
     "testConnection": "Test Connection",
     "fetchModels": "Fetch Models",
     "edit": "Edit",
@@ -114,7 +115,9 @@
     "followSystem": "Follow System",
     "lightMode": "Light Mode",
     "darkMode": "Dark Mode",
-    "selectTheme": "Select Theme"
+    "selectTheme": "Select Theme",
+    "maxTokensRange": "Max tokens must be between 1-1000000",
+    "temperatureRange": "Temperature must be between 0-2"
   },
   "permission": {
     "confirmTitle": "Tool Execution Confirmation",
@@ -134,7 +137,9 @@
     "disable": "Disable",
     "modeDescAuto": "All tools execute directly without confirmation",
     "modeDescPrompt": "Every tool call requires user confirmation",
-    "modeDescSmart": "Low-risk tools auto-execute, high-risk tools require confirmation"
+    "modeDescSmart": "Low-risk tools auto-execute, high-risk tools require confirmation",
+    "result": "Result",
+    "error": "Error"
   },
   "memory": {
     "searchPlaceholder": "Search memories...",

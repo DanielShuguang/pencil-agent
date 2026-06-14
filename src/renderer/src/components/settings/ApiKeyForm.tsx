@@ -1,6 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettingsStore } from '../../stores/settings-store'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 
 const PROVIDERS = [
   { id: 'openai', name: 'OpenAI', placeholder: 'sk-...' },
@@ -13,6 +23,7 @@ export function ApiKeyForm() {
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
   const [maskedKeys, setMaskedKeys] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -50,14 +61,21 @@ export function ApiKeyForm() {
     }
   }
 
-  const handleDelete = async (provider: string) => {
+  const handleDelete = useCallback((provider: string) => {
+    setDeleteConfirm(provider)
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteConfirm) return
     try {
-      await deleteApiKey(provider)
-      setSavedKeys((prev) => ({ ...prev, [provider]: false }))
+      await deleteApiKey(deleteConfirm)
+      setSavedKeys((prev) => ({ ...prev, [deleteConfirm]: false }))
     } catch (error) {
       console.error('Failed to delete API key:', error)
+    } finally {
+      setDeleteConfirm(null)
     }
-  }
+  }, [deleteConfirm, deleteApiKey])
 
   return (
     <div className='space-y-4'>
@@ -97,6 +115,19 @@ export function ApiKeyForm() {
           )}
         </div>
       ))}
+
+      <AlertDialog open={Boolean(deleteConfirm)} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common.confirm')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.deleteApiKeyConfirm')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t('common.ok')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

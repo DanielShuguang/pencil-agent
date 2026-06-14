@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Shield, ShieldCheck, ShieldAlert, ShieldOff } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -18,8 +19,13 @@ export function PermissionPanel() {
   const { config, isLoaded, fetchConfig, updateConfig } = usePermissionStore()
   const { t } = useTranslation()
 
+  useEffect(() => {
+    if (!isLoaded) {
+      fetchConfig()
+    }
+  }, [isLoaded, fetchConfig])
+
   if (!isLoaded) {
-    fetchConfig()
     return <div className='text-sm text-muted-foreground'>{t('common.loading')}</div>
   }
 

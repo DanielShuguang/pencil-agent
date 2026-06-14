@@ -42,7 +42,17 @@ export const useThemeStore = create<ThemeState>((set) => ({
           ? 'dark'
           : 'light'
         : mode
-    set({ mode })
+    const theme = themeRegistry.getTheme(themeId)
+    if (theme) {
+      set({
+        mode,
+        currentThemeId: themeId,
+        currentTheme: theme,
+        isDark: themeId === 'dark',
+      })
+    } else {
+      set({ mode })
+    }
     localStorage.setItem('theme-mode', themeId)
   },
 

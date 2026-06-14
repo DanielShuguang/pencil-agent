@@ -133,6 +133,7 @@
     "connected": "已连接",
     "deleteProviderConfirm": "确定删除此供应商？",
     "deleteModelConfirm": "确定删除此模型？",
+    "deleteApiKeyConfirm": "确定删除此 API Key？",
     "testConnection": "测试连接",
     "fetchModels": "获取模型",
     "edit": "编辑",
@@ -145,7 +146,9 @@
     "followSystem": "跟随系统",
     "lightMode": "亮色模式",
     "darkMode": "暗色模式",
-    "selectTheme": "选择主题"
+    "selectTheme": "选择主题",
+    "maxTokensRange": "最大 Token 数必须在 1-1000000 之间",
+    "temperatureRange": "温度必须在 0-2 之间"
   },
   "permission": {
     "confirmTitle": "工具执行确认",
@@ -165,7 +168,9 @@
     "disable": "禁用",
     "modeDescAuto": "所有工具直接执行，不弹出确认框",
     "modeDescPrompt": "每次工具调用都需要用户确认",
-    "modeDescSmart": "低风险工具直接执行，高风险工具需要确认"
+    "modeDescSmart": "低风险工具直接执行，高风险工具需要确认",
+    "result": "结果",
+    "error": "错误"
   },
   "memory": {
     "searchPlaceholder": "搜索记忆...",

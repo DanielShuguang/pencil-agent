@@ -17,16 +17,58 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
   const [name, setName] = useState(model?.name || '')
   const [maxTokens, setMaxTokens] = useState(model?.maxTokens?.toString() || '')
   const [temperature, setTemperature] = useState(model?.temperature?.toString() || '')
+  const [maxTokensError, setMaxTokensError] = useState('')
+  const [temperatureError, setTemperatureError] = useState('')
   const { t } = useTranslation()
+
+  const handleMaxTokensChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setMaxTokens(value)
+    if (value) {
+      const parsed = parseInt(value)
+      if (isNaN(parsed) || parsed < 1 || parsed > 1000000) {
+        setMaxTokensError(t('settings.maxTokensRange'))
+      } else {
+        setMaxTokensError('')
+      }
+    } else {
+      setMaxTokensError('')
+    }
+  }
+
+  const handleTemperatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setTemperature(value)
+    if (value) {
+      const parsed = parseFloat(value)
+      if (isNaN(parsed) || parsed < 0 || parsed > 2) {
+        setTemperatureError(t('settings.temperatureRange'))
+      } else {
+        setTemperatureError('')
+      }
+    } else {
+      setTemperatureError('')
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const parsedMaxTokens = maxTokens ? parseInt(maxTokens) : undefined
+    const parsedTemperature = temperature ? parseFloat(temperature) : undefined
+
+    if (parsedMaxTokens !== undefined && (parsedMaxTokens < 1 || parsedMaxTokens > 1000000)) {
+      return
+    }
+    if (parsedTemperature !== undefined && (parsedTemperature < 0 || parsedTemperature > 2)) {
+      return
+    }
+
     onSave({
       id,
       name,
       providerId,
-      maxTokens: maxTokens ? parseInt(maxTokens) : undefined,
-      temperature: temperature ? parseFloat(temperature) : undefined,
+      maxTokens: parsedMaxTokens,
+      temperature: parsedTemperature,
     })
   }
 
@@ -61,9 +103,11 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
             id='max-tokens'
             type='number'
             value={maxTokens}
-            onChange={(e) => setMaxTokens(e.target.value)}
+            onChange={handleMaxTokensChange}
             placeholder='4096'
+            aria-invalid={Boolean(maxTokensError)}
           />
+          {maxTokensError && <p className='text-sm text-destructive'>{maxTokensError}</p>}
         </div>
 
         <div className='space-y-2'>
@@ -75,9 +119,11 @@ export function ModelForm({ model, providerId, onSave, onCancel }: ModelFormProp
             min='0'
             max='2'
             value={temperature}
-            onChange={(e) => setTemperature(e.target.value)}
+            onChange={handleTemperatureChange}
             placeholder='0.7'
+            aria-invalid={Boolean(temperatureError)}
           />
+          {temperatureError && <p className='text-sm text-destructive'>{temperatureError}</p>}
         </div>
       </div>
 

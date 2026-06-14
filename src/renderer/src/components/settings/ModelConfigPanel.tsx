@@ -349,19 +349,6 @@ export function ModelConfigPanel() {
                               </TooltipContent>
                             </Tooltip>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onClick={() => handleEditProvider(provider)}
-                      >
-                        <Pencil className='h-4 w-4' />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('settings.editProvider')}</TooltipContent>
-                  </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { match } from 'ts-pattern'
 import { ApiKeyForm } from './ApiKeyForm'
@@ -53,6 +53,16 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [currentFont, setCurrentFont] = useState(() => {
     return localStorage.getItem('pencil-agent:font-family') || ''
   })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      if (detail?.tab) setActiveTab(detail.tab as SettingsTab)
+    }
+    window.addEventListener('open-settings', handler)
+    return () => window.removeEventListener('open-settings', handler)
+  }, [])
 
   const handleFontChange = useCallback((fontValue: string) => {
     setCurrentFont(fontValue)

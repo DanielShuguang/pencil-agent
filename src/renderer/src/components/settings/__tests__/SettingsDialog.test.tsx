@@ -72,6 +72,8 @@ beforeEach(() => {
 
   vi.stubGlobal('window', {
     ...window,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
     api: { theme: { setMode: vi.fn(), setTheme: vi.fn() } },
   })
 })

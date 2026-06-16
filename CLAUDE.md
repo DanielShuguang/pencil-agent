@@ -7,7 +7,7 @@
 | 类别 | 技术 | 版本 |
 |------|------|------|
 | 桌面框架 | Electron | ^39.x |
-| 前端 | React + TypeScript | ^19.x / ^6.x |
+| 前端 | React + TypeScript | ^19.x / ^7.x (tsgo) |
 | 状态管理 | Zustand | ^5.x |
 | UI | shadcn/ui + Radix UI + Tailwind CSS | ^4.x |
 | Agent 引擎 | @earendil-works/pi-coding-agent | ^0.78.x |
@@ -46,7 +46,8 @@ pnpm fmt           # oxfmt
 pnpm test          # 监视模式 vitest
 pnpm test:run      # 单次运行所有 vitest 测试
 pnpm test:e2e      # Playwright E2E (需先 build)
-pnpm typecheck     # 类型检查
+pnpm typecheck     # tsgo 类型检查
+pnpm typecheck:legacy  # tsc 类型检查
 ```
 
 ## 通用约定

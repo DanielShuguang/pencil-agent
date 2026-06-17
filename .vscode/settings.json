@@ -55,5 +55,6 @@
     "**/dist": true,
     "**/out": true,
     "**/pnpm-lock.yaml": true
-  }
+  },
+  "typescript.native-preview.tsdk": "node_modules\\@typescript\\native-preview"
 }

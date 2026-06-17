@@ -330,6 +330,43 @@ describe('agent-store', () => {
     expect(useAgentStore.getState().sessionMetas.get(sessionId)?.currentModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
   })
 
+  it('createSession inherits model from last session', async () => {
+    await useAgentStore.getState().createSession('/test1')
+    useAgentStore.getState().switchSessionModel({ id: 'gpt-4o', provider: 'openai' })
+
+    vi.advanceTimersByTime(100)
+    await useAgentStore.getState().createSession('/test2')
+
+    const sessionIds = Array.from(useAgentStore.getState().sessionMetas.keys())
+    expect(sessionIds).toHaveLength(2)
+    const secondSessionMeta = useAgentStore.getState().sessionMetas.get(sessionIds[1])
+    expect(secondSessionMeta?.currentModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
+  })
+
+  it('createBranch inherits model from parent session', async () => {
+    await useAgentStore.getState().createSession('/tmp')
+    const sessionId = useAgentStore.getState().activeSessionId!
+    useAgentStore.setState({
+      sessions: new Map([
+        [
+          sessionId,
+          [
+            { id: 'msg-1', role: 'user' as const, content: 'Hello', timestamp: Date.now() },
+            { id: 'msg-2', role: 'assistant' as const, content: 'Hi there', timestamp: Date.now() },
+          ],
+        ],
+      ]),
+    })
+    useAgentStore.getState().switchSessionModel({ id: 'gpt-4o', provider: 'openai' })
+
+    const branchId = await useAgentStore.getState().createBranch('msg-1')
+    expect(branchId).toBeTruthy()
+
+    const branchMeta = useAgentStore.getState().sessionMetas.get(branchId!)
+    expect(branchMeta?.currentModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
+    expect(branchMeta?.model).toEqual({ id: 'gpt-4o', provider: 'openai' })
+  })
+
   it('deleteSession removes session', async () => {
     await useAgentStore.getState().createSession('/tmp')
     const id = useAgentStore.getState().activeSessionId!

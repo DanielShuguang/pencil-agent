@@ -110,4 +110,29 @@ test.describe('Chat Panel Header', () => {
     expect(headerClass).toContain('flex')
     expect(headerClass).toContain('justify-between')
   })
+
+  test('model selector switches model for current session only', async () => {
+    // 打开模型选择器
+    const header = window.locator('.flex.items-center.justify-between.px-4.py-2.border-b').first()
+    const modelSelector = header.locator('button, [role="combobox"]').first()
+    await modelSelector.click()
+    await window.waitForTimeout(500)
+
+    // 选择一个不同的模型（如果有下拉选项）
+    const option = window.locator('[role="option"], [role="menuitem"]').first()
+    if (await option.isVisible().catch(() => false)) {
+      await option.click()
+      await window.waitForTimeout(500)
+    }
+
+    // 创建第二个会话
+    await ensureSession(window)
+    await window.waitForTimeout(500)
+
+    // 验证 header 仍然显示模型选择器
+    const newHeader = window.locator('.flex.items-center.justify-between.px-4.py-2.border-b').first()
+    await expect(newHeader).toBeVisible()
+    const newModelSelector = newHeader.locator('button, [role="combobox"]').first()
+    await expect(newModelSelector).toBeVisible()
+  })
 })

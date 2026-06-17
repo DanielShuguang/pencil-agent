@@ -87,7 +87,7 @@ export function ChatPanel() {
               )}
             </div>
           )}
-          <ModelSelector />
+          <ModelSelector mode='session' />
           <TokenUsageBadge />
         </div>
       </div>

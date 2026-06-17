@@ -38,8 +38,13 @@ const mockProviders = [
 
 beforeEach(() => {
   mockUseAgentStore.mockReturnValue({
-    currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-    switchModel: vi.fn(),
+    activeSessionId: 'session-1',
+    sessionMetas: new Map([
+      ['session-1', { currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' } }],
+    ]),
+    defaultModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+    switchSessionModel: vi.fn(),
+    switchDefaultModel: vi.fn(),
   } as unknown as ReturnType<typeof useAgentStore>)
 
   mockUseModelConfigStore.mockReturnValue({
@@ -74,18 +79,23 @@ describe('ModelSelector', () => {
     expect(screen.getByText('GPT-4o')).toBeInTheDocument()
   })
 
-  it('calls switchModel on selection', async () => {
-    const switchModel = vi.fn()
+  it('calls switchSessionModel on selection', async () => {
+    const switchSessionModel = vi.fn()
     mockUseAgentStore.mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-      switchModel,
+      activeSessionId: 'session-1',
+      sessionMetas: new Map([
+        ['session-1', { currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' } }],
+      ]),
+      defaultModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+      switchSessionModel,
+      switchDefaultModel: vi.fn(),
     } as unknown as ReturnType<typeof useAgentStore>)
 
     const user = userEvent.setup()
     render(<ModelSelector />)
     await user.click(screen.getByText('Claude Sonnet 4'))
     await user.click(screen.getByText('GPT-4o'))
-    expect(switchModel).toHaveBeenCalledWith({ id: 'gpt-4o', provider: 'openai' })
+    expect(switchSessionModel).toHaveBeenCalledWith({ id: 'gpt-4o', provider: 'openai' })
   })
 
   it('filters models by search query', async () => {

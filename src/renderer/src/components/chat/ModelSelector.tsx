@@ -7,10 +7,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 
 interface ModelSelectorProps {
   showTrigger?: boolean
+  mode?: 'session' | 'default'
 }
 
-export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
-  const { currentModel, switchModel } = useAgentStore()
+export function ModelSelector({ showTrigger = true, mode = 'session' }: ModelSelectorProps) {
+  const { activeSessionId, sessionMetas, defaultModel, switchSessionModel, switchDefaultModel } = useAgentStore()
   const { providers, fetchProviders } = useModelConfigStore()
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
@@ -19,6 +20,10 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
   useEffect(() => {
     fetchProviders()
   }, [fetchProviders])
+
+  const currentModel = mode === 'session'
+    ? (activeSessionId ? sessionMetas.get(activeSessionId)?.currentModel : null) || defaultModel
+    : defaultModel
 
   const currentProvider = providers.find((p) => p.id === currentModel.provider)
   const currentModelInfo = currentProvider?.models.find((m) => m.id === currentModel.id)
@@ -37,7 +42,12 @@ export function ModelSelector({ showTrigger = true }: ModelSelectorProps) {
     .filter((provider) => provider.models.length > 0)
 
   const handleSelect = (providerId: string, modelId: string) => {
-    switchModel({ id: modelId, provider: providerId })
+    const model = { id: modelId, provider: providerId }
+    if (mode === 'session') {
+      switchSessionModel(model)
+    } else {
+      switchDefaultModel(model)
+    }
     setIsOpen(false)
     setSearchQuery('')
   }

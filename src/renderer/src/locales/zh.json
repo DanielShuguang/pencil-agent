@@ -206,7 +206,10 @@
     "maxTokensRange": "最大 Token 数必须在 1-1000000 之间",
     "temperatureRange": "温度必须在 0-2 之间",
     "searchModels": "搜索模型...",
-    "noModelsFound": "未找到模型"
+    "noModelsFound": "未找到模型",
+    "defaultModel": "默认模型",
+    "defaultModelDescription": "新创建的对话将使用此模型",
+    "model": "模型"
   },
   "permission": {
     "confirmTitle": "工具执行确认",

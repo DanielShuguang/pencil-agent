@@ -59,7 +59,8 @@ export interface Message {
 export interface SessionMeta {
   id: string
   title: string
-  model: { id: string; provider: string }
+  model: { id: string; provider: string }  // 创建时的模型（历史记录）
+  currentModel: { id: string; provider: string }  // 当前使用的模型
   cwd?: string
   createdAt: number
   updatedAt: number
@@ -74,7 +75,7 @@ interface AgentState {
   sessionMetas: Map<string, SessionMeta>
   activeSessionId: string | null
   isGenerating: boolean
-  currentModel: { id: string; provider: string }
+  defaultModel: { id: string; provider: string }  // 全局默认模型
   language: 'zh' | 'en'
 
   initFromStorage: () => void
@@ -86,7 +87,8 @@ interface AgentState {
   switchSession: (id: string) => void
   validateAndSwitchSession: (id: string) => Promise<boolean>
   appendChunk: (chunk: AgentChunk) => void
-  switchModel: (model: { id: string; provider: string }) => void
+  switchSessionModel: (model: { id: string; provider: string }) => void
+  switchDefaultModel: (model: { id: string; provider: string }) => void
   createBranch: (messageId: string) => Promise<string | null>
   getBranches: () => SessionMeta[]
   setLanguage: (lang: 'zh' | 'en') => void
@@ -223,7 +225,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   sessionMetas: new Map(),
   activeSessionId: null,
   isGenerating: false,
-  currentModel: getStorageItem<{ id: string; provider: string }>('currentModel', {
+  defaultModel: getStorageItem<{ id: string; provider: string }>('defaultModel', {
     id: 'claude-sonnet-4-20250514',
     provider: 'anthropic',
   }),
@@ -270,19 +272,19 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
   // 检查当前模型的 provider 是否有配置，没有则自动切换到第一个可用的
   syncModelWithProviders: async () => {
-    const { currentModel } = get()
+    const { defaultModel } = get()
     try {
       const providers = await window.api.modelConfig.list()
       if (providers.length === 0) return
 
-      const hasCurrentProvider = providers.some((p) => p.id === currentModel.provider)
+      const hasCurrentProvider = providers.some((p) => p.id === defaultModel.provider)
       if (!hasCurrentProvider) {
         const firstProvider = providers[0]
         const firstModel = firstProvider.models[0]
         if (firstModel) {
           const newModel = { id: firstModel.id, provider: firstProvider.id }
-          setStorageItem('currentModel', newModel)
-          set({ currentModel: newModel })
+          setStorageItem('defaultModel', newModel)
+          set({ defaultModel: newModel })
         }
       }
     } catch {
@@ -291,18 +293,25 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   },
 
   createSession: async (cwd: string) => {
-    const { currentModel } = get()
+    const { defaultModel } = get()
+
+    // 获取上一个会话的 currentModel，如果没有则使用 defaultModel
+    const lastSession = Array.from(get().sessionMetas.values())
+      .sort((a, b) => b.updatedAt - a.updatedAt)[0]
+    const model = lastSession?.currentModel || defaultModel
+
     const id = `session-${Date.now()}`
     await window.api.agent.create({
       sessionId: id,
-      model: currentModel,
+      model,
       cwd,
     })
 
     const meta: SessionMeta = {
       id,
       title: i18n.t('app.newConversation'),
-      model: currentModel,
+      model,  // 创建时的模型
+      currentModel: model,  // 当前使用的模型
       cwd,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -342,8 +351,13 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   },
 
   sendMessage: (content: string) => {
-    const { activeSessionId, currentModel } = get()
+    const { activeSessionId, sessionMetas } = get()
     if (!activeSessionId) return
+
+    // 使用当前会话的 currentModel
+    const meta = sessionMetas.get(activeSessionId)
+    if (!meta) return
+    const model = meta.currentModel
 
     const sessions = new Map(get().sessions)
     const metas = new Map(get().sessionMetas)
@@ -361,7 +375,6 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const truncatedMessages = truncateMessages(newMessages)
     sessions.set(activeSessionId, truncatedMessages)
 
-    const meta = metas.get(activeSessionId)
     if (meta) {
       const updatedMeta = {
         ...meta,
@@ -374,7 +387,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }
 
     set({ sessions, sessionMetas: metas, isGenerating: true })
-    window.api.agent.prompt(activeSessionId, content, currentModel)
+    window.api.agent.prompt(activeSessionId, content, model)
   },
 
   appendChunk: (chunk: AgentChunk) => {
@@ -512,13 +525,30 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }
   },
 
-  switchModel: (model: { id: string; provider: string }) => {
-    setStorageItem('currentModel', model)
-    set({ currentModel: model })
+  switchSessionModel: (model: { id: string; provider: string }) => {
+    const { activeSessionId, sessionMetas } = get()
+    if (!activeSessionId) return
+
+    const meta = sessionMetas.get(activeSessionId)
+    if (!meta) return
+
+    const updatedMeta = { ...meta, currentModel: model, updatedAt: Date.now() }
+    const newMetas = new Map(sessionMetas)
+    newMetas.set(activeSessionId, updatedMeta)
+
+    // 持久化
+    persistSession(updatedMeta, get().sessions.get(activeSessionId) || [])
+
+    set({ sessionMetas: newMetas })
+  },
+
+  switchDefaultModel: (model: { id: string; provider: string }) => {
+    setStorageItem('defaultModel', model)
+    set({ defaultModel: model })
   },
 
   createBranch: async (messageId: string) => {
-    const { activeSessionId, sessions, sessionMetas, currentModel } = get()
+    const { activeSessionId, sessions, sessionMetas } = get()
     if (!activeSessionId) return null
 
     const messages = sessions.get(activeSessionId) || []
@@ -532,9 +562,12 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
     if (!branchCwd) return null
 
+    // 继承父会话的 currentModel
+    const model = parentMeta?.currentModel || get().defaultModel
+
     await window.api.agent.create({
       sessionId: branchId,
-      model: currentModel,
+      model,
       cwd: branchCwd,
     })
 
@@ -543,7 +576,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       title: i18n.t('app.branchTitle', {
         title: sessionMetas.get(activeSessionId)?.title || i18n.t('app.newConversation'),
       }),
-      model: currentModel,
+      model,  // 创建时的模型
+      currentModel: model,  // 当前使用的模型
       cwd: branchCwd,
       createdAt: Date.now(),
       updatedAt: Date.now(),

@@ -55,9 +55,10 @@ export function getCommands(): CommandDef[] {
       description: t('commands.contextDesc'),
       execute: () => {
         const store = useAgentStore.getState()
-        const { activeSessionId, currentModel } = store
+        const { activeSessionId, sessionMetas, defaultModel } = store
         if (!activeSessionId) return t('commands.noActiveSession')
         const messages = store.sessions.get(activeSessionId) || []
+        const currentModel = sessionMetas.get(activeSessionId)?.currentModel || defaultModel
         const userMsgs = messages.filter((m) => m.role === 'user').length
         const assistantMsgs = messages.filter((m) => m.role === 'assistant').length
         const toolMsgs = messages.filter((m) => m.role === 'tool').length
@@ -76,6 +77,7 @@ export function getCommands(): CommandDef[] {
       usage: '/model [model-id]',
       execute: (args) => {
         const store = useAgentStore.getState()
+        const { activeSessionId, sessionMetas, defaultModel } = store
         const modelId = args.trim()
         if (!modelId) {
           const configStore = useModelConfigStore.getState()
@@ -83,8 +85,11 @@ export function getCommands(): CommandDef[] {
           const allModels = providers.flatMap((p) =>
             p.models.filter((m) => m.visible !== false).map((m) => `  ${m.id} (${p.name})`),
           )
+          const currentModel = activeSessionId
+            ? sessionMetas.get(activeSessionId)?.currentModel || defaultModel
+            : defaultModel
           return [
-            `${t('commands.currentModel')}: ${store.currentModel.id}`,
+            `${t('commands.currentModel')}: ${currentModel.id}`,
             '',
             t('commands.availableModels'),
             ...allModels,
@@ -95,7 +100,7 @@ export function getCommands(): CommandDef[] {
         for (const provider of providers) {
           const model = provider.models.find((m) => m.id === modelId)
           if (model) {
-            store.switchModel({ id: modelId, provider: provider.id })
+            store.switchSessionModel({ id: modelId, provider: provider.id })
             return t('commands.modelSwitched', { model: modelId })
           }
         }

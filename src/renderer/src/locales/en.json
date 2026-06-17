@@ -175,7 +175,10 @@
     "maxTokensRange": "Max tokens must be between 1-1000000",
     "temperatureRange": "Temperature must be between 0-2",
     "searchModels": "Search models...",
-    "noModelsFound": "No models found"
+    "noModelsFound": "No models found",
+    "defaultModel": "Default Model",
+    "defaultModelDescription": "New conversations will use this model",
+    "model": "Model"
   },
   "permission": {
     "confirmTitle": "Tool Execution Confirmation",

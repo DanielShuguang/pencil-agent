@@ -15,12 +15,10 @@ vi.stubGlobal('window', {
 describe('status-store', () => {
   beforeEach(() => {
     useStatusStore.setState({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tokenUsage: { prompt: 0, completion: 0, total: 0 },
       connectionStatus: 'checking',
       lastChecked: 0,
       version: '0.0.0',
-      isGenerating: false,
     })
   })
 
@@ -103,27 +101,6 @@ describe('status-store', () => {
 
       const { connectionStatus } = useStatusStore.getState()
       expect(connectionStatus).toBe('disconnected')
-    })
-  })
-
-  describe('Sync from agent store', () => {
-    it('should sync model from agent store', () => {
-      const { syncFromAgentStore } = useStatusStore.getState()
-
-      syncFromAgentStore({ id: 'gpt-4', provider: 'openai' }, false)
-
-      const { currentModel } = useStatusStore.getState()
-      expect(currentModel.id).toBe('gpt-4')
-      expect(currentModel.provider).toBe('openai')
-    })
-
-    it('should sync generating state', () => {
-      const { syncFromAgentStore } = useStatusStore.getState()
-
-      syncFromAgentStore({ id: 'claude-sonnet-4-20250514', provider: 'anthropic' }, true)
-
-      const { isGenerating } = useStatusStore.getState()
-      expect(isGenerating).toBe(true)
     })
   })
 

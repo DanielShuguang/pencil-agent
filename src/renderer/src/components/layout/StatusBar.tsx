@@ -1,33 +1,18 @@
-import { useEffect } from 'react'
-import { Bot, Coins, Wifi, WifiOff, Loader2, Info, Folder } from 'lucide-react'
+import { Coins, Wifi, WifiOff, Loader2, Info, Folder } from 'lucide-react'
 import { match } from 'ts-pattern'
-import { cn } from '../../lib/utils'
 import { useStatusStore } from '../../stores/status-store'
 import { useAgentStore } from '../../stores/agent-store'
-import { ModelSelector } from '../chat/ModelSelector'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { UpdateNotification } from '../settings/UpdateNotification'
 import { useTranslation } from 'react-i18next'
 
 export function StatusBar() {
-  const {
-    currentModel,
-    tokenUsage,
-    connectionStatus,
-    version,
-    isGenerating,
-    checkConnection,
-    syncFromAgentStore,
-  } = useStatusStore()
+  const { tokenUsage, connectionStatus, version, checkConnection } = useStatusStore()
 
-  const { currentModel: agentModel, isGenerating: agentIsGenerating, activeSessionId, sessionMetas } = useAgentStore()
+  const { activeSessionId, sessionMetas } = useAgentStore()
   const { t } = useTranslation()
 
   const activeCwd = activeSessionId ? sessionMetas.get(activeSessionId)?.cwd : undefined
-
-  useEffect(() => {
-    syncFromAgentStore(agentModel, agentIsGenerating)
-  }, [agentModel, agentIsGenerating, syncFromAgentStore])
 
   const getConnectionIcon = () =>
     match(connectionStatus)
@@ -58,23 +43,6 @@ export function StatusBar() {
             <span className='max-w-[200px] truncate'>{activeCwd}</span>
           </span>
         )}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={cn(
-                'flex items-center gap-1.5 hover:text-foreground transition-colors',
-                isGenerating && 'text-primary',
-              )}
-            >
-              <Bot className='h-3 w-3' />
-              <span>{currentModel.id}</span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent side='top' align='start' className='w-auto p-0'>
-            <ModelSelector showTrigger={false} />
-          </PopoverContent>
-        </Popover>
-
         <Popover>
           <PopoverTrigger asChild>
             <button className='flex items-center gap-1.5 hover:text-foreground transition-colors'>

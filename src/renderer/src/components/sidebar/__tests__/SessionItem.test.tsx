@@ -7,6 +7,7 @@ const baseMeta = {
   id: 'session-1',
   title: 'Test Session',
   model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+  currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
   updatedAt: Date.now(),
   createdAt: Date.now(),
   messageCount: 0,
@@ -25,11 +26,6 @@ describe('SessionItem', () => {
   it('renders session title', () => {
     render(<SessionItem meta={baseMeta} isActive={false} onClick={vi.fn()} onDelete={vi.fn()} />)
     expect(screen.getByText('Test Session')).toBeInTheDocument()
-  })
-
-  it('renders model info', () => {
-    render(<SessionItem meta={baseMeta} isActive={false} onClick={vi.fn()} onDelete={vi.fn()} />)
-    expect(screen.getByText('anthropic/claude-sonnet-4-20250514')).toBeInTheDocument()
   })
 
   it('applies active styles when isActive', () => {

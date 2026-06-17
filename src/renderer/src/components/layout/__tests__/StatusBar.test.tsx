@@ -12,10 +12,6 @@ vi.mock('../../../stores/agent-store', () => ({
   useAgentStore: vi.fn(),
 }))
 
-vi.mock('../../chat/ModelSelector', () => ({
-  ModelSelector: () => <div data-testid='model-selector'>Model Selector</div>,
-}))
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -35,31 +31,25 @@ vi.mock('react-i18next', () => ({
 
 describe('StatusBar', () => {
   const mockCheckConnection = vi.fn()
-  const mockSyncFromAgentStore = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     vi.mocked(useStatusStore).mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tokenUsage: { prompt: 1000, completion: 500, total: 1500 },
       connectionStatus: 'connected',
       lastChecked: Date.now(),
       version: '1.0.0',
-      isGenerating: false,
       checkConnection: mockCheckConnection,
-      syncFromAgentStore: mockSyncFromAgentStore,
       incrementTokenUsage: vi.fn(),
       resetTokenUsage: vi.fn(),
       init: vi.fn(),
     })
 
     vi.mocked(useAgentStore).mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-      isGenerating: false,
       activeSessionId: 's1',
       sessionMetas: new Map([
-        ['s1', { id: 's1', title: 'Test', model: { id: 'm', provider: 'p' }, cwd: '/Users/dev/frontend', updatedAt: 0, createdAt: 0, messageCount: 0 }],
+        ['s1', { id: 's1', title: 'Test', model: { id: 'm', provider: 'p' }, currentModel: { id: 'm', provider: 'p' }, cwd: '/Users/dev/frontend', updatedAt: 0, createdAt: 0, messageCount: 0 }],
       ]),
     })
   })
@@ -67,28 +57,9 @@ describe('StatusBar', () => {
   it('should render all subcomponents', () => {
     render(<StatusBar />)
 
-    expect(screen.getByText('claude-sonnet-4-20250514')).toBeInTheDocument()
     expect(screen.getByText('1.5K')).toBeInTheDocument()
     expect(screen.getByText('已连接')).toBeInTheDocument()
     expect(screen.getByText('v1.0.0')).toBeInTheDocument()
-  })
-
-  it('should open model selector on click', () => {
-    render(<StatusBar />)
-
-    fireEvent.click(screen.getByText('claude-sonnet-4-20250514'))
-
-    expect(screen.getByTestId('model-selector')).toBeInTheDocument()
-  })
-
-  it('should close model selector on Escape key', () => {
-    render(<StatusBar />)
-
-    fireEvent.click(screen.getByText('claude-sonnet-4-20250514'))
-    expect(screen.getByTestId('model-selector')).toBeInTheDocument()
-
-    fireEvent.keyDown(document.body, { key: 'Escape' })
-    expect(screen.queryByTestId('model-selector')).not.toBeInTheDocument()
   })
 
   it('should show token details on click', () => {
@@ -111,14 +82,11 @@ describe('StatusBar', () => {
 
   it('should show disconnected status', () => {
     vi.mocked(useStatusStore).mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tokenUsage: { prompt: 0, completion: 0, total: 0 },
       connectionStatus: 'disconnected',
       lastChecked: Date.now(),
       version: '1.0.0',
-      isGenerating: false,
       checkConnection: mockCheckConnection,
-      syncFromAgentStore: mockSyncFromAgentStore,
       incrementTokenUsage: vi.fn(),
       resetTokenUsage: vi.fn(),
       init: vi.fn(),
@@ -131,14 +99,11 @@ describe('StatusBar', () => {
 
   it('should show checking status with spinner', () => {
     vi.mocked(useStatusStore).mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       tokenUsage: { prompt: 0, completion: 0, total: 0 },
       connectionStatus: 'checking',
       lastChecked: 0,
       version: '1.0.0',
-      isGenerating: false,
       checkConnection: mockCheckConnection,
-      syncFromAgentStore: mockSyncFromAgentStore,
       incrementTokenUsage: vi.fn(),
       resetTokenUsage: vi.fn(),
       init: vi.fn(),
@@ -149,27 +114,6 @@ describe('StatusBar', () => {
     expect(screen.getByText('检查中...')).toBeInTheDocument()
   })
 
-  it('should show generating state', () => {
-    vi.mocked(useStatusStore).mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-      tokenUsage: { prompt: 100, completion: 50, total: 150 },
-      connectionStatus: 'connected',
-      lastChecked: Date.now(),
-      version: '1.0.0',
-      isGenerating: true,
-      checkConnection: mockCheckConnection,
-      syncFromAgentStore: mockSyncFromAgentStore,
-      incrementTokenUsage: vi.fn(),
-      resetTokenUsage: vi.fn(),
-      init: vi.fn(),
-    })
-
-    render(<StatusBar />)
-
-    const modelButton = screen.getByText('claude-sonnet-4-20250514').closest('button')
-    expect(modelButton).toHaveClass('text-primary')
-  })
-
   it('should display workspace path when active session has cwd', () => {
     render(<StatusBar />)
     expect(screen.getByText('/Users/dev/frontend')).toBeInTheDocument()
@@ -177,8 +121,6 @@ describe('StatusBar', () => {
 
   it('should not display workspace path when no active session', () => {
     vi.mocked(useAgentStore).mockReturnValue({
-      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-      isGenerating: false,
       activeSessionId: null,
       sessionMetas: new Map(),
     })

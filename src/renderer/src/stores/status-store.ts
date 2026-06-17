@@ -5,27 +5,22 @@ let tokenListenerInitialized = false
 let connectionTimer: ReturnType<typeof setInterval> | null = null
 
 interface StatusState {
-  currentModel: { id: string; provider: string }
   tokenUsage: TokenUsage
   connectionStatus: ConnectionStatus
   lastChecked: number
   version: string
-  isGenerating: boolean
 
   incrementTokenUsage: (usage: Partial<TokenUsage>) => void
   resetTokenUsage: () => void
   checkConnection: () => Promise<void>
-  syncFromAgentStore: (model: { id: string; provider: string }, isGenerating: boolean) => void
   init: () => Promise<void>
 }
 
 export const useStatusStore = create<StatusState>((set, get) => ({
-  currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
   tokenUsage: { prompt: 0, completion: 0, total: 0 },
   connectionStatus: 'checking' as ConnectionStatus,
   lastChecked: 0,
   version: '0.0.0',
-  isGenerating: false,
 
   incrementTokenUsage: (usage: Partial<TokenUsage>) => {
     set((state) => {
@@ -43,11 +38,10 @@ export const useStatusStore = create<StatusState>((set, get) => ({
   },
 
   checkConnection: async () => {
-    const { currentModel } = get()
     set({ connectionStatus: 'checking' })
 
     try {
-      const isConnected = await window.api.settings.checkConnection(currentModel.provider)
+      const isConnected = await window.api.settings.checkConnection('anthropic')
       set({
         connectionStatus: isConnected ? 'connected' : 'disconnected',
         lastChecked: Date.now(),
@@ -59,16 +53,6 @@ export const useStatusStore = create<StatusState>((set, get) => ({
         lastChecked: Date.now(),
       })
     }
-  },
-
-  syncFromAgentStore: (model: { id: string; provider: string }, isGenerating: boolean) => {
-    const { currentModel } = get()
-    if (currentModel.id !== model.id || currentModel.provider !== model.provider) {
-      set({ currentModel: model })
-      // 模型变化后重新检查连接状态
-      get().checkConnection()
-    }
-    set({ isGenerating })
   },
 
   init: async () => {

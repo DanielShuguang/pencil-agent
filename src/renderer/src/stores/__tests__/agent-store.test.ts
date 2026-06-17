@@ -83,7 +83,6 @@ beforeEach(() => {
     sessionMetas: new Map(),
     activeSessionId: null,
     isGenerating: false,
-    currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
   })
 })
 
@@ -93,7 +92,7 @@ describe('agent-store', () => {
     expect(state.activeSessionId).toBeNull()
     expect(state.isGenerating).toBe(false)
     expect(state.sessions.size).toBe(0)
-    expect(state.currentModel).toEqual({
+    expect(state.defaultModel).toEqual({
       id: 'claude-sonnet-4-20250514',
       provider: 'anthropic',
     })
@@ -127,6 +126,7 @@ describe('agent-store', () => {
             id: 'session-1',
             title: 'New Chat',
             model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+            currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
             createdAt: Date.now(),
             updatedAt: Date.now(),
             messageCount: 0,
@@ -149,7 +149,17 @@ describe('agent-store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', []]]),
-      sessionMetas: new Map(),
+      sessionMetas: new Map([
+        ['session-1', {
+          id: 'session-1',
+          title: 'New Chat',
+          model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+          currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          messageCount: 0,
+        }],
+      ]),
     })
     useAgentStore.getState().sendMessage('Hello')
     expect(useAgentStore.getState().isGenerating).toBe(true)
@@ -313,9 +323,11 @@ describe('agent-store', () => {
     expect(useAgentStore.getState().activeSessionId).toBe('session-2')
   })
 
-  it('switchModel updates currentModel', () => {
-    useAgentStore.getState().switchModel({ id: 'gpt-4o', provider: 'openai' })
-    expect(useAgentStore.getState().currentModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
+  it('switchSessionModel updates session currentModel', async () => {
+    await useAgentStore.getState().createSession('/tmp')
+    const sessionId = useAgentStore.getState().activeSessionId!
+    useAgentStore.getState().switchSessionModel({ id: 'gpt-4o', provider: 'openai' })
+    expect(useAgentStore.getState().sessionMetas.get(sessionId)?.currentModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
   })
 
   it('deleteSession removes session', async () => {
@@ -343,6 +355,7 @@ describe('agent-store', () => {
       id: 'session-1',
       title: 'Test Session',
       model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+      currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
       createdAt: Date.now(),
       updatedAt: Date.now(),
       messageCount: 1,
@@ -386,6 +399,7 @@ describe('agent-store', () => {
             id: 'session-1',
             title: 'Test',
             model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+            currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
             createdAt: Date.now(),
             updatedAt: Date.now(),
             messageCount: 351,

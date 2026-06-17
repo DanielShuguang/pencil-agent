@@ -64,11 +64,7 @@ export function SessionItem({ meta, isActive, onClick, onDelete }: SessionItemPr
               <span className='truncate'>{projectName}</span>
             </div>
           )}
-          <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-            <span>
-              {meta.model.provider}/{meta.model.id}
-            </span>
-            <span>·</span>
+          <div className='text-xs text-muted-foreground'>
             <span>{formatTime(meta.updatedAt, i18n.language, t)}</span>
           </div>
         </div>

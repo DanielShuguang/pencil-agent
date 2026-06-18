@@ -46,6 +46,7 @@ export function FontSelect({ value, onValueChange, options, placeholder }: FontS
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const listContainerRef = useRef<HTMLDivElement>(null)
 
   const filtered = useMemo(() => {
     if (!search) return options
@@ -69,6 +70,12 @@ export function FontSelect({ value, onValueChange, options, placeholder }: FontS
       setTimeout(() => inputRef.current?.focus(), 0)
     }
   }, [open])
+
+  // 处理滚轮事件，确保列表可以滚动
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    // 阻止事件冒泡，让列表自己处理滚动
+    e.stopPropagation()
+  }, [])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -99,13 +106,15 @@ export function FontSelect({ value, onValueChange, options, placeholder }: FontS
         {filtered.length === 0 ? (
           <div className='py-6 text-center text-sm text-muted-foreground'>No font found</div>
         ) : (
-          <List
-            rowComponent={FontRow}
-            rowCount={filtered.length}
-            rowHeight={ITEM_HEIGHT}
-            rowProps={{ fonts: filtered, selected: value, onSelect: handleSelect }}
-            style={{ height: Math.min(filtered.length * ITEM_HEIGHT, LIST_HEIGHT) }}
-          />
+          <div ref={listContainerRef} onWheel={handleWheel} className='overflow-auto'>
+            <List
+              rowComponent={FontRow}
+              rowCount={filtered.length}
+              rowHeight={ITEM_HEIGHT}
+              rowProps={{ fonts: filtered, selected: value, onSelect: handleSelect }}
+              style={{ height: Math.min(filtered.length * ITEM_HEIGHT, LIST_HEIGHT) }}
+            />
+          </div>
         )}
       </PopoverContent>
     </Popover>

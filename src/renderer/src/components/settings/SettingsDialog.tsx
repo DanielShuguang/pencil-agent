@@ -6,7 +6,6 @@ import { ModelConfigPanel } from './ModelConfigPanel'
 import { PermissionPanel } from './PermissionPanel'
 import { AuditLogPanel } from '../audit/AuditLogPanel'
 import { MemoryPanel } from '../memory/MemoryPanel'
-import { UpdateDialog } from './UpdateDialog'
 import { useAgentStore } from '../../stores/agent-store'
 import { useThemeStore } from '../../stores/theme-store'
 import { useUpdateStore } from '../../stores/update-store'
@@ -41,7 +40,6 @@ const THEME_MODE_KEYS: Record<string, string> = {
 
 export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('api-keys')
-  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
   const { t } = useTranslation()
   const { language, setLanguage } = useAgentStore()
   const { mode, currentThemeId } = useThemeStore()
@@ -72,7 +70,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
   const handleCheckUpdate = async () => {
     await checkForUpdates()
-    setIsUpdateDialogOpen(true)
+    window.dispatchEvent(new CustomEvent('open-update-dialog'))
   }
 
   return (
@@ -82,7 +80,15 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         if (!open) onClose()
       }}
     >
-      <DialogContent className='max-w-2xl'>
+      <DialogContent
+        className='max-w-2xl'
+        onPointerDownOutside={(e) => {
+          e.preventDefault()
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault()
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t('settings.title')}</DialogTitle>
         </DialogHeader>
@@ -182,7 +188,6 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             .exhaustive()}
         </DialogBody>
       </DialogContent>
-      <UpdateDialog isOpen={isUpdateDialogOpen} onClose={() => setIsUpdateDialogOpen(false)} />
     </Dialog>
   )
 }

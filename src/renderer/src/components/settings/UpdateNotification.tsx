@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { Download } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useUpdateStore } from '../../stores/update-store'
@@ -13,19 +13,29 @@ export function UpdateNotification() {
     setIsDialogOpen(true)
   }, [])
 
-  if (status !== 'available' && status !== 'downloaded') return null
+  useEffect(() => {
+    const handler = () => setIsDialogOpen(true)
+    window.addEventListener('open-update-dialog', handler)
+    return () => window.removeEventListener('open-update-dialog', handler)
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setIsDialogOpen(false)
+  }, [])
 
   return (
     <>
-      <button
-        onClick={handleClick}
-        className='flex items-center gap-1.5 hover:text-foreground transition-colors text-xs'
-        title={t('updater.available')}
-      >
-        <Download className='h-3 w-3' />
-        <span>{t('updater.checkNow')}</span>
-      </button>
-      <UpdateDialog isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)} />
+      {(status === 'available' || status === 'downloaded') && (
+        <button
+          onClick={handleClick}
+          className='flex items-center gap-1.5 hover:text-foreground transition-colors text-xs'
+          title={t('updater.available')}
+        >
+          <Download className='h-3 w-3' />
+          <span>{t('updater.checkNow')}</span>
+        </button>
+      )}
+      <UpdateDialog isOpen={isDialogOpen} onClose={handleClose} />
     </>
   )
 }

@@ -14,6 +14,18 @@ const FALLBACK_FONTS: FontOption[] = [
 
 async function querySystemFonts(): Promise<FontOption[]> {
   try {
+    // 优先使用 IPC 接口获取系统字体
+    if (window.api?.system?.getFonts) {
+      const fonts = await window.api.system.getFonts()
+      if (fonts && fonts.length > 0) {
+        return fonts.map((family: string) => ({
+          label: family,
+          value: `'${family}', sans-serif`,
+        }))
+      }
+    }
+
+    // 回退到 navigator.fonts API
     const fontsApi = (navigator as unknown as Record<string, unknown>).fonts as
       | { query: () => AsyncIterable<{ family: string }> }
       | undefined

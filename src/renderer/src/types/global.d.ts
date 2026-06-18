@@ -126,6 +126,10 @@ interface DialogAPI {
   selectDirectory: () => Promise<{ canceled: boolean; filePaths: string[] }>
 }
 
+interface SystemAPI {
+  getFonts: () => Promise<string[]>
+}
+
 interface ElectronAPI {
   agent: AgentAPI
   tool: ToolAPI
@@ -142,6 +146,7 @@ interface ElectronAPI {
   permission: PermissionAPI
   audit: AuditAPI
   updater: UpdaterAPI
+  system: SystemAPI
 }
 
 declare global {

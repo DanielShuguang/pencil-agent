@@ -1,6 +1,8 @@
 import type { AgentRole, ThemeMode, ToolPermissionConfig, ConfirmRequest, ConfirmResponse } from '@shared/ipc'
 import { ipcMain, safeStorage, nativeTheme, dialog, BrowserWindow } from 'electron'
 import { access, constants } from 'fs/promises'
+import { exec } from 'child_process'
+import { promisify } from 'util'
 import { appStore } from '../lib/store'
 import type { AgentSessionManager } from './session-manager'
 import type { ToolRegistry } from './tool-registry'
@@ -8,6 +10,8 @@ import { RoleManager } from './role-manager'
 import { ModelConfigManager } from './model-config'
 import type { PermissionManager } from './permission-manager'
 import type { AuditLogger } from './audit-logger'
+
+const execAsync = promisify(exec)
 
 let roleManager: RoleManager | null = null
 function getRoleManager(): RoleManager {
@@ -365,4 +369,62 @@ export function registerAgentHandlers(
       auditLogger.clearAll()
     })
   }
+
+  // 系统字体 handlers
+  ipcMain.handle('system:getFonts', async () => {
+    try {
+      if (process.platform === 'win32') {
+        // Windows: 通过注册表获取已安装的字体
+        // 同时查询系统级和用户级字体
+        const fonts = new Set<string>()
+
+        // 查询两个注册表路径：系统级和用户级
+        const regPaths = [
+          'HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts',
+          'HKCU\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts',
+        ]
+
+        for (const regPath of regPaths) {
+          try {
+            // 使用 chcp 65001 切换到 UTF-8 代码页，避免乱码
+            const { stdout } = await execAsync(
+              `chcp 65001 >nul && reg query "${regPath}"`,
+              { encoding: 'buffer' }
+            )
+            // 将 Buffer 转为 UTF-8 字符串
+            const text = Buffer.from(stdout).toString('utf-8')
+            for (const line of text.split('\n')) {
+              // 匹配注册表格式：字体名称    REG_SZ    文件名
+              const match = line.match(/^\s+(.+?)\s+REG_SZ\s+/)
+              if (match) {
+                let name = match[1].trim()
+                // 移除 (TrueType) / (OpenType) 后缀
+                name = name.replace(/\s*\(TrueType\)\s*$/i, '').replace(/\s*\(OpenType\)\s*$/i, '')
+                if (name && !name.includes('\\') && name.length > 0) {
+                  fonts.add(name)
+                }
+              }
+            }
+          } catch {
+            // 某些注册表路径可能不存在，忽略错误继续
+          }
+        }
+        return Array.from(fonts).sort()
+      } else if (process.platform === 'darwin') {
+        // macOS: 使用 system_profiler 获取字体
+        const { stdout } = await execAsync(
+          'system_profiler SPFontsDataType -json 2>/dev/null | python3 -c "import sys,json; data=json.load(sys.stdin); fonts=set(); [fonts.add(f[\'_name\'].split(\',\')[0].strip()) for f in data.get(\'SPFontsDataType\',[]) if \'_name\' in f]; print(\'\\n\'.join(sorted(fonts)))"',
+          { encoding: 'utf-8' }
+        )
+        return stdout.split('\n').filter((f) => f.trim().length > 0)
+      } else {
+        // Linux: 使用 fc-list 获取字体
+        const { stdout } = await execAsync('fc-list : family | sort -u', { encoding: 'utf-8' })
+        return stdout.split('\n').filter((f) => f.trim().length > 0)
+      }
+    } catch (error) {
+      console.error('Failed to get system fonts:', error)
+      return []
+    }
+  })
 }

@@ -266,6 +266,10 @@ const dialogAPI = {
   selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
 }
 
+const systemAPI = {
+  getFonts: () => ipcRenderer.invoke('system:getFonts'),
+}
+
 // Custom APIs for renderer
 const api: {
   agent: typeof agentAPI
@@ -283,6 +287,7 @@ const api: {
   permission: typeof permissionAPI
   audit: typeof auditAPI
   updater: typeof updaterAPI
+  system: typeof systemAPI
 } = {
   agent: agentAPI,
   tool: toolAPI,
@@ -299,6 +304,7 @@ const api: {
   permission: permissionAPI,
   audit: auditAPI,
   updater: updaterAPI,
+  system: systemAPI,
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

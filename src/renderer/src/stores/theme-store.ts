@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Theme, ThemeMode } from '@shared/ipc'
+import type { Theme, ThemeMode, ThemeState as MainThemeState } from '@shared/ipc'
 import { themeRegistry } from '../themes/theme-registry'
 
 interface ThemeState {
@@ -9,11 +9,18 @@ interface ThemeState {
   currentTheme: Theme
   setTheme: (themeId: string) => void
   setThemeMode: (mode: ThemeMode) => void
-  setDark: (isDark: boolean) => void
+  applyFromMain: (state: MainThemeState) => void
   initFromStorage: () => Promise<void>
 }
 
 const DEFAULT_THEME_ID = 'dark'
+
+function resolveThemeId(mode: ThemeMode): string {
+  if (mode === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  }
+  return mode
+}
 
 export const useThemeStore = create<ThemeState>((set) => ({
   mode: 'system',
@@ -32,16 +39,11 @@ export const useThemeStore = create<ThemeState>((set) => ({
       currentTheme: theme,
       isDark: themeId === 'dark',
     })
-    localStorage.setItem('theme-mode', themeId)
+    window.api?.theme?.setTheme(themeId)
   },
 
   setThemeMode: (mode: ThemeMode) => {
-    const themeId =
-      mode === 'system'
-        ? window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-        : mode
+    const themeId = resolveThemeId(mode)
     const theme = themeRegistry.getTheme(themeId)
     if (theme) {
       set({
@@ -53,20 +55,18 @@ export const useThemeStore = create<ThemeState>((set) => ({
     } else {
       set({ mode })
     }
-    localStorage.setItem('theme-mode', themeId)
+    window.api?.theme?.setMode(mode)
   },
 
-  setDark: (isDark: boolean) => {
-    const themeId = isDark ? 'dark' : 'light'
-    const theme = themeRegistry.getTheme(themeId)
-    if (theme) {
-      set({
-        isDark,
-        currentThemeId: themeId,
-        currentTheme: theme,
-      })
-      localStorage.setItem('theme-mode', themeId)
-    }
+  applyFromMain: (state: MainThemeState) => {
+    const themeId = state.mode === 'system' ? state.currentThemeId : state.mode
+    const theme = themeRegistry.getTheme(themeId) ?? themeRegistry.getTheme(DEFAULT_THEME_ID)!
+    set({
+      mode: state.mode as ThemeMode,
+      currentThemeId: state.currentThemeId,
+      isDark: state.isDark,
+      currentTheme: theme,
+    })
   },
 
   initFromStorage: async () => {
@@ -74,15 +74,13 @@ export const useThemeStore = create<ThemeState>((set) => ({
       if (window.api?.theme) {
         const state = await window.api.theme.get()
         if (state) {
+          const theme = themeRegistry.getTheme(state.currentThemeId) ?? themeRegistry.getTheme(DEFAULT_THEME_ID)!
           set({
-            mode: state.mode,
+            mode: state.mode as ThemeMode,
             currentThemeId: state.currentThemeId,
             isDark: state.isDark,
-            currentTheme:
-              themeRegistry.getTheme(state.currentThemeId) ??
-              themeRegistry.getTheme(DEFAULT_THEME_ID)!,
+            currentTheme: theme,
           })
-          localStorage.setItem('theme-mode', state.currentThemeId)
         }
       }
     } catch (error) {

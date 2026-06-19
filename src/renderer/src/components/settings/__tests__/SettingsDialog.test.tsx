@@ -63,6 +63,8 @@ beforeEach(() => {
   mockUseThemeStore.mockReturnValue({
     mode: 'dark',
     currentThemeId: 'dark',
+    setThemeMode: vi.fn(),
+    setTheme: vi.fn(),
   } as unknown as ReturnType<typeof useThemeStore>)
 
   mockUseUpdateStore.mockReturnValue({
@@ -74,7 +76,7 @@ beforeEach(() => {
     ...window,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    api: { theme: { setMode: vi.fn(), setTheme: vi.fn() } },
+    api: { theme: {} },
   })
 })
 

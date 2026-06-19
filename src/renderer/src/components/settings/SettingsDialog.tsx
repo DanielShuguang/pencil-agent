@@ -1,3 +1,4 @@
+import type { ThemeMode } from '@shared/ipc'
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { match } from 'ts-pattern'
@@ -13,6 +14,7 @@ import { useSystemFonts } from '../../hooks/useSystemFonts'
 import { themeRegistry } from '../../themes/theme-registry'
 import { Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
+import { Checkbox } from '../ui/checkbox'
 import { FontSelect } from '../ui/font-select'
 
 type SettingsTab = 'api-keys' | 'models' | 'permission' | 'audit' | 'memory' | 'language' | 'theme'
@@ -32,17 +34,11 @@ const TAB_KEYS: Record<SettingsTab, string> = {
   theme: 'theme',
 }
 
-const THEME_MODE_KEYS: Record<string, string> = {
-  system: 'followSystem',
-  light: 'lightMode',
-  dark: 'darkMode',
-}
-
 export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('api-keys')
   const { t } = useTranslation()
   const { language, setLanguage } = useAgentStore()
-  const { mode, currentThemeId } = useThemeStore()
+  const { mode, currentThemeId, setThemeMode, setTheme } = useThemeStore()
   const { status, checkForUpdates } = useUpdateStore()
 
   const themes = themeRegistry.getAllThemes()
@@ -151,28 +147,22 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium'>{t('settings.themeMode')}</label>
-                  <div className='flex gap-2'>
-                    {(['system', 'light', 'dark'] as const).map((m) => (
-                      <Button
-                        key={m}
-                        variant={mode === m ? 'default' : 'secondary'}
-                        onClick={() => window.api?.theme?.setMode(m)}
-                      >
-                        {t(`settings.${THEME_MODE_KEYS[m]}`)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div className='space-y-2'>
                   <label className='text-sm font-medium'>{t('settings.selectTheme')}</label>
+                  <label className='flex items-center gap-2 cursor-pointer'>
+                    <Checkbox
+                      checked={mode === 'system'}
+                      onCheckedChange={(checked) => setThemeMode(checked ? 'system' : (currentThemeId as ThemeMode))}
+                    />
+                    <span className='text-sm'>{t('settings.followSystem')}</span>
+                  </label>
                   <div className='grid grid-cols-2 gap-2'>
                     {themes.map((theme) => (
                       <Button
                         key={theme.id}
                         variant={currentThemeId === theme.id ? 'default' : 'outline'}
                         className='justify-start gap-2'
-                        onClick={() => window.api?.theme?.setTheme(theme.id)}
+                        disabled={mode === 'system'}
+                        onClick={() => setTheme(theme.id)}
                       >
                         <div
                           className='w-4 h-4 rounded-full shrink-0'

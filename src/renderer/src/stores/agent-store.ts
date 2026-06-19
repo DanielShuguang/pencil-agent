@@ -6,19 +6,17 @@ import { useEditorStore, getLanguageFromPath } from './editor-store'
 import { useSandboxStore } from './sandbox-store'
 import i18n from '../i18n'
 
-// 生成唯一消息 ID，避免同一毫秒内冲突
-let messageCounter = 0
-function generateMessageId(): string {
-  messageCounter = (messageCounter + 1) % 10000
-  return `msg-${Date.now()}-${messageCounter}-${Math.random().toString(36).slice(2, 7)}`
+// 生成唯一 ID，避免同一毫秒内冲突
+function createIdGenerator(prefix: string) {
+  let counter = 0
+  return () => {
+    counter = (counter + 1) % 10000
+    return `${prefix}-${Date.now()}-${counter}-${Math.random().toString(36).slice(2, 7)}`
+  }
 }
 
-// 生成工具调用 ID
-let toolCallCounter = 0
-function generateToolCallId(): string {
-  toolCallCounter = (toolCallCounter + 1) % 10000
-  return `tc-${Date.now()}-${toolCallCounter}-${Math.random().toString(36).slice(2, 7)}`
-}
+const generateMessageId = createIdGenerator('msg')
+const generateToolCallId = createIdGenerator('tc')
 
 // 每个会话最大消息数，超出后智能截断
 const MAX_MESSAGES_PER_SESSION = 300
@@ -375,16 +373,14 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const truncatedMessages = truncateMessages(newMessages)
     sessions.set(activeSessionId, truncatedMessages)
 
-    if (meta) {
-      const updatedMeta = {
-        ...meta,
-        title: prev.length === 0 ? content.slice(0, 30) : meta.title,
-        updatedAt: Date.now(),
-        messageCount: truncatedMessages.length,
-      }
-      metas.set(activeSessionId, updatedMeta)
-      persistSession(updatedMeta, truncatedMessages)
+    const updatedMeta = {
+      ...meta,
+      title: prev.length === 0 ? content.slice(0, 30) : meta.title,
+      updatedAt: Date.now(),
+      messageCount: truncatedMessages.length,
     }
+    metas.set(activeSessionId, updatedMeta)
+    persistSession(updatedMeta, truncatedMessages)
 
     set({ sessions, sessionMetas: metas, isGenerating: true })
     window.api.agent.prompt(activeSessionId, content, model)

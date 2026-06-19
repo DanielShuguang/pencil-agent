@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Folder } from 'lucide-react'
+import { Folder, Trash2 } from 'lucide-react'
 import type { SessionMeta } from '../../stores/agent-store'
 import { cn } from '../../lib/utils'
 import {
@@ -75,22 +75,7 @@ export function SessionItem({ meta, isActive, onClick, onDelete }: SessionItemPr
             setShowDeleteDialog(true)
           }}
         >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='14'
-            height='14'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='text-destructive'
-          >
-            <path d='M3 6h18' />
-            <path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6' />
-            <path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2' />
-          </svg>
+          <Trash2 className='h-3.5 w-3.5 text-destructive' />
         </button>
       </div>
 

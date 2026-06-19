@@ -14,19 +14,11 @@ export function StatusBar() {
 
   const activeCwd = activeSessionId ? sessionMetas.get(activeSessionId)?.cwd : undefined
 
-  const getConnectionIcon = () =>
-    match(connectionStatus)
-      .with('connected', () => <Wifi className='h-3 w-3 text-green-500' />)
-      .with('disconnected', () => <WifiOff className='h-3 w-3 text-red-500' />)
-      .with('checking', () => <Loader2 className='h-3 w-3 text-yellow-500 animate-spin' />)
-      .exhaustive()
-
-  const getConnectionText = () =>
-    match(connectionStatus)
-      .with('connected', () => t('status.connected'))
-      .with('disconnected', () => t('status.disconnected'))
-      .with('checking', () => t('status.checking'))
-      .exhaustive()
+  const connectionInfo = match(connectionStatus)
+    .with('connected', () => ({ icon: <Wifi className='h-3 w-3 text-green-500' />, text: t('status.connected') }))
+    .with('disconnected', () => ({ icon: <WifiOff className='h-3 w-3 text-red-500' />, text: t('status.disconnected') }))
+    .with('checking', () => ({ icon: <Loader2 className='h-3 w-3 text-yellow-500 animate-spin' />, text: t('status.checking') }))
+    .exhaustive()
 
   const formatTokenCount = (count: number) =>
     match(count)
@@ -79,8 +71,8 @@ export function StatusBar() {
           onClick={() => checkConnection()}
           className='flex items-center gap-1.5 hover:text-foreground transition-colors'
         >
-          {getConnectionIcon()}
-          <span>{getConnectionText()}</span>
+          {connectionInfo.icon}
+          <span>{connectionInfo.text}</span>
         </button>
 
         <span>v{version}</span>

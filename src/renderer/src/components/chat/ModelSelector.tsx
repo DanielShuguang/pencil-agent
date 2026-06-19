@@ -21,9 +21,8 @@ export function ModelSelector({ showTrigger = true, mode = 'session' }: ModelSel
     fetchProviders()
   }, [fetchProviders])
 
-  const currentModel = mode === 'session'
-    ? (activeSessionId ? sessionMetas.get(activeSessionId)?.currentModel : null) || defaultModel
-    : defaultModel
+  const sessionModel = activeSessionId ? sessionMetas.get(activeSessionId)?.currentModel : null
+  const currentModel = mode === 'session' ? (sessionModel || defaultModel) : defaultModel
 
   const currentProvider = providers.find((p) => p.id === currentModel.provider)
   const currentModelInfo = currentProvider?.models.find((m) => m.id === currentModel.id)

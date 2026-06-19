@@ -56,9 +56,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     if (!window.api?.theme) return
     const unsubscribe = window.api.theme.onThemeChanged((state) => {
-      const { setDark, setThemeMode } = useThemeStore.getState()
-      setThemeMode(state.mode)
-      setDark(state.isDark)
+      useThemeStore.getState().applyFromMain(state)
     })
     return unsubscribe
   }, [])

@@ -8,4 +8,5 @@ out
 .claude/settings.local.json
 
 test-results/
+coverage/
 .env.local

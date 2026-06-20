@@ -118,7 +118,7 @@ export function AppShell({ children }: AppShellProps) {
   }, [setExecuting, updateNodeStatus])
 
   useEffect(() => {
-    window.api.window.isMaximized().then(setIsMaximized)
+    void window.api.window.isMaximized().then(setIsMaximized)
     const cleanup = window.api.window.onMaximizedChanged(setIsMaximized)
     return cleanup
   }, [])
@@ -126,7 +126,7 @@ export function AppShell({ children }: AppShellProps) {
   // 权限确认请求监听
   useEffect(() => {
     const { fetchConfig, handleConfirmRequest } = usePermissionStore.getState()
-    fetchConfig()
+    void fetchConfig()
     const cleanup = window.api.permission.onConfirmRequest((request) => {
       handleConfirmRequest(request as any)
     })

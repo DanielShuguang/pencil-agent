@@ -13,7 +13,7 @@ export function RoleList({ onSelect, selectedRoleId }: RoleListProps) {
   const { t } = useTranslation()
 
   useEffect(() => {
-    fetchRoles()
+    void fetchRoles()
   }, [fetchRoles])
 
   if (isLoading) {
@@ -51,7 +51,7 @@ export function RoleList({ onSelect, selectedRoleId }: RoleListProps) {
             className='opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity'
             onClick={(e) => {
               e.stopPropagation()
-              deleteRole(role.id)
+              void deleteRole(role.id)
             }}
           >
             <svg

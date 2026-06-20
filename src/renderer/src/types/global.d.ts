@@ -7,6 +7,8 @@ import type {
   UpdateProgress,
   ThemeMode,
   ThemeState,
+  ToolDefinition,
+  AgentRole,
 } from '@shared/ipc'
 
 interface AgentAPI {

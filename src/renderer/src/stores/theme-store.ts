@@ -39,7 +39,7 @@ export const useThemeStore = create<ThemeState>((set) => ({
       currentTheme: theme,
       isDark: themeId === 'dark',
     })
-    window.api?.theme?.setTheme(themeId)
+    void window.api?.theme?.setTheme(themeId)
   },
 
   setThemeMode: (mode: ThemeMode) => {
@@ -55,7 +55,7 @@ export const useThemeStore = create<ThemeState>((set) => ({
     } else {
       set({ mode })
     }
-    window.api?.theme?.setMode(mode)
+    void window.api?.theme?.setMode(mode)
   },
 
   applyFromMain: (state: MainThemeState) => {

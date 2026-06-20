@@ -47,7 +47,7 @@ export function AuditLogPanel() {
   }
 
   useEffect(() => {
-    fetchLogs()
+    void fetchLogs()
   }, [activeSessionId])
 
   const handleClear = async () => {

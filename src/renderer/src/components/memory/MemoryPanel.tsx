@@ -17,7 +17,7 @@ export function MemoryPanel() {
 
   const handleSearch = () => {
     if (localQuery.trim()) {
-      searchMemory(localQuery.trim())
+      void searchMemory(localQuery.trim())
     }
   }
 

@@ -28,10 +28,10 @@ export function ApiKeyForm() {
 
   useEffect(() => {
     for (const provider of PROVIDERS) {
-      loadApiKey(provider.id).then((key) => {
+      void loadApiKey(provider.id).then((key) => {
         if (key) {
           setSavedKeys((prev) => ({ ...prev, [provider.id]: true }))
-          window.api.settings.getMaskedKey(provider.id).then((maskedKey) => {
+          void window.api.settings.getMaskedKey(provider.id).then((maskedKey) => {
             if (maskedKey) {
               setMaskedKeys((prev) => ({ ...prev, [provider.id]: maskedKey }))
             }

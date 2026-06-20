@@ -143,6 +143,7 @@ export function evaluateSafeExpression(expression: string, input: unknown): bool
     const evalExpression = expression.replace(/\$input/g, JSON.stringify(input))
     
     // 使用 Function 构造器进行安全求值
+    // oxlint-disable-next-line no-implied-eval
     const fn = new Function(`"use strict"; return (${evalExpression})`)
     return Boolean(fn())
   } catch {

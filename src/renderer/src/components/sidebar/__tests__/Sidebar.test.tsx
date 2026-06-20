@@ -53,10 +53,10 @@ describe('Sidebar', () => {
     expect(addButtons.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('calls handleNewSession on new session click', async () => {
+  it('calls handleNewSession on new session click', () => {
     render(<Sidebar />)
     const buttons = screen.getAllByRole('button')
-    await fireEvent.click(buttons[buttons.length - 1])
+    fireEvent.click(buttons[buttons.length - 1])
     expect(mockHandleNewSession).toHaveBeenCalled()
   })
 

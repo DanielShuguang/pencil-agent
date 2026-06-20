@@ -91,7 +91,7 @@ export function MessageList() {
   }, [isSearchOpen])
 
   const handleRewind = (messageId: string) => {
-    createBranch(messageId)
+    void createBranch(messageId)
   }
 
   return (

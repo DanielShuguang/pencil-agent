@@ -75,7 +75,7 @@ export const useStatusStore = create<StatusState>((set, get) => ({
 
     if (connectionTimer) clearInterval(connectionTimer)
     connectionTimer = setInterval(() => {
-      checkConnection()
+      void checkConnection()
     }, 60000)
   },
 }))

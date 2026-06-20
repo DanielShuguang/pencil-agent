@@ -20,9 +20,9 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     initFromStorage()
-    initStatusStore()
-    initTheme()
-    syncModelWithProviders()
+    void initStatusStore()
+    void initTheme()
+    void syncModelWithProviders()
   }, [initFromStorage, initStatusStore, initTheme, syncModelWithProviders])
 
   useEffect(() => {

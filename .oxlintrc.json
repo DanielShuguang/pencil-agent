@@ -1,13 +1,31 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
   "rules": {
-    "no-unused-vars": "warn",
-    "no-console": "off",
-    "eqeqeq": "error",
-    "no-var": "error",
-    "prefer-const": "error",
-    "prefer-template": "warn",
-    "no-throw-literal": "error",
-    "no-implicit-coercion": "warn"
-  }
+    "typescript/restrict-template-expressions": "warn"
+  },
+  "env": {
+    "builtin": true
+  },
+  "options": {
+    "typeAware": true
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"],
+      "rules": {
+        "typescript/unbound-method": "off",
+        "typescript/no-misused-spread": "off",
+        "typescript/no-floating-promises": "off",
+        "typescript/no-base-to-string": "off"
+      }
+    }
+  ]
 }

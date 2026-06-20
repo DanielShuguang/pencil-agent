@@ -18,7 +18,7 @@ export function ModelSelector({ showTrigger = true, mode = 'session' }: ModelSel
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    fetchProviders()
+    void fetchProviders()
   }, [fetchProviders])
 
   const sessionModel = activeSessionId ? sessionMetas.get(activeSessionId)?.currentModel : null

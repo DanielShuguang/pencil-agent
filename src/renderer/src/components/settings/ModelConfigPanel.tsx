@@ -56,7 +56,7 @@ export function ModelConfigPanel() {
   } | null>(null)
 
   useEffect(() => {
-    fetchProviders()
+    void fetchProviders()
   }, [fetchProviders])
 
   const handleEditProvider = async (provider: ModelProviderInfo) => {
@@ -78,7 +78,7 @@ export function ModelConfigPanel() {
     setIsAddingProvider(false)
     setMaskedApiKey(undefined)
     // 保存后自动获取可用模型
-    handleFetchModels(provider.id)
+    void handleFetchModels(provider.id)
   }
 
   const handleFetchModels = async (providerId: string) => {

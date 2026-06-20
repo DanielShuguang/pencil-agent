@@ -15,7 +15,7 @@ export function MemorySearch({ onResultSelect }: MemorySearchProps) {
 
   const handleSearch = () => {
     if (query.trim()) {
-      searchMemory(query.trim())
+      void searchMemory(query.trim())
     }
   }
 

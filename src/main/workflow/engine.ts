@@ -88,7 +88,7 @@ export class WorkflowEngine {
   private async cleanupSessions(sessionIds: string[]): Promise<void> {
     const cleanupPromises = sessionIds.map((sid) => {
       try {
-        return this.agents.destroy(sid)
+        return Promise.resolve(this.agents.destroy(sid))
       } catch {
         // Ignore cleanup errors
         return Promise.resolve()
@@ -211,7 +211,8 @@ export class WorkflowEngine {
     })
 
     let result = ''
-    for await (const chunk of this.agents.prompt(sessionId, String(inputs[0] ?? ''))) {
+    const inputStr = typeof inputs[0] === 'string' ? inputs[0] : JSON.stringify(inputs[0] ?? '')
+    for await (const chunk of this.agents.prompt(sessionId, inputStr)) {
       if (chunk.type === 'text') {
         result += chunk.content
         if (result.length > MAX_AGENT_OUTPUT_LENGTH) break
@@ -274,7 +275,7 @@ export class WorkflowEngine {
       throw new Error(`Invalid multi-agent mode: ${mode}`)
     }
 
-    const input = String(inputs[0] ?? '')
+    const input = typeof inputs[0] === 'string' ? inputs[0] : JSON.stringify(inputs[0] ?? '')
 
     const result = await this.orchestrator.execute(mode, roleIds, input, {
       cwd,

@@ -52,7 +52,7 @@ export const useUpdateStore = create<UpdateState>((set, get) => ({
 
   installUpdate: () => {
     if (!window.api?.updater) return
-    window.api.updater.install()
+    void window.api.updater.install()
   },
 
   reset: () => {

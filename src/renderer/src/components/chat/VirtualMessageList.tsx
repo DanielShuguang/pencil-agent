@@ -35,7 +35,7 @@ export function VirtualMessageList() {
   }, [messages, listRef])
 
   const handleRewind = (messageId: string) => {
-    createBranch(messageId)
+    void createBranch(messageId)
   }
 
   if (messages.length === 0) {

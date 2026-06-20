@@ -66,7 +66,7 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
   },
 
   submitConfirmResponse: (response) => {
-    window.api.permission.submitConfirmResponse(response as unknown as Record<string, unknown>)
+    void window.api.permission.submitConfirmResponse(response as unknown as Record<string, unknown>)
     set({ pendingConfirm: null })
   },
 
@@ -74,7 +74,7 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
     const { pendingConfirm } = get()
     if (pendingConfirm) {
       // 默认拒绝
-      window.api.permission.submitConfirmResponse({
+      void window.api.permission.submitConfirmResponse({
         id: pendingConfirm.id,
         allowed: false,
       } as unknown as Record<string, unknown>)

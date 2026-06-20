@@ -606,7 +606,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
   setLanguage: (lang: 'zh' | 'en') => {
     setStorageItem('language', lang)
-    i18n.changeLanguage(lang)
+    void i18n.changeLanguage(lang)
     set({ language: lang })
   },
 }))

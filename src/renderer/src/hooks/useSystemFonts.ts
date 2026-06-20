@@ -61,7 +61,7 @@ export function useSystemFonts() {
   useEffect(() => {
     let cancelled = false
 
-    querySystemFonts().then((result) => {
+    void querySystemFonts().then((result) => {
       if (!cancelled) {
         setFonts(result)
         setLoading(false)

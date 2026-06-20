@@ -21,7 +21,7 @@ export function PermissionPanel() {
 
   useEffect(() => {
     if (!isLoaded) {
-      fetchConfig()
+      void fetchConfig()
     }
   }, [isLoaded, fetchConfig])
 
@@ -30,7 +30,7 @@ export function PermissionPanel() {
   }
 
   const handleModeChange = (mode: (typeof MODES)[number]) => {
-    updateConfig({ mode })
+    void updateConfig({ mode })
   }
 
   const handleToggleTool = (tool: string) => {
@@ -38,7 +38,7 @@ export function PermissionPanel() {
     const newDisabled = disabled
       ? config.disabledTools.filter((t) => t !== tool)
       : [...config.disabledTools, tool]
-    updateConfig({ disabledTools: newDisabled })
+    void updateConfig({ disabledTools: newDisabled })
   }
 
   return (

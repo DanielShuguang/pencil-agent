@@ -57,7 +57,9 @@ export function PermissionPanel() {
                 onClick={() => handleModeChange(mode)}
               >
                 <Icon className='h-5 w-5' />
-                <span className='text-xs'>{t(`permission.mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}</span>
+                <span className='text-xs'>
+                  {t(`permission.mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
+                </span>
               </Button>
             )
           })}

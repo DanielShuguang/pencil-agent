@@ -146,9 +146,9 @@ describe('AuditLogPanel', () => {
     await waitFor(() => {
       expect(screen.getByText('file_read')).toBeInTheDocument()
     })
-    const clearButton = screen.getAllByRole('button').find((b) =>
-      b.querySelector('.lucide-trash-2'),
-    )
+    const clearButton = screen
+      .getAllByRole('button')
+      .find((b) => b.querySelector('.lucide-trash-2'))
     expect(clearButton).toBeDefined()
     await user.click(clearButton!)
     expect(mockClearLogs).toHaveBeenCalled()

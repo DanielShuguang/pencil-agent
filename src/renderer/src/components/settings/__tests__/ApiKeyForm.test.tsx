@@ -6,8 +6,13 @@ import '../../../i18n'
 vi.mock('../../ui/alert-dialog', () => ({
   AlertDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
     open ? <div data-testid='alert-dialog'>{children}</div> : null,
-  AlertDialogAction: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) =>
-    <button onClick={onClick}>{children}</button>,
+  AlertDialogAction: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+  }) => <button onClick={onClick}>{children}</button>,
   AlertDialogCancel: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
   AlertDialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   AlertDialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
@@ -29,7 +34,7 @@ const mockGetMaskedKey = vi.fn().mockResolvedValue(null)
 beforeEach(() => {
   vi.clearAllMocks()
   mockGetMaskedKey.mockResolvedValue(null)
-  
+
   // 设置 window.api 模拟
   Object.defineProperty(window, 'api', {
     value: {

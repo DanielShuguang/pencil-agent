@@ -105,7 +105,11 @@ const markdownComponents = {
     )
   },
   th({ children }: any) {
-    return <th className='border border-muted-foreground/30 px-2 py-1 bg-muted/50 font-medium'>{children}</th>
+    return (
+      <th className='border border-muted-foreground/30 px-2 py-1 bg-muted/50 font-medium'>
+        {children}
+      </th>
+    )
   },
   td({ children }: any) {
     return <td className='border border-muted-foreground/30 px-2 py-1'>{children}</td>

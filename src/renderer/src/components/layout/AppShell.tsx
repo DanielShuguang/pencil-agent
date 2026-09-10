@@ -231,53 +231,62 @@ export function AppShell({ children }: AppShellProps) {
           </>
         )}
         <div className='flex-1 flex flex-col overflow-hidden'>
-          <div key={activeTab} className='flex-1 flex flex-col overflow-hidden animate-in fade-in-0 slide-in-from-bottom-2 duration-150'>
-          {match(activeTab)
-            .with('chat', () => <ErrorBoundary>{children}</ErrorBoundary>)
-            .with('editor', () => (
-              <ErrorBoundary>
-                <Suspense fallback={<Loading />}>
-                  <div className='flex-1 flex overflow-hidden'>
-                    <div className='border-r bg-muted/20 overflow-auto' style={{ width: fileTreeWidth }}>
-                      <div className='p-2'>
-                        <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
-                          {t('app.file')}
-                        </h3>
-                        <FileTree />
+          <div
+            key={activeTab}
+            className='flex-1 flex flex-col overflow-hidden animate-in fade-in-0 slide-in-from-bottom-2 duration-150'
+          >
+            {match(activeTab)
+              .with('chat', () => <ErrorBoundary>{children}</ErrorBoundary>)
+              .with('editor', () => (
+                <ErrorBoundary>
+                  <Suspense fallback={<Loading />}>
+                    <div className='flex-1 flex overflow-hidden'>
+                      <div
+                        className='border-r bg-muted/20 overflow-auto'
+                        style={{ width: fileTreeWidth }}
+                      >
+                        <div className='p-2'>
+                          <h3 className='text-xs font-medium text-muted-foreground mb-2 px-2'>
+                            {t('app.file')}
+                          </h3>
+                          <FileTree />
+                        </div>
+                      </div>
+                      <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
+                      <div className='flex-1 flex flex-col overflow-hidden'>
+                        <TabBar />
+                        <EditorPanel className='flex-1' />
+                        <TerminalPanel
+                          isCollapsed={isTerminalCollapsed}
+                          onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
+                        />
                       </div>
                     </div>
-                    <ResizeHandle direction='horizontal' onResize={handleFileTreeResize} />
+                  </Suspense>
+                </ErrorBoundary>
+              ))
+              .with('workflow', () => (
+                <ErrorBoundary>
+                  <Suspense fallback={<Loading />}>
                     <div className='flex-1 flex flex-col overflow-hidden'>
-                      <TabBar />
-                      <EditorPanel className='flex-1' />
-                      <TerminalPanel
-                        isCollapsed={isTerminalCollapsed}
-                        onToggleCollapse={() => setIsTerminalCollapsed(!isTerminalCollapsed)}
-                      />
+                      <WorkflowToolbar onExecute={handleExecute} />
+                      <div className='flex-1 flex overflow-hidden'>
+                        <WorkflowCanvas className='flex-1' />
+                        {selectedNodeId && (
+                          <>
+                            <ResizeHandle
+                              direction='horizontal'
+                              onResize={handleNodeConfigResize}
+                            />
+                            <NodeConfigPanel style={{ width: nodeConfigWidth }} />
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Suspense>
-              </ErrorBoundary>
-            ))
-            .with('workflow', () => (
-              <ErrorBoundary>
-                <Suspense fallback={<Loading />}>
-                  <div className='flex-1 flex flex-col overflow-hidden'>
-                    <WorkflowToolbar onExecute={handleExecute} />
-                    <div className='flex-1 flex overflow-hidden'>
-                      <WorkflowCanvas className='flex-1' />
-                      {selectedNodeId && (
-                        <>
-                          <ResizeHandle direction='horizontal' onResize={handleNodeConfigResize} />
-                          <NodeConfigPanel style={{ width: nodeConfigWidth }} />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </Suspense>
-              </ErrorBoundary>
-            ))
-            .exhaustive()}
+                  </Suspense>
+                </ErrorBoundary>
+              ))
+              .exhaustive()}
           </div>
         </div>
       </main>

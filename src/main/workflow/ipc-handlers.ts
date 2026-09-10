@@ -5,12 +5,7 @@ import type { WorkflowDefinition } from '@shared/ipc'
 export function registerWorkflowHandlers(engine: WorkflowEngine, mainWindow: BrowserWindow): void {
   ipcMain.handle(
     'workflow:execute',
-    async (
-      _,
-      workflow: WorkflowDefinition,
-      input: Record<string, unknown>,
-      cwd?: string,
-    ) => {
+    async (_, workflow: WorkflowDefinition, input: Record<string, unknown>, cwd?: string) => {
       try {
         const result = await engine.execute(
           workflow,

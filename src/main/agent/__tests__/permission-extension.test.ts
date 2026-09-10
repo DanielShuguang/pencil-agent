@@ -22,7 +22,9 @@ function createMockAuditLogger(): AuditLogger {
   } as unknown as AuditLogger
 }
 
-function createMockMainWindow(confirmFn?: (req: ConfirmRequest) => Promise<ConfirmResponse>): BrowserWindow {
+function createMockMainWindow(
+  confirmFn?: (req: ConfirmRequest) => Promise<ConfirmResponse>,
+): BrowserWindow {
   const win = {} as BrowserWindow
   if (confirmFn) {
     ;(win as any).__requestConfirm = confirmFn
@@ -125,7 +127,11 @@ describe('createPermissionExtension', () => {
       const getSessionCwdFn = vi.fn(() => '/fallback/cwd')
       const { createPermissionExtension } = await import('../permission-extension')
       const ext = createPermissionExtension(
-        permissionManager, auditLogger, getMainWindow, getSessionId, getSessionCwdFn,
+        permissionManager,
+        auditLogger,
+        getMainWindow,
+        getSessionId,
+        getSessionCwdFn,
       )
       const api = createMockExtensionAPI()
       ext(api as any)
@@ -148,7 +154,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'ls' }, riskLevel: 'medium' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'ls' },
+          riskLevel: 'medium',
+        },
       })
 
       const result = await api.handlers['tool_call'](
@@ -171,7 +182,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'rm -rf /tmp' }, riskLevel: 'high' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'rm -rf /tmp' },
+          riskLevel: 'high',
+        },
       })
 
       const result = await api.handlers['tool_call'](
@@ -186,7 +202,9 @@ describe('createPermissionExtension', () => {
     })
 
     it('should remember session choice when rememberSession is true', async () => {
-      const confirmFn = vi.fn().mockResolvedValue({ id: 'req-1', allowed: true, rememberSession: true })
+      const confirmFn = vi
+        .fn()
+        .mockResolvedValue({ id: 'req-1', allowed: true, rememberSession: true })
       getMainWindow = () => createMockMainWindow(confirmFn)
       const factory = await createExtension()
       const api = createMockExtensionAPI()
@@ -194,7 +212,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'ls' }, riskLevel: 'medium' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'ls' },
+          riskLevel: 'medium',
+        },
       })
 
       await api.handlers['tool_call'](
@@ -202,11 +225,17 @@ describe('createPermissionExtension', () => {
         { cwd: '/tmp' },
       )
 
-      expect(permissionManager.rememberSessionChoice).toHaveBeenCalledWith('test-session', 'bash', true)
+      expect(permissionManager.rememberSessionChoice).toHaveBeenCalledWith(
+        'test-session',
+        'bash',
+        true,
+      )
     })
 
     it('should not remember session choice when rememberSession is false', async () => {
-      const confirmFn = vi.fn().mockResolvedValue({ id: 'req-1', allowed: true, rememberSession: false })
+      const confirmFn = vi
+        .fn()
+        .mockResolvedValue({ id: 'req-1', allowed: true, rememberSession: false })
       getMainWindow = () => createMockMainWindow(confirmFn)
       const factory = await createExtension()
       const api = createMockExtensionAPI()
@@ -214,7 +243,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'ls' }, riskLevel: 'medium' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'ls' },
+          riskLevel: 'medium',
+        },
       })
 
       await api.handlers['tool_call'](
@@ -254,7 +288,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'ls' }, riskLevel: 'medium' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'ls' },
+          riskLevel: 'medium',
+        },
       })
 
       const result = await api.handlers['tool_call'](
@@ -274,7 +313,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'ls' }, riskLevel: 'medium' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'ls' },
+          riskLevel: 'medium',
+        },
       })
 
       const result = await api.handlers['tool_call'](
@@ -295,7 +339,12 @@ describe('createPermissionExtension', () => {
 
       vi.mocked(permissionManager.checkToolPermission).mockReturnValue({
         needsConfirm: true,
-        request: { id: 'req-1', toolName: 'bash', parameters: { command: 'ls' }, riskLevel: 'medium' },
+        request: {
+          id: 'req-1',
+          toolName: 'bash',
+          parameters: { command: 'ls' },
+          riskLevel: 'medium',
+        },
       })
 
       const resultPromise = api.handlers['tool_call'](
@@ -327,7 +376,12 @@ describe('createPermissionExtension', () => {
 
       // 触发 tool_result
       api.handlers['tool_result'](
-        { toolName: 'read', input: { path: '/tmp/file.txt' }, toolCallId: 'call-1', isError: false },
+        {
+          toolName: 'read',
+          input: { path: '/tmp/file.txt' },
+          toolCallId: 'call-1',
+          isError: false,
+        },
         {},
       )
 
@@ -383,13 +437,16 @@ describe('createPermissionExtension', () => {
       vi.advanceTimersByTime(500)
 
       api.handlers['tool_result'](
-        { toolName: 'read', input: { path: '/tmp/file.txt' }, toolCallId: 'call-3', isError: false },
+        {
+          toolName: 'read',
+          input: { path: '/tmp/file.txt' },
+          toolCallId: 'call-3',
+          isError: false,
+        },
         {},
       )
 
-      expect(auditLogger.log).toHaveBeenCalledWith(
-        expect.objectContaining({ duration: 500 }),
-      )
+      expect(auditLogger.log).toHaveBeenCalledWith(expect.objectContaining({ duration: 500 }))
 
       vi.useRealTimers()
     })
@@ -400,13 +457,16 @@ describe('createPermissionExtension', () => {
       factory(api as any)
 
       api.handlers['tool_result'](
-        { toolName: 'read', input: { path: '/tmp/file.txt' }, toolCallId: 'unknown-call', isError: false },
+        {
+          toolName: 'read',
+          input: { path: '/tmp/file.txt' },
+          toolCallId: 'unknown-call',
+          isError: false,
+        },
         {},
       )
 
-      expect(auditLogger.log).toHaveBeenCalledWith(
-        expect.objectContaining({ duration: 0 }),
-      )
+      expect(auditLogger.log).toHaveBeenCalledWith(expect.objectContaining({ duration: 0 }))
     })
 
     it('should clean up toolStartTimes after tool_result', async () => {
@@ -422,19 +482,27 @@ describe('createPermissionExtension', () => {
       )
 
       api.handlers['tool_result'](
-        { toolName: 'read', input: { path: '/tmp/file.txt' }, toolCallId: 'call-cleanup', isError: false },
+        {
+          toolName: 'read',
+          input: { path: '/tmp/file.txt' },
+          toolCallId: 'call-cleanup',
+          isError: false,
+        },
         {},
       )
 
       // 再次触发 tool_result 应该 duration=0（因为 startTime 已被清理）
       api.handlers['tool_result'](
-        { toolName: 'read', input: { path: '/tmp/file.txt' }, toolCallId: 'call-cleanup', isError: false },
+        {
+          toolName: 'read',
+          input: { path: '/tmp/file.txt' },
+          toolCallId: 'call-cleanup',
+          isError: false,
+        },
         {},
       )
 
-      expect(auditLogger.log).toHaveBeenLastCalledWith(
-        expect.objectContaining({ duration: 0 }),
-      )
+      expect(auditLogger.log).toHaveBeenLastCalledWith(expect.objectContaining({ duration: 0 }))
     })
   })
 })

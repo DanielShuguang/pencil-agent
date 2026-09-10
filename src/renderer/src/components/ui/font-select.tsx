@@ -36,7 +36,12 @@ function FontRow({ index, fonts, selected, onSelect, style }: RowComponentProps<
       )}
       onClick={() => onSelect(font.value)}
     >
-      <Check className={cn('mr-2 h-4 w-4 shrink-0', selected === font.value ? 'opacity-100' : 'opacity-0')} />
+      <Check
+        className={cn(
+          'mr-2 h-4 w-4 shrink-0',
+          selected === font.value ? 'opacity-100' : 'opacity-0',
+        )}
+      />
       {font.label}
     </button>
   )

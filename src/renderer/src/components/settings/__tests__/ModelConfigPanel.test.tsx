@@ -103,7 +103,7 @@ import { useModelConfigStore } from '../../../stores/model-config-store'
 describe('ModelConfigPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // 模拟 window.api
     Object.defineProperty(window, 'api', {
       value: {
@@ -129,7 +129,11 @@ describe('ModelConfigPanel', () => {
   })
 
   it('should fetch providers on mount', () => {
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
     expect(mockFetchProviders).toHaveBeenCalledTimes(1)
   })
 
@@ -147,12 +151,20 @@ describe('ModelConfigPanel', () => {
       fetchModels: mockFetchModels,
     })
 
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
     expect(screen.getByText('加载中...')).toBeInTheDocument()
   })
 
   it('should show empty state', () => {
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
     expect(screen.getByText('暂无供应商')).toBeInTheDocument()
   })
 
@@ -170,7 +182,11 @@ describe('ModelConfigPanel', () => {
       fetchModels: mockFetchModels,
     })
 
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
     expect(screen.getByText('Network error')).toBeInTheDocument()
   })
 
@@ -197,14 +213,22 @@ describe('ModelConfigPanel', () => {
       fetchModels: mockFetchModels,
     })
 
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
     expect(screen.getByText('OpenAI')).toBeInTheDocument()
     expect(screen.getByText('（1 个模型）')).toBeInTheDocument()
   })
 
   it('should show ProviderForm when adding provider', async () => {
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     await user.click(screen.getByText('添加供应商'))
     expect(screen.getByTestId('provider-form')).toBeInTheDocument()
@@ -213,7 +237,11 @@ describe('ModelConfigPanel', () => {
 
   it('should save provider and close form', async () => {
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     await user.click(screen.getByText('添加供应商'))
     await user.click(screen.getByText('Save Provider'))
@@ -224,7 +252,11 @@ describe('ModelConfigPanel', () => {
 
   it('should cancel adding provider', async () => {
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     await user.click(screen.getByText('添加供应商'))
     await user.click(screen.getByText('Cancel Provider'))
@@ -256,7 +288,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     await user.click(screen.getByText('OpenAI'))
     expect(screen.getByText('模型列表')).toBeInTheDocument()
@@ -287,7 +323,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     await user.click(screen.getByText('OpenAI'))
     await user.click(screen.getByText('添加模型'))
@@ -319,7 +359,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     const editButtons = screen.getAllByRole('button')
     const editButton = editButtons.find((btn) => btn.querySelector('.lucide-pencil'))
@@ -353,7 +397,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     const testButtons = screen.getAllByRole('button')
     const testButton = testButtons.find((btn) => btn.querySelector('.lucide-test-tube'))
@@ -386,7 +434,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     const deleteButtons = screen.getAllByRole('button')
     const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
@@ -419,7 +471,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     const deleteButtons = screen.getAllByRole('button')
     const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))
@@ -455,7 +511,11 @@ describe('ModelConfigPanel', () => {
     })
 
     const user = userEvent.setup()
-    render(<TooltipProvider><ModelConfigPanel /></TooltipProvider>)
+    render(
+      <TooltipProvider>
+        <ModelConfigPanel />
+      </TooltipProvider>,
+    )
 
     const deleteButtons = screen.getAllByRole('button')
     const deleteButton = deleteButtons.find((btn) => btn.querySelector('.lucide-trash-2'))

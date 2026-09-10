@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, TestTube, Download, Eye, EyeOff, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  TestTube,
+  Download,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+} from 'lucide-react'
 import type { ModelProvider, ModelProviderInfo, ModelConfig } from '@shared/ipc'
 import { cn } from '../../lib/utils'
 import { useModelConfigStore } from '../../stores/model-config-store'
@@ -269,7 +280,11 @@ export function ModelConfigPanel() {
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size='sm' variant='ghost' onClick={() => handleEditProvider(provider)}>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => handleEditProvider(provider)}
+                      >
                         <Pencil className='h-4 w-4' />
                       </Button>
                     </TooltipTrigger>
@@ -299,74 +314,82 @@ export function ModelConfigPanel() {
                     : 'grid-rows-[0fr] opacity-0',
                 )}
               >
-                <div className='overflow-hidden'><div className='p-3'>
-                  <div className='mb-2 flex items-center justify-between'>
-                    <span className='text-sm text-muted-foreground'>{t('settings.modelList')}</span>
-                    <Button
-                      size='sm'
-                      variant='outline'
-                      onClick={() => setEditingModel({ providerId: provider.id })}
-                    >
-                      <Plus className='mr-2 h-3 w-3' />
-                      {t('settings.addModel')}
-                    </Button>
-                  </div>
-
-                  {provider.models.length === 0 ? (
-                    <div className='text-sm text-muted-foreground'>{t('settings.noModels')}</div>
-                  ) : (
-                    <div className='space-y-1'>
-                      {provider.models.map((model) => (
-                        <div
-                          key={model.id}
-                          className={`flex items-center justify-between rounded-md p-2 hover:bg-muted ${model.visible === false ? 'opacity-50' : ''}`}
-                        >
-                          <div>
-                            <span className='font-medium'>{model.name}</span>
-                            <span className='ml-2 text-sm text-muted-foreground'>{model.id}</span>
-                            {model.visible === false && (
-                              <span className='ml-2 text-xs text-muted-foreground'>({t('settings.hideModel')})</span>
-                            )}
-                          </div>
-
-                          <div className='flex items-center gap-1'>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size='sm'
-                                  variant='ghost'
-                                  onClick={() => toggleVisibility(provider.id, model.id)}
-                                >
-                                  {model.visible === false ? (
-                                    <EyeOff className='h-3 w-3' />
-                                  ) : (
-                                    <Eye className='h-3 w-3' />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {model.visible === false ? t('settings.showModel') : t('settings.hideModel')}
-                              </TooltipContent>
-                            </Tooltip>
-
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size='sm'
-                                  variant='ghost'
-                                  onClick={() => handleDeleteModel(provider.id, model.id)}
-                                >
-                                  <Trash2 className='h-3 w-3' />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t('common.delete')}</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </div>
-                      ))}
+                <div className='overflow-hidden'>
+                  <div className='p-3'>
+                    <div className='mb-2 flex items-center justify-between'>
+                      <span className='text-sm text-muted-foreground'>
+                        {t('settings.modelList')}
+                      </span>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setEditingModel({ providerId: provider.id })}
+                      >
+                        <Plus className='mr-2 h-3 w-3' />
+                        {t('settings.addModel')}
+                      </Button>
                     </div>
-                  )}
-                </div></div>
+
+                    {provider.models.length === 0 ? (
+                      <div className='text-sm text-muted-foreground'>{t('settings.noModels')}</div>
+                    ) : (
+                      <div className='space-y-1'>
+                        {provider.models.map((model) => (
+                          <div
+                            key={model.id}
+                            className={`flex items-center justify-between rounded-md p-2 hover:bg-muted ${model.visible === false ? 'opacity-50' : ''}`}
+                          >
+                            <div>
+                              <span className='font-medium'>{model.name}</span>
+                              <span className='ml-2 text-sm text-muted-foreground'>{model.id}</span>
+                              {model.visible === false && (
+                                <span className='ml-2 text-xs text-muted-foreground'>
+                                  ({t('settings.hideModel')})
+                                </span>
+                              )}
+                            </div>
+
+                            <div className='flex items-center gap-1'>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size='sm'
+                                    variant='ghost'
+                                    onClick={() => toggleVisibility(provider.id, model.id)}
+                                  >
+                                    {model.visible === false ? (
+                                      <EyeOff className='h-3 w-3' />
+                                    ) : (
+                                      <Eye className='h-3 w-3' />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {model.visible === false
+                                    ? t('settings.showModel')
+                                    : t('settings.hideModel')}
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size='sm'
+                                    variant='ghost'
+                                    onClick={() => handleDeleteModel(provider.id, model.id)}
+                                  >
+                                    <Trash2 className='h-3 w-3' />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t('common.delete')}</TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           ))}

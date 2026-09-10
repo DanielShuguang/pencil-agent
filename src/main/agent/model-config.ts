@@ -217,14 +217,16 @@ export class ModelConfigManager {
         return { models: [], error: (errorData as any).error?.message || `HTTP ${response.status}` }
       }
 
-      const data = await response.json() as any
+      const data = (await response.json()) as any
       const rawModels: any[] = data.data || data.models || []
 
-      const models: ModelConfig[] = rawModels.map((m: any) => ({
-        id: m.id || m.name || m.model,
-        name: m.id || m.name || m.model,
-        providerId,
-      })).filter((m: ModelConfig) => m.id)
+      const models: ModelConfig[] = rawModels
+        .map((m: any) => ({
+          id: m.id || m.name || m.model,
+          name: m.id || m.name || m.model,
+          providerId,
+        }))
+        .filter((m: ModelConfig) => m.id)
 
       return { models }
     } catch (error) {

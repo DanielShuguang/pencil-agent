@@ -39,14 +39,28 @@ export function createPermissionExtension(
           // 发送确认请求到渲染进程
           const mainWindow = getMainWindow()
           if (!mainWindow) {
-            auditLogger.log({ sessionId, toolName, parameters, status: 'denied', error: 'No window', duration: 0 })
+            auditLogger.log({
+              sessionId,
+              toolName,
+              parameters,
+              status: 'denied',
+              error: 'No window',
+              duration: 0,
+            })
             return { block: true, reason: '无法获取用户确认' }
           }
 
           const response = await requestConfirmation(mainWindow, request)
 
           if (!response.allowed) {
-            auditLogger.log({ sessionId, toolName, parameters, status: 'denied', error: 'User denied', duration: Date.now() - startTime })
+            auditLogger.log({
+              sessionId,
+              toolName,
+              parameters,
+              status: 'denied',
+              error: 'User denied',
+              duration: Date.now() - startTime,
+            })
             toolStartTimes.delete(event.toolCallId)
             return { block: true, reason: '用户拒绝执行' }
           }
@@ -61,7 +75,14 @@ export function createPermissionExtension(
         return undefined
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-        auditLogger.log({ sessionId, toolName, parameters, status: 'denied', error: errorMessage, duration: Date.now() - startTime })
+        auditLogger.log({
+          sessionId,
+          toolName,
+          parameters,
+          status: 'denied',
+          error: errorMessage,
+          duration: Date.now() - startTime,
+        })
         toolStartTimes.delete(event.toolCallId)
         return { block: true, reason: errorMessage }
       }
@@ -89,7 +110,10 @@ export function createPermissionExtension(
 }
 
 // 通过 IPC 请求用户确认
-function requestConfirmation(mainWindow: BrowserWindow, request: ConfirmRequest): Promise<ConfirmResponse> {
+function requestConfirmation(
+  mainWindow: BrowserWindow,
+  request: ConfirmRequest,
+): Promise<ConfirmResponse> {
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
       // 30 秒超时自动拒绝

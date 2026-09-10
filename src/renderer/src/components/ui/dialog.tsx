@@ -57,14 +57,23 @@ DialogContent.displayName = DialogPrimitive.Content.displayName
 
 // 对话框头部（标题和描述）
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('shrink-0 flex flex-col space-y-1.5 p-6 pb-0 text-center sm:text-left', className)} {...props} />
+  <div
+    className={cn(
+      'shrink-0 flex flex-col space-y-1.5 p-6 pb-0 text-center sm:text-left',
+      className,
+    )}
+    {...props}
+  />
 )
 DialogHeader.displayName = 'DialogHeader'
 
 // 对话框底部（操作按钮）
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('shrink-0 flex flex-col-reverse p-6 pt-0 sm:flex-row sm:justify-end sm:space-x-2', className)}
+    className={cn(
+      'shrink-0 flex flex-col-reverse p-6 pt-0 sm:flex-row sm:justify-end sm:space-x-2',
+      className,
+    )}
     {...props}
   />
 )

@@ -47,7 +47,12 @@ type UnaryOperator = '!' | '-' | '+'
 type Expression =
   | { kind: 'literal'; value: unknown }
   | { kind: 'input' }
-  | { kind: 'member'; target: 'input' | 'math'; keyType: 'static' | 'dynamic'; key: string | Expression }
+  | {
+      kind: 'member'
+      target: 'input' | 'math'
+      keyType: 'static' | 'dynamic'
+      key: string | Expression
+    }
   | { kind: 'unary'; operator: UnaryOperator; argument: Expression }
   | { kind: 'typeof'; argument: Expression }
   | { kind: 'binary'; operator: BinaryOperator; left: Expression; right: Expression }
@@ -294,7 +299,10 @@ class Parser {
 
     if (token.type === 'identifier' && token.value === '$input') {
       this.next()
-      if (this.peek().type === 'punctuator' && (this.peek().value === '.' || this.peek().value === '[')) {
+      if (
+        this.peek().type === 'punctuator' &&
+        (this.peek().value === '.' || this.peek().value === '[')
+      ) {
         const key = this.parseMemberKey()
         return this.buildMember('input', key)
       }
@@ -303,7 +311,10 @@ class Parser {
 
     if (token.type === 'identifier' && token.value === 'Math') {
       this.next()
-      if (this.peek().type !== 'punctuator' || (this.peek().value !== '.' && this.peek().value !== '[')) {
+      if (
+        this.peek().type !== 'punctuator' ||
+        (this.peek().value !== '.' && this.peek().value !== '[')
+      ) {
         throw new ExpressionSyntaxError(`"Math" must be accessed as a member at ${token.position}`)
       }
       const key = this.parseMemberKey()
@@ -376,7 +387,9 @@ class Parser {
         case 'undefined':
           return { kind: 'literal', value: undefined }
         default:
-          throw new ExpressionSyntaxError(`Unknown identifier "${token.value}" at ${token.position}`)
+          throw new ExpressionSyntaxError(
+            `Unknown identifier "${token.value}" at ${token.position}`,
+          )
       }
     }
 
@@ -398,7 +411,10 @@ function readStaticKey(container: unknown, key: string): unknown {
   return (container as Record<string, unknown>)[key]
 }
 
-function evaluateMember(expression: Extract<Expression, { kind: 'member' }>, input: unknown): unknown {
+function evaluateMember(
+  expression: Extract<Expression, { kind: 'member' }>,
+  input: unknown,
+): unknown {
   if (expression.target === 'math') {
     const key = expression.keyType === 'static' ? (expression.key as string) : undefined
     if (!key || !MATH_MEMBERS.has(key)) return undefined

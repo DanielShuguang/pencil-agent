@@ -83,7 +83,14 @@ function createWindow(): void {
   )
 
   // Register agent IPC handlers
-  registerAgentHandlers(agentManager, mainWindow, toolRegistry, modelConfigManager, permissionManager, auditLogger)
+  registerAgentHandlers(
+    agentManager,
+    mainWindow,
+    toolRegistry,
+    modelConfigManager,
+    permissionManager,
+    auditLogger,
+  )
 
   // 启动时清理过期审计日志
   auditLogger.cleanup()

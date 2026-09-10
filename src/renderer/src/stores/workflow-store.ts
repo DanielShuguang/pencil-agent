@@ -54,7 +54,9 @@ function loadSaved(): { nodes: Node[]; edges: Edge[] } {
       // 否则损坏的节点会让引擎在读字段时抛错
       return { nodes: sanitizeNodes(data.nodes), edges: sanitizeEdges(data.edges) }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return { nodes: [], edges: [] }
 }
 
@@ -82,7 +84,9 @@ interface WorkflowState {
 function persist(nodes: Node[], edges: Edge[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: STORAGE_VERSION, nodes, edges }))
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 const saved = loadSaved()
@@ -146,7 +150,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   updateNodeData: (nodeId, data) => {
     const { nodes } = get()
-    const newNodes = nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n))
+    const newNodes = nodes.map((n) =>
+      n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n,
+    )
     set({ nodes: newNodes })
     persist(newNodes, get().edges)
   },

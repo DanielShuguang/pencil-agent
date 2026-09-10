@@ -53,9 +53,12 @@ describe('memory-store', () => {
     it('should call memory.api.store and refresh list', async () => {
       vi.mocked(mockMemoryApi.recall).mockResolvedValueOnce([sampleEntry])
 
-      await useMemoryStore
-        .getState()
-        .storeMemory('test content', { tags: ['test'], sessionId: 's1', role: 'user', timestamp: Date.now() })
+      await useMemoryStore.getState().storeMemory('test content', {
+        tags: ['test'],
+        sessionId: 's1',
+        role: 'user',
+        timestamp: Date.now(),
+      })
 
       expect(mockMemoryApi.store).toHaveBeenCalledWith('test content', {
         tags: ['test'],
@@ -93,7 +96,9 @@ describe('memory-store', () => {
       vi.mocked(mockMemoryApi.store).mockRejectedValueOnce(new Error('fail'))
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await useMemoryStore.getState().storeMemory('content', { tags: [], sessionId: 's1', role: 'user', timestamp: Date.now() })
+      await useMemoryStore
+        .getState()
+        .storeMemory('content', { tags: [], sessionId: 's1', role: 'user', timestamp: Date.now() })
 
       expect(useMemoryStore.getState().isLoading).toBe(false)
       consoleSpy.mockRestore()

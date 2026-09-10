@@ -59,14 +59,14 @@ describe('WorkflowEngine - Parallel Execution', () => {
 
   it('should execute independent nodes in parallel', async () => {
     const executionTimes: { nodeId: string; start: number; end: number }[] = []
-    
+
     // Mock agents with delay to track execution timing
     const delayedAgents = {
       create: vi.fn().mockResolvedValue(undefined),
       prompt: vi.fn().mockImplementation(async function* (sessionId: string) {
         const nodeId = sessionId.split('-').pop() || 'unknown'
         const start = Date.now()
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
         const end = Date.now()
         executionTimes.push({ nodeId, start, end })
         yield { type: 'text', content: `output from ${nodeId}` }
@@ -99,11 +99,11 @@ describe('WorkflowEngine - Parallel Execution', () => {
 
     expect(result).toBeDefined()
     expect(onProgress).toHaveBeenCalled()
-    
+
     // Verify parallel execution: if executed in parallel, total time should be ~100ms
     // If executed sequentially, total time would be ~200ms
     expect(totalTime).toBeLessThan(150) // Allow some margin
-    
+
     // Verify both nodes started before either finished
     if (executionTimes.length >= 2) {
       const [first, second] = executionTimes.sort((a, b) => a.start - b.start)

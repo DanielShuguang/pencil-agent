@@ -69,7 +69,9 @@ export function PermissionConfirmDialog() {
 
             {pendingConfirm.pattern && (
               <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm'>
-                <div className='font-medium mb-1 text-destructive'>{t('permission.riskWarning')}</div>
+                <div className='font-medium mb-1 text-destructive'>
+                  {t('permission.riskWarning')}
+                </div>
                 <div>{pendingConfirm.pattern}</div>
               </div>
             )}
@@ -95,9 +97,7 @@ export function PermissionConfirmDialog() {
           <Button variant='outline' onClick={handleDeny}>
             {t('permission.deny')}
           </Button>
-          <Button onClick={handleAllow}>
-            {t('permission.allow')}
-          </Button>
+          <Button onClick={handleAllow}>{t('permission.allow')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -26,7 +26,13 @@ describe('ModelForm', () => {
   it('预填充已有模型数据', () => {
     render(
       <ModelForm
-        model={{ id: 'gpt-4o', name: 'GPT-4o', providerId: 'openai', maxTokens: 4096, temperature: 0.7 }}
+        model={{
+          id: 'gpt-4o',
+          name: 'GPT-4o',
+          providerId: 'openai',
+          maxTokens: 4096,
+          temperature: 0.7,
+        }}
         providerId='openai'
         onSave={mockOnSave}
         onCancel={mockOnCancel}
@@ -67,7 +73,9 @@ describe('ModelForm', () => {
   })
 
   it('提交调用 onSave', () => {
-    const { container } = render(<ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />)
+    const { container } = render(
+      <ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />,
+    )
 
     fireEvent.change(screen.getByLabelText('settings.modelId'), { target: { value: 'gpt-4o' } })
     fireEvent.change(screen.getByLabelText('settings.modelName'), { target: { value: 'GPT-4o' } })
@@ -86,7 +94,9 @@ describe('ModelForm', () => {
   })
 
   it('无效 maxTokens 阻止提交', () => {
-    const { container } = render(<ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />)
+    const { container } = render(
+      <ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />,
+    )
 
     fireEvent.change(screen.getByLabelText('settings.modelId'), { target: { value: 'gpt-4o' } })
     fireEvent.change(screen.getByLabelText('settings.modelName'), { target: { value: 'GPT-4o' } })
@@ -98,7 +108,9 @@ describe('ModelForm', () => {
   })
 
   it('无效 temperature 阻止提交', () => {
-    const { container } = render(<ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />)
+    const { container } = render(
+      <ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />,
+    )
 
     fireEvent.change(screen.getByLabelText('settings.modelId'), { target: { value: 'gpt-4o' } })
     fireEvent.change(screen.getByLabelText('settings.modelName'), { target: { value: 'GPT-4o' } })
@@ -116,7 +128,9 @@ describe('ModelForm', () => {
   })
 
   it('空 maxTokens/temperature 时提交为 undefined', () => {
-    const { container } = render(<ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />)
+    const { container } = render(
+      <ModelForm providerId='openai' onSave={mockOnSave} onCancel={mockOnCancel} />,
+    )
 
     fireEvent.change(screen.getByLabelText('settings.modelId'), { target: { value: 'gpt-4o' } })
     fireEvent.change(screen.getByLabelText('settings.modelName'), { target: { value: 'GPT-4o' } })

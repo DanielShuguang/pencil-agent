@@ -30,10 +30,13 @@ function showToast(message: string, type: ToastType = 'info', options?: ToastOpt
   el.className = [
     'fixed right-4 z-[9999] flex items-center gap-2 px-4 py-2 rounded-md shadow-lg text-sm font-medium',
     'transition-all duration-300 ease-out',
-    type === 'error' ? 'bg-destructive text-destructive-foreground' :
-    type === 'success' ? 'bg-green-600 text-white' :
-    type === 'warning' ? 'bg-yellow-600 text-white' :
-    'bg-primary text-primary-foreground',
+    type === 'error'
+      ? 'bg-destructive text-destructive-foreground'
+      : type === 'success'
+        ? 'bg-green-600 text-white'
+        : type === 'warning'
+          ? 'bg-yellow-600 text-white'
+          : 'bg-primary text-primary-foreground',
   ].join(' ')
 
   const textSpan = document.createElement('span')

@@ -32,9 +32,7 @@ export function TabBar({ className }: TabBarProps) {
           >
             <File className='h-3 w-3 shrink-0' />
             <span className='truncate'>{file.name}</span>
-            {file.isModified && (
-              <GitCompare className='h-3 w-3 text-blue-400 shrink-0' />
-            )}
+            {file.isModified && <GitCompare className='h-3 w-3 text-blue-400 shrink-0' />}
             <button
               onClick={(e) => {
                 e.stopPropagation()

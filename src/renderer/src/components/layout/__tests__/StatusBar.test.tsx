@@ -49,7 +49,19 @@ describe('StatusBar', () => {
     vi.mocked(useAgentStore).mockReturnValue({
       activeSessionId: 's1',
       sessionMetas: new Map([
-        ['s1', { id: 's1', title: 'Test', model: { id: 'm', provider: 'p' }, currentModel: { id: 'm', provider: 'p' }, cwd: '/Users/dev/frontend', updatedAt: 0, createdAt: 0, messageCount: 0 }],
+        [
+          's1',
+          {
+            id: 's1',
+            title: 'Test',
+            model: { id: 'm', provider: 'p' },
+            currentModel: { id: 'm', provider: 'p' },
+            cwd: '/Users/dev/frontend',
+            updatedAt: 0,
+            createdAt: 0,
+            messageCount: 0,
+          },
+        ],
       ]),
     })
   })

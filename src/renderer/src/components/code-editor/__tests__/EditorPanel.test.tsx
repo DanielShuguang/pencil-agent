@@ -39,7 +39,16 @@ describe('EditorPanel', () => {
 
   it('renders editor for active file', () => {
     const files = new Map([
-      ['src/index.ts', { path: 'src/index.ts', name: 'index.ts', content: 'const x = 1', language: 'typescript', isModified: false }],
+      [
+        'src/index.ts',
+        {
+          path: 'src/index.ts',
+          name: 'index.ts',
+          content: 'const x = 1',
+          language: 'typescript',
+          isModified: false,
+        },
+      ],
     ])
     mockUseEditorStore.mockReturnValue({
       files,
@@ -56,7 +65,17 @@ describe('EditorPanel', () => {
 
   it('renders DiffEditor when file is modified with originalContent', () => {
     const files = new Map([
-      ['src/index.ts', { path: 'src/index.ts', name: 'index.ts', content: 'new content', language: 'typescript', originalContent: 'old content', isModified: true }],
+      [
+        'src/index.ts',
+        {
+          path: 'src/index.ts',
+          name: 'index.ts',
+          content: 'new content',
+          language: 'typescript',
+          originalContent: 'old content',
+          isModified: true,
+        },
+      ],
     ])
     mockUseEditorStore.mockReturnValue({
       files,
@@ -72,7 +91,17 @@ describe('EditorPanel', () => {
 
   it('shows accept/reject buttons when diff is visible', () => {
     const files = new Map([
-      ['src/index.ts', { path: 'src/index.ts', name: 'index.ts', content: 'new', language: 'typescript', originalContent: 'old', isModified: true }],
+      [
+        'src/index.ts',
+        {
+          path: 'src/index.ts',
+          name: 'index.ts',
+          content: 'new',
+          language: 'typescript',
+          originalContent: 'old',
+          isModified: true,
+        },
+      ],
     ])
     mockUseEditorStore.mockReturnValue({
       files,
@@ -90,7 +119,17 @@ describe('EditorPanel', () => {
   it('calls acceptChanges on accept click', () => {
     const acceptChanges = vi.fn()
     const files = new Map([
-      ['src/index.ts', { path: 'src/index.ts', name: 'index.ts', content: 'new', language: 'typescript', originalContent: 'old', isModified: true }],
+      [
+        'src/index.ts',
+        {
+          path: 'src/index.ts',
+          name: 'index.ts',
+          content: 'new',
+          language: 'typescript',
+          originalContent: 'old',
+          isModified: true,
+        },
+      ],
     ])
     mockUseEditorStore.mockReturnValue({
       files,
@@ -108,7 +147,17 @@ describe('EditorPanel', () => {
   it('calls rejectChanges on reject click', () => {
     const rejectChanges = vi.fn()
     const files = new Map([
-      ['src/index.ts', { path: 'src/index.ts', name: 'index.ts', content: 'new', language: 'typescript', originalContent: 'old', isModified: true }],
+      [
+        'src/index.ts',
+        {
+          path: 'src/index.ts',
+          name: 'index.ts',
+          content: 'new',
+          language: 'typescript',
+          originalContent: 'old',
+          isModified: true,
+        },
+      ],
     ])
     mockUseEditorStore.mockReturnValue({
       files,

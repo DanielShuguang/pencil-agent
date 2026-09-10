@@ -75,9 +75,7 @@ describe('MessageBubble', () => {
   })
 
   it('does not show rewind button when onRewind is not provided', () => {
-    const { container } = render(
-      <MessageBubble message={{ ...baseMessage, role: 'user' }} />,
-    )
+    const { container } = render(<MessageBubble message={{ ...baseMessage, role: 'user' }} />)
     const button = container.querySelector('button')
     expect(button).toBeNull()
   })

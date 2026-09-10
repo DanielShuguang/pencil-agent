@@ -34,7 +34,11 @@ export class WorkflowEngine {
     private agents: AgentSessionManager,
     private tools: ToolRegistry,
     roleManager?: RoleManager,
-    private toolExecutor?: (toolName: string, parameters: Record<string, unknown>, cwd?: string) => Promise<unknown>,
+    private toolExecutor?: (
+      toolName: string,
+      parameters: Record<string, unknown>,
+      cwd?: string,
+    ) => Promise<unknown>,
   ) {
     if (roleManager) {
       this.orchestrator = new MultiAgentOrchestrator(agents, roleManager)

@@ -71,15 +71,27 @@ describe('AgentSessionManager', () => {
     })
 
     it('should create multiple sessions', async () => {
-      await manager.create({ sessionId: 's1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' })
-      await manager.create({ sessionId: 's2', model: { id: 'claude', provider: 'anthropic' }, cwd: '/tmp' })
+      await manager.create({
+        sessionId: 's1',
+        model: { id: 'gpt-4', provider: 'openai' },
+        cwd: '/tmp',
+      })
+      await manager.create({
+        sessionId: 's2',
+        model: { id: 'claude', provider: 'anthropic' },
+        cwd: '/tmp',
+      })
       expect(mocks.mockCreateAgentSession).toHaveBeenCalledTimes(2)
     })
   })
 
   describe('prompt', () => {
     beforeEach(async () => {
-      await manager.create({ sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' })
+      await manager.create({
+        sessionId: 'session-1',
+        model: { id: 'gpt-4', provider: 'openai' },
+        cwd: '/tmp',
+      })
       vi.clearAllMocks()
     })
 
@@ -165,7 +177,11 @@ describe('AgentSessionManager', () => {
 
   describe('stop', () => {
     beforeEach(async () => {
-      await manager.create({ sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' })
+      await manager.create({
+        sessionId: 'session-1',
+        model: { id: 'gpt-4', provider: 'openai' },
+        cwd: '/tmp',
+      })
     })
 
     it('should abort the session', async () => {
@@ -180,7 +196,11 @@ describe('AgentSessionManager', () => {
 
   describe('destroy', () => {
     beforeEach(async () => {
-      await manager.create({ sessionId: 'session-1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' })
+      await manager.create({
+        sessionId: 'session-1',
+        model: { id: 'gpt-4', provider: 'openai' },
+        cwd: '/tmp',
+      })
     })
 
     it('should dispose the session', () => {
@@ -195,8 +215,16 @@ describe('AgentSessionManager', () => {
 
   describe('destroyAll', () => {
     it('should destroy all sessions', async () => {
-      await manager.create({ sessionId: 's1', model: { id: 'gpt-4', provider: 'openai' }, cwd: '/tmp' })
-      await manager.create({ sessionId: 's2', model: { id: 'claude', provider: 'anthropic' }, cwd: '/tmp' })
+      await manager.create({
+        sessionId: 's1',
+        model: { id: 'gpt-4', provider: 'openai' },
+        cwd: '/tmp',
+      })
+      await manager.create({
+        sessionId: 's2',
+        model: { id: 'claude', provider: 'anthropic' },
+        cwd: '/tmp',
+      })
       vi.clearAllMocks()
       mocks.mockDispose.mockClear()
 

@@ -69,7 +69,9 @@ describe('PermissionPanel', () => {
 
     const { container } = render(<PermissionPanel />)
     const buttons = container.querySelectorAll('button')
-    const promptButton = Array.from(buttons).find((b) => b.textContent?.includes('permission.modePrompt'))
+    const promptButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes('permission.modePrompt'),
+    )
     expect(promptButton?.className).toContain('bg-primary')
   })
 

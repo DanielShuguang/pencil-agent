@@ -80,9 +80,7 @@ export function AuditLogPanel() {
 
       <div className='flex-1 overflow-auto'>
         {logs.length === 0 ? (
-          <div className='p-4 text-sm text-muted-foreground text-center'>
-            {t('common.noData')}
-          </div>
+          <div className='p-4 text-sm text-muted-foreground text-center'>{t('common.noData')}</div>
         ) : (
           <div className='space-y-1 p-2'>
             {logs.map((log) => {
@@ -130,7 +128,9 @@ export function AuditLogPanel() {
 
                       {log.error && (
                         <div>
-                          <div className='text-xs font-medium mb-1 text-destructive'>{t('permission.error')}</div>
+                          <div className='text-xs font-medium mb-1 text-destructive'>
+                            {t('permission.error')}
+                          </div>
                           <div className='text-xs text-destructive bg-destructive/10 p-2 rounded'>
                             {log.error}
                           </div>

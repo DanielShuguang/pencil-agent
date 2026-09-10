@@ -5,7 +5,7 @@
 ## 技术栈
 
 - **桌面框架**: Electron ^39.x
-- **前端**: React ^19.x + TypeScript ^7.x (tsgo)
+- **前端**: React ^19.x + TypeScript ^7.x (原生编译器)
 - **状态管理**: Zustand ^5.x
 - **UI**: shadcn/ui + Tailwind CSS ^4.x
 - **画布**: @xyflow/react ^12.x
@@ -75,8 +75,7 @@ pnpm dev
 ```bash
 pnpm lint    # oxlint 检查
 pnpm fmt     # oxfmt 格式化
-pnpm typecheck  # tsgo 类型检查 (TypeScript 7.0)
-pnpm typecheck:legacy  # tsc 类型检查 (TypeScript 6.0)
+pnpm typecheck  # 类型检查 (TypeScript 7.0 原生编译器)
 ```
 
 ### 测试

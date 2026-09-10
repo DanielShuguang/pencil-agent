@@ -158,9 +158,7 @@ export function ProviderForm({ provider, maskedApiKey, onSave, onCancel }: Provi
           <p className='text-sm text-yellow-600 dark:text-yellow-500'>{apiKeyWarning}</p>
         )}
         {provider && maskedApiKey && apiKey === maskedApiKey && (
-          <p className='text-xs text-muted-foreground'>
-            {t('settings.editMaskedKey')}
-          </p>
+          <p className='text-xs text-muted-foreground'>{t('settings.editMaskedKey')}</p>
         )}
       </div>
 

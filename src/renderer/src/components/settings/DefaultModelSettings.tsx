@@ -8,9 +8,7 @@ export function DefaultModelSettings() {
     <div className='space-y-4'>
       <div>
         <h3 className='text-lg font-medium'>{t('settings.defaultModel')}</h3>
-        <p className='text-sm text-muted-foreground'>
-          {t('settings.defaultModelDescription')}
-        </p>
+        <p className='text-sm text-muted-foreground'>{t('settings.defaultModelDescription')}</p>
       </div>
       <div className='flex items-center gap-4'>
         <span className='text-sm font-medium'>{t('settings.model')}:</span>

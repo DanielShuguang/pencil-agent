@@ -64,13 +64,17 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
       {isExpanded && (
         <div className='border-t px-3 py-2 space-y-2'>
           <div>
-            <p className='text-xs font-medium text-muted-foreground mb-1'>{t('permission.parameters')}</p>
+            <p className='text-xs font-medium text-muted-foreground mb-1'>
+              {t('permission.parameters')}
+            </p>
             <CodeBlock code={formatParameters(toolCall.parameters)} language='json' />
           </div>
 
           {toolCall.result !== undefined && (
             <div>
-              <p className='text-xs font-medium text-muted-foreground mb-1'>{t('permission.result')}</p>
+              <p className='text-xs font-medium text-muted-foreground mb-1'>
+                {t('permission.result')}
+              </p>
               <CodeBlock code={formatResult(toolCall.result)} language='json' />
             </div>
           )}

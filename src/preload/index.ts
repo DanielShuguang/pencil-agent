@@ -179,7 +179,8 @@ const themeAPI = {
 
 const permissionAPI = {
   getConfig: () => ipcRenderer.invoke('permission:getConfig'),
-  setConfig: (config: Record<string, unknown>) => ipcRenderer.invoke('permission:setConfig', config),
+  setConfig: (config: Record<string, unknown>) =>
+    ipcRenderer.invoke('permission:setConfig', config),
   onConfirmRequest: (cb: (request: unknown) => void) => {
     const handler = (_: unknown, request: unknown) => cb(request)
     ipcRenderer.on('permission:confirm-request', handler)
@@ -232,8 +233,7 @@ const settingsAPI = {
   checkConnection: (provider: string) =>
     ipcRenderer.invoke('settings:checkConnection', { provider }),
 
-  getMaskedKey: (provider: string) =>
-    ipcRenderer.invoke('settings:get-masked-key', { provider }),
+  getMaskedKey: (provider: string) => ipcRenderer.invoke('settings:get-masked-key', { provider }),
 }
 
 const windowAPI = {

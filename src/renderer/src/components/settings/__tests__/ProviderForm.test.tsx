@@ -189,7 +189,7 @@ describe('ProviderForm', () => {
     render(
       <ProviderForm
         provider={provider}
-        maskedApiKey="sk-a***1234"
+        maskedApiKey='sk-a***1234'
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />,
@@ -212,7 +212,7 @@ describe('ProviderForm', () => {
     render(
       <ProviderForm
         provider={provider}
-        maskedApiKey="sk-a***1234"
+        maskedApiKey='sk-a***1234'
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />,

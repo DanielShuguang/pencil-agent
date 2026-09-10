@@ -71,18 +71,19 @@ ${config.cwd}
 </working_directory>
 
 重要：你的所有文件操作必须基于上述工作目录。当用户询问"当前目录"或"工作目录"时，回答：${config.cwd}`
-    
+
     // Windows 平台提示使用 PowerShell 语法
-    const shellInfo = process.platform === 'win32'
-      ? `\n\n<shell_environment>
+    const shellInfo =
+      process.platform === 'win32'
+        ? `\n\n<shell_environment>
 Windows PowerShell 环境：
 - 使用 Get-ChildItem 或 ls（而非 dir）
 - 使用 Get-Content（而非 cat）
 - 使用 Set-Location 或 cd
 - 不要使用 bash 语法
 </shell_environment>`
-      : ''
-    
+        : ''
+
     const baseSystemPrompt = config.systemPrompt || ''
     const fullSystemPrompt = baseSystemPrompt
       ? `${baseSystemPrompt}\n\n${cwdInfo}${shellInfo}`
@@ -131,7 +132,7 @@ Windows PowerShell 环境：
       // 优先使用存储的配置，确保恢复一致性
       const storedConfig = this.sessionConfigs.get(sessionId)
       const configToUse = storedConfig || (model && cwd ? { sessionId, model, cwd } : null)
-      
+
       if (configToUse) {
         await this.create(configToUse)
         session = this.sessions.get(sessionId)
@@ -186,7 +187,11 @@ Windows PowerShell 环境：
           metadata: {
             toolCallId: currentToolCallId,
             toolName: e.toolName,
-            error: e.isError ? (typeof e.result === 'string' ? e.result : 'Tool execution failed') : undefined,
+            error: e.isError
+              ? typeof e.result === 'string'
+                ? e.result
+                : 'Tool execution failed'
+              : undefined,
           },
         })
         currentToolCallId = null

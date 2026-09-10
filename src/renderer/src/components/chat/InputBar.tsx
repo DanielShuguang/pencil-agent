@@ -56,8 +56,18 @@ export function InputBar({ onSend, onStop, isGenerating, disabled }: InputBarPro
           const prev = sessions.get(activeSessionId) || []
           sessions.set(activeSessionId, [
             ...prev,
-            { id: `cmd-${Date.now()}`, role: 'user' as const, content: trimmed, timestamp: Date.now() },
-            { id: `cmd-res-${Date.now()}`, role: 'system' as const, content: result, timestamp: Date.now() },
+            {
+              id: `cmd-${Date.now()}`,
+              role: 'user' as const,
+              content: trimmed,
+              timestamp: Date.now(),
+            },
+            {
+              id: `cmd-res-${Date.now()}`,
+              role: 'system' as const,
+              content: result,
+              timestamp: Date.now(),
+            },
           ])
           useAgentStore.setState({ sessions })
         }
@@ -70,7 +80,7 @@ export function InputBar({ onSend, onStop, isGenerating, disabled }: InputBarPro
   }
 
   const handleSelectSuggestion = (cmd: CommandDef) => {
-    setValue(`${cmd.name  } `)
+    setValue(`${cmd.name} `)
     textareaRef.current?.focus()
   }
 

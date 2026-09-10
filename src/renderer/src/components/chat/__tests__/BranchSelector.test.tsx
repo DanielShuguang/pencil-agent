@@ -47,9 +47,7 @@ describe('BranchSelector', () => {
 
   it('shows back-to-parent button when parentId exists', () => {
     setupStore({
-      sessionMetas: new Map([
-        ['session-1', { parentSessionId: 'parent-1' }],
-      ]),
+      sessionMetas: new Map([['session-1', { parentSessionId: 'parent-1' }]]),
     })
     render(<BranchSelector />)
     expect(screen.getByText('chat.backToParent')).toBeInTheDocument()
@@ -57,9 +55,7 @@ describe('BranchSelector', () => {
 
   it('calls switchSession with parentId on back button click', async () => {
     setupStore({
-      sessionMetas: new Map([
-        ['session-1', { parentSessionId: 'parent-1' }],
-      ]),
+      sessionMetas: new Map([['session-1', { parentSessionId: 'parent-1' }]]),
     })
     const user = userEvent.setup()
     render(<BranchSelector />)

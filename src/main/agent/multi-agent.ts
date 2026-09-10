@@ -143,7 +143,7 @@ export class MultiAgentOrchestrator {
           await this.agents.create({
             sessionId,
             model: role.model,
-        cwd: cwd || process.cwd(),
+            cwd: cwd || process.cwd(),
             systemPrompt: role.systemPrompt,
             tools: role.tools,
           })

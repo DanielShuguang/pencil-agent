@@ -29,25 +29,36 @@ vi.mock('../toast', () => ({
   toast: { success: vi.fn() },
 }))
 
-const { isCommand, parseCommand, filterCommands, executeCommand, getCommands } = await import('../commands')
+const { isCommand, parseCommand, filterCommands, executeCommand, getCommands } =
+  await import('../commands')
 const { exportAsMarkdown, exportAsJSON } = await import('../export-chat')
 const { toast } = await import('../toast')
 
 function setupAgentState(overrides: Record<string, unknown> = {}) {
   const defaults = {
     activeSessionId: 'session-1',
-    sessions: new Map([['session-1', [
-      { id: 'msg-1', role: 'user', content: 'hello', timestamp: 1 },
-      { id: 'msg-2', role: 'assistant', content: 'hi there', timestamp: 2 },
-      { id: 'msg-3', role: 'tool', content: 'tool result', timestamp: 3 },
-    ]]]),
-    sessionMetas: new Map([['session-1', {
-      id: 'session-1',
-      title: 'Test Chat',
-      currentModel: { id: 'gpt-4', provider: 'openai' },
-      messageCount: 3,
-      updatedAt: Date.now(),
-    }]]),
+    sessions: new Map([
+      [
+        'session-1',
+        [
+          { id: 'msg-1', role: 'user', content: 'hello', timestamp: 1 },
+          { id: 'msg-2', role: 'assistant', content: 'hi there', timestamp: 2 },
+          { id: 'msg-3', role: 'tool', content: 'tool result', timestamp: 3 },
+        ],
+      ],
+    ]),
+    sessionMetas: new Map([
+      [
+        'session-1',
+        {
+          id: 'session-1',
+          title: 'Test Chat',
+          currentModel: { id: 'gpt-4', provider: 'openai' },
+          messageCount: 3,
+          updatedAt: Date.now(),
+        },
+      ],
+    ]),
     defaultModel: { id: 'gpt-4', provider: 'openai' },
     switchSessionModel: vi.fn(),
   }
@@ -55,7 +66,13 @@ function setupAgentState(overrides: Record<string, unknown> = {}) {
   return defaults
 }
 
-function setupModelState(providers: Array<{ id: string; name: string; models: Array<{ id: string; visible?: boolean }> }> = []) {
+function setupModelState(
+  providers: Array<{
+    id: string
+    name: string
+    models: Array<{ id: string; visible?: boolean }>
+  }> = [],
+) {
   mockModelGetState.mockReturnValue({ providers })
 }
 
@@ -165,7 +182,7 @@ describe('/compact', () => {
   it('should return message count and char count', () => {
     setupAgentState()
     const result = executeCommand('/compact')
-    expect(result).toContain('3')  // 3 messages
+    expect(result).toContain('3') // 3 messages
     expect(result).toContain('24') // 'hello'.length(5) + 'hi there'.length(8) + 'tool result'.length(11)
   })
 
@@ -216,7 +233,9 @@ describe('/context', () => {
 
   it('should use defaultModel when session has no currentModel', () => {
     setupAgentState({
-      sessionMetas: new Map([['session-1', { id: 'session-1', title: 'Test', messageCount: 3, updatedAt: Date.now() }]]),
+      sessionMetas: new Map([
+        ['session-1', { id: 'session-1', title: 'Test', messageCount: 3, updatedAt: Date.now() }],
+      ]),
       defaultModel: { id: 'claude-3', provider: 'anthropic' },
     })
     const result = executeCommand('/context')
@@ -231,7 +250,11 @@ describe('/model', () => {
 
   it('should list available models when no args', () => {
     setupModelState([
-      { id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-4' }, { id: 'gpt-3.5-turbo', visible: false }] },
+      {
+        id: 'openai',
+        name: 'OpenAI',
+        models: [{ id: 'gpt-4' }, { id: 'gpt-3.5-turbo', visible: false }],
+      },
       { id: 'anthropic', name: 'Anthropic', models: [{ id: 'claude-3' }] },
     ])
     const result = executeCommand('/model')
@@ -243,9 +266,7 @@ describe('/model', () => {
 
   it('should switch to valid model', () => {
     const state = setupAgentState()
-    setupModelState([
-      { id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-4-turbo' }] },
-    ])
+    setupModelState([{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-4-turbo' }] }])
     const result = executeCommand('/model gpt-4-turbo')
     expect(state.switchSessionModel).toHaveBeenCalledWith({ id: 'gpt-4-turbo', provider: 'openai' })
     expect(result).toContain('gpt-4-turbo')
@@ -294,10 +315,7 @@ describe('/export', () => {
   it('should use session title for filename', () => {
     setupAgentState()
     executeCommand('/export md')
-    expect(exportAsMarkdown).toHaveBeenCalledWith(
-      expect.any(Array),
-      'Test Chat',
-    )
+    expect(exportAsMarkdown).toHaveBeenCalledWith(expect.any(Array), 'Test Chat')
   })
 })
 

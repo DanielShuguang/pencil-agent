@@ -11,7 +11,8 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ showTrigger = true, mode = 'session' }: ModelSelectorProps) {
-  const { activeSessionId, sessionMetas, defaultModel, switchSessionModel, switchDefaultModel } = useAgentStore()
+  const { activeSessionId, sessionMetas, defaultModel, switchSessionModel, switchDefaultModel } =
+    useAgentStore()
   const { providers, fetchProviders } = useModelConfigStore()
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
@@ -22,7 +23,7 @@ export function ModelSelector({ showTrigger = true, mode = 'session' }: ModelSel
   }, [fetchProviders])
 
   const sessionModel = activeSessionId ? sessionMetas.get(activeSessionId)?.currentModel : null
-  const currentModel = mode === 'session' ? (sessionModel || defaultModel) : defaultModel
+  const currentModel = mode === 'session' ? sessionModel || defaultModel : defaultModel
 
   const currentProvider = providers.find((p) => p.id === currentModel.provider)
   const currentModelInfo = currentProvider?.models.find((m) => m.id === currentModel.id)
@@ -65,7 +66,9 @@ export function ModelSelector({ showTrigger = true, mode = 'session' }: ModelSel
 
       <div className='max-h-64 overflow-y-auto'>
         {filteredProviders.length === 0 ? (
-          <div className='p-4 text-sm text-muted-foreground text-center'>{t('settings.noModelsFound')}</div>
+          <div className='p-4 text-sm text-muted-foreground text-center'>
+            {t('settings.noModelsFound')}
+          </div>
         ) : (
           filteredProviders.map((provider) => (
             <div key={provider.id} className='p-2'>

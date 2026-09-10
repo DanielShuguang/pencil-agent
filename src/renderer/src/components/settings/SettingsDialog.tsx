@@ -91,7 +91,17 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
         <DialogBody>
           <div className='flex gap-2 mb-4 border-b'>
-            {(['api-keys', 'models', 'permission', 'audit', 'memory', 'language', 'theme'] as SettingsTab[]).map((tab) => (
+            {(
+              [
+                'api-keys',
+                'models',
+                'permission',
+                'audit',
+                'memory',
+                'language',
+                'theme',
+              ] as SettingsTab[]
+            ).map((tab) => (
               <Button
                 key={tab}
                 variant={activeTab === tab ? 'default' : 'ghost'}
@@ -151,7 +161,9 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                   <label className='flex items-center gap-2 cursor-pointer'>
                     <Checkbox
                       checked={mode === 'system'}
-                      onCheckedChange={(checked) => setThemeMode(checked ? 'system' : (currentThemeId as ThemeMode))}
+                      onCheckedChange={(checked) =>
+                        setThemeMode(checked ? 'system' : (currentThemeId as ThemeMode))
+                      }
                     />
                     <span className='text-sm'>{t('settings.followSystem')}</span>
                   </label>

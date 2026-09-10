@@ -48,16 +48,19 @@ describe('TerminalPanel', () => {
 
   it('shows output lines for active execution', () => {
     const executions = new Map([
-      ['exec-1', {
-        id: 'exec-1',
-        language: 'python',
-        code: 'print("hi")',
-        status: 'completed' as const,
-        output: [
-          { type: 'stdout' as const, content: 'hello world', timestamp: 1 },
-          { type: 'stderr' as const, content: 'some error', timestamp: 2 },
-        ],
-      }],
+      [
+        'exec-1',
+        {
+          id: 'exec-1',
+          language: 'python',
+          code: 'print("hi")',
+          status: 'completed' as const,
+          output: [
+            { type: 'stdout' as const, content: 'hello world', timestamp: 1 },
+            { type: 'stderr' as const, content: 'some error', timestamp: 2 },
+          ],
+        },
+      ],
     ])
     mockUseSandboxStore.mockReturnValue({
       executions,
@@ -72,13 +75,16 @@ describe('TerminalPanel', () => {
 
   it('shows running indicator', () => {
     const executions = new Map([
-      ['exec-1', {
-        id: 'exec-1',
-        language: 'python',
-        code: 'print("hi")',
-        status: 'running' as const,
-        output: [],
-      }],
+      [
+        'exec-1',
+        {
+          id: 'exec-1',
+          language: 'python',
+          code: 'print("hi")',
+          status: 'running' as const,
+          output: [],
+        },
+      ],
     ])
     mockUseSandboxStore.mockReturnValue({
       executions,
@@ -92,16 +98,17 @@ describe('TerminalPanel', () => {
 
   it('shows exit code line', () => {
     const executions = new Map([
-      ['exec-1', {
-        id: 'exec-1',
-        language: 'python',
-        code: '',
-        status: 'completed' as const,
-        exitCode: 0,
-        output: [
-          { type: 'exit' as const, content: '', exitCode: 0, timestamp: 3 },
-        ],
-      }],
+      [
+        'exec-1',
+        {
+          id: 'exec-1',
+          language: 'python',
+          code: '',
+          status: 'completed' as const,
+          exitCode: 0,
+          output: [{ type: 'exit' as const, content: '', exitCode: 0, timestamp: 3 }],
+        },
+      ],
     ])
     mockUseSandboxStore.mockReturnValue({
       executions,
@@ -134,7 +141,10 @@ describe('TerminalPanel', () => {
   it('calls clearAll on trash button click', () => {
     const clearAll = vi.fn()
     const executions = new Map([
-      ['exec-1', { id: 'exec-1', language: 'python', code: '', status: 'completed' as const, output: [] }],
+      [
+        'exec-1',
+        { id: 'exec-1', language: 'python', code: '', status: 'completed' as const, output: [] },
+      ],
     ])
     mockUseSandboxStore.mockReturnValue({
       executions,
@@ -150,7 +160,10 @@ describe('TerminalPanel', () => {
 
   it('shows language label for active execution', () => {
     const executions = new Map([
-      ['exec-1', { id: 'exec-1', language: 'python', code: '', status: 'running' as const, output: [] }],
+      [
+        'exec-1',
+        { id: 'exec-1', language: 'python', code: '', status: 'running' as const, output: [] },
+      ],
     ])
     mockUseSandboxStore.mockReturnValue({
       executions,

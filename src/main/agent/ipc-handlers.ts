@@ -1,4 +1,10 @@
-import type { AgentRole, ThemeMode, ToolPermissionConfig, ConfirmRequest, ConfirmResponse } from '@shared/ipc'
+import type {
+  AgentRole,
+  ThemeMode,
+  ToolPermissionConfig,
+  ConfirmRequest,
+  ConfirmResponse,
+} from '@shared/ipc'
 import { ipcMain, safeStorage, nativeTheme, dialog, BrowserWindow } from 'electron'
 import { access, constants } from 'fs/promises'
 import { exec } from 'child_process'
@@ -142,14 +148,14 @@ export function registerAgentHandlers(
     try {
       // 首先检查 ModelConfigManager 中的自定义 provider
       const modelConfigApiKey = getModelConfigManager().getApiKey(provider)
-      
+
       if (modelConfigApiKey) {
         const key = modelConfigApiKey
         // 加密显示：前4字符 + *** + 后4字符
         if (key.length <= 8) {
           return '*'.repeat(key.length)
         }
-        return `${key.slice(0, 4)  }***${  key.slice(-4)}`
+        return `${key.slice(0, 4)}***${key.slice(-4)}`
       }
 
       // 如果 ModelConfigManager 中没有，检查 api-keys 存储
@@ -170,7 +176,7 @@ export function registerAgentHandlers(
       if (key.length <= 8) {
         return '*'.repeat(key.length)
       }
-      return `${key.slice(0, 4)  }***${  key.slice(-4)}`
+      return `${key.slice(0, 4)}***${key.slice(-4)}`
     } catch (error) {
       console.error(`Failed to get masked API key for ${provider}:`, error)
       return null
@@ -387,10 +393,9 @@ export function registerAgentHandlers(
         for (const regPath of regPaths) {
           try {
             // 使用 chcp 65001 切换到 UTF-8 代码页，避免乱码
-            const { stdout } = await execAsync(
-              `chcp 65001 >nul && reg query "${regPath}"`,
-              { encoding: 'buffer' }
-            )
+            const { stdout } = await execAsync(`chcp 65001 >nul && reg query "${regPath}"`, {
+              encoding: 'buffer',
+            })
             // 将 Buffer 转为 UTF-8 字符串
             const text = Buffer.from(stdout).toString('utf-8')
             for (const line of text.split('\n')) {
@@ -413,8 +418,8 @@ export function registerAgentHandlers(
       } else if (process.platform === 'darwin') {
         // macOS: 使用 system_profiler 获取字体
         const { stdout } = await execAsync(
-          'system_profiler SPFontsDataType -json 2>/dev/null | python3 -c "import sys,json; data=json.load(sys.stdin); fonts=set(); [fonts.add(f[\'_name\'].split(\',\')[0].strip()) for f in data.get(\'SPFontsDataType\',[]) if \'_name\' in f]; print(\'\\n\'.join(sorted(fonts)))"',
-          { encoding: 'utf-8' }
+          "system_profiler SPFontsDataType -json 2>/dev/null | python3 -c \"import sys,json; data=json.load(sys.stdin); fonts=set(); [fonts.add(f['_name'].split(',')[0].strip()) for f in data.get('SPFontsDataType',[]) if '_name' in f]; print('\\n'.join(sorted(fonts)))\"",
+          { encoding: 'utf-8' },
         )
         return stdout.split('\n').filter((f) => f.trim().length > 0)
       } else {

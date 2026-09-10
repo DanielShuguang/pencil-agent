@@ -34,8 +34,12 @@ describe('SafeExpressionEvaluator', () => {
     })
 
     it('should evaluate OR', () => {
-      expect(evaluateSafeExpression('$input === "error" || $input === "warning"', 'error')).toBe(true)
-      expect(evaluateSafeExpression('$input === "error" || $input === "warning"', 'info')).toBe(false)
+      expect(evaluateSafeExpression('$input === "error" || $input === "warning"', 'error')).toBe(
+        true,
+      )
+      expect(evaluateSafeExpression('$input === "error" || $input === "warning"', 'info')).toBe(
+        false,
+      )
     })
 
     it('should evaluate NOT', () => {
@@ -118,24 +122,27 @@ describe('SafeExpressionEvaluator', () => {
 
     it('should reject array literals and subscript-based constructor access', () => {
       // 旧的黑名单实现放行了这些表达式，直接导致任意代码执行
-      expect(evaluateSafeExpression('[]["filter"]["constructor"]("return true")()', null)).toBe(false)
-      expect(evaluateSafeExpression('[]["filter"]["constr" + "uctor"]("return true")()', null)).toBe(
+      expect(evaluateSafeExpression('[]["filter"]["constructor"]("return true")()', null)).toBe(
         false,
       )
+      expect(
+        evaluateSafeExpression('[]["filter"]["constr" + "uctor"]("return true")()', null),
+      ).toBe(false)
       expect(
         evaluateSafeExpression('(()=>{})["constructor"]("return typeof process")()', null),
       ).toBe(false)
-      expect(evaluateSafeExpression('(1)["constructor"]["constructor"]("return true")()', null)).toBe(
-        false,
-      )
+      expect(
+        evaluateSafeExpression('(1)["constructor"]["constructor"]("return true")()', null),
+      ).toBe(false)
     })
 
     it('should reject string-concatenated dangerous identifiers', () => {
+      expect(evaluateSafeExpression('typeof pro"+"cess === "undefined"', null)).toBe(false)
       expect(
-        evaluateSafeExpression('typeof pro"+"cess === "undefined"', null),
-      ).toBe(false)
-      expect(
-        evaluateSafeExpression('[]["filter"]["constr"+"uctor"]("return typeof pro"+"cess")()', null),
+        evaluateSafeExpression(
+          '[]["filter"]["constr"+"uctor"]("return typeof pro"+"cess")()',
+          null,
+        ),
       ).toBe(false)
     })
 

@@ -114,7 +114,11 @@ interface MemoryAPI {
 }
 
 interface PermissionAPI {
-  getConfig: () => Promise<{ mode: string; disabledTools: string[]; dangerousPatternOverrides: string[] }>
+  getConfig: () => Promise<{
+    mode: string
+    disabledTools: string[]
+    dangerousPatternOverrides: string[]
+  }>
   setConfig: (config: Record<string, unknown>) => Promise<void>
   onConfirmRequest: (cb: (request: unknown) => void) => () => void
   submitConfirmResponse: (response: Record<string, unknown>) => Promise<void>

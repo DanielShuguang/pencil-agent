@@ -57,14 +57,14 @@ export interface Message {
 export interface SessionMeta {
   id: string
   title: string
-  model: { id: string; provider: string }  // 创建时的模型（历史记录）
-  currentModel: { id: string; provider: string }  // 当前使用的模型
+  model: { id: string; provider: string } // 创建时的模型（历史记录）
+  currentModel: { id: string; provider: string } // 当前使用的模型
   cwd?: string
   createdAt: number
   updatedAt: number
   messageCount: number
-  parentSessionId?: string  // 父会话 ID（分支功能）
-  branchPointMessageId?: string  // 分支点消息 ID
+  parentSessionId?: string // 父会话 ID（分支功能）
+  branchPointMessageId?: string // 分支点消息 ID
 }
 
 // Agent 状态接口
@@ -73,7 +73,7 @@ interface AgentState {
   sessionMetas: Map<string, SessionMeta>
   activeSessionId: string | null
   isGenerating: boolean
-  defaultModel: { id: string; provider: string }  // 全局默认模型
+  defaultModel: { id: string; provider: string } // 全局默认模型
   language: 'zh' | 'en'
 
   initFromStorage: () => void
@@ -125,7 +125,7 @@ function handleToolCallChunk(chunk: AgentChunk, prev: Message[]): Message[] {
 // 处理工具结果块：更新对应工具调用的状态
 function handleToolResultChunk(chunk: AgentChunk, prev: Message[]): Message[] {
   const toolCallId = chunk.metadata?.toolCallId as string | undefined
-  
+
   // 优先使用 toolCallId 精确匹配，回退到最后一个 running 状态
   let index = -1
   if (toolCallId) {
@@ -246,7 +246,11 @@ export const useAgentStore = create<AgentState>((set, get) => ({
           if (data && data.meta && Array.isArray(data.messages)) {
             // 验证消息格式
             const validMessages = data.messages.filter(
-              (m) => m && typeof m.id === 'string' && typeof m.role === 'string' && typeof m.content === 'string',
+              (m) =>
+                m &&
+                typeof m.id === 'string' &&
+                typeof m.role === 'string' &&
+                typeof m.content === 'string',
             )
             sessions.set(id, validMessages)
             sessionMetas.set(id, data.meta)
@@ -294,8 +298,9 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const { defaultModel } = get()
 
     // 获取上一个会话的 currentModel，如果没有则使用 defaultModel
-    const lastSession = Array.from(get().sessionMetas.values())
-      .sort((a, b) => b.updatedAt - a.updatedAt)[0]
+    const lastSession = Array.from(get().sessionMetas.values()).sort(
+      (a, b) => b.updatedAt - a.updatedAt,
+    )[0]
     const model = lastSession?.currentModel || defaultModel
 
     const id = `session-${Date.now()}`
@@ -308,8 +313,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const meta: SessionMeta = {
       id,
       title: i18n.t('app.newConversation'),
-      model,  // 创建时的模型
-      currentModel: model,  // 当前使用的模型
+      model, // 创建时的模型
+      currentModel: model, // 当前使用的模型
       cwd,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -430,7 +435,11 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         } else if (chunk.content) {
           sandboxStore.appendOutput({ type: 'stdout', content: chunk.content })
         }
-        sandboxStore.appendOutput({ type: 'exit', content: '', exitCode: chunk.metadata?.error ? 1 : 0 })
+        sandboxStore.appendOutput({
+          type: 'exit',
+          content: '',
+          exitCode: chunk.metadata?.error ? 1 : 0,
+        })
       }
 
       if (!chunk.metadata?.error && filePath) {
@@ -572,8 +581,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       title: i18n.t('app.branchTitle', {
         title: sessionMetas.get(activeSessionId)?.title || i18n.t('app.newConversation'),
       }),
-      model,  // 创建时的模型
-      currentModel: model,  // 当前使用的模型
+      model, // 创建时的模型
+      currentModel: model, // 当前使用的模型
       cwd: branchCwd,
       createdAt: Date.now(),
       updatedAt: Date.now(),

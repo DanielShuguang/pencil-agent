@@ -84,13 +84,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         files.set(path, {
           ...existing,
           content,
-          language,  // 始终更新语言
-          isModified: existing.originalContent !== undefined && existing.originalContent !== content,
+          language, // 始终更新语言
+          isModified:
+            existing.originalContent !== undefined && existing.originalContent !== content,
         })
       } else {
         files.set(path, {
           path,
-          name: path.split('/').pop() || path.split('\\').pop() || path,  // 兼容 Windows 路径
+          name: path.split('/').pop() || path.split('\\').pop() || path, // 兼容 Windows 路径
           content,
           language,
           isModified: false,

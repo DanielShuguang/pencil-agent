@@ -34,7 +34,7 @@ export class AuditLogger {
 
     try {
       const logFile = this.getLogFile(entry.sessionId)
-      appendFileSync(logFile, `${JSON.stringify(fullEntry)  }\n`, 'utf-8')
+      appendFileSync(logFile, `${JSON.stringify(fullEntry)}\n`, 'utf-8')
     } catch (error) {
       console.error('[AuditLogger] Failed to write log:', error)
     }

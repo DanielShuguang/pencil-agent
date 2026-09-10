@@ -1,7 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { match } from 'ts-pattern'
 import { useUpdateStore } from '../../stores/update-store'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '../ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from '../ui/dialog'
 import { Button } from '../ui/button'
 
 interface UpdateDialogProps {
@@ -94,15 +101,9 @@ export function UpdateDialog({ isOpen, onClose }: UpdateDialogProps) {
                 <p className='text-sm text-muted-foreground text-center'>{Math.round(progress)}%</p>
               </div>
             ))
-            .with('downloaded', () => (
-              <p>{t('updater.downloaded')}</p>
-            ))
-            .with('error', () => (
-              <p className='text-destructive'>{error || t('updater.error')}</p>
-            ))
-            .with('idle', () => (
-              <p className='text-muted-foreground'>{t('updater.noUpdate')}</p>
-            ))
+            .with('downloaded', () => <p>{t('updater.downloaded')}</p>)
+            .with('error', () => <p className='text-destructive'>{error || t('updater.error')}</p>)
+            .with('idle', () => <p className='text-muted-foreground'>{t('updater.noUpdate')}</p>)
             .exhaustive()}
         </DialogBody>
 

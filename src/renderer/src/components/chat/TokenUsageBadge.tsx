@@ -10,7 +10,8 @@ export function TokenUsageBadge() {
       setUsage((prev) => ({
         prompt: e.detail.prompt ?? prev?.prompt ?? 0,
         completion: e.detail.completion ?? prev?.completion ?? 0,
-        total: (e.detail.prompt ?? prev?.prompt ?? 0) + (e.detail.completion ?? prev?.completion ?? 0),
+        total:
+          (e.detail.prompt ?? prev?.prompt ?? 0) + (e.detail.completion ?? prev?.completion ?? 0),
       }))
     }
     window.addEventListener('token-usage', handler as EventListener)

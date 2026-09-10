@@ -74,7 +74,9 @@ export const useThemeStore = create<ThemeState>((set) => ({
       if (window.api?.theme) {
         const state = await window.api.theme.get()
         if (state) {
-          const theme = themeRegistry.getTheme(state.currentThemeId) ?? themeRegistry.getTheme(DEFAULT_THEME_ID)!
+          const theme =
+            themeRegistry.getTheme(state.currentThemeId) ??
+            themeRegistry.getTheme(DEFAULT_THEME_ID)!
           set({
             mode: state.mode as ThemeMode,
             currentThemeId: state.currentThemeId,

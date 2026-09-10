@@ -10,7 +10,11 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../chat/ModelSelector', () => ({
   ModelSelector: (p: any) =>
-    React.createElement('div', { 'data-testid': 'model-selector', 'data-mode': p.mode }, 'ModelSelector'),
+    React.createElement(
+      'div',
+      { 'data-testid': 'model-selector', 'data-mode': p.mode },
+      'ModelSelector',
+    ),
 }))
 
 describe('DefaultModelSettings', () => {

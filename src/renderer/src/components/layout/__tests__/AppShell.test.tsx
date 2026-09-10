@@ -184,36 +184,60 @@ const { AppShell } = await import('../AppShell')
 
 describe('AppShell', () => {
   it('renders title Pencil Agent', () => {
-    render(<AppShell><div>child</div></AppShell>)
+    render(
+      <AppShell>
+        <div>child</div>
+      </AppShell>,
+    )
     expect(screen.getByText('Pencil Agent')).toBeInTheDocument()
   })
 
   it('renders children', () => {
-    render(<AppShell><div>test-child</div></AppShell>)
+    render(
+      <AppShell>
+        <div>test-child</div>
+      </AppShell>,
+    )
     expect(screen.getByText('test-child')).toBeInTheDocument()
   })
 
   it('renders tab buttons', () => {
-    render(<AppShell><div>child</div></AppShell>)
+    render(
+      <AppShell>
+        <div>child</div>
+      </AppShell>,
+    )
     expect(screen.getByText('app.chat')).toBeInTheDocument()
     expect(screen.getByText('app.editor')).toBeInTheDocument()
     expect(screen.getByText('app.workflow')).toBeInTheDocument()
   })
 
   it('renders status bar', () => {
-    render(<AppShell><div>child</div></AppShell>)
+    render(
+      <AppShell>
+        <div>child</div>
+      </AppShell>,
+    )
     expect(screen.getByTestId('status-bar')).toBeInTheDocument()
   })
 
   it('switches active tab on click', () => {
-    render(<AppShell><div>child</div></AppShell>)
+    render(
+      <AppShell>
+        <div>child</div>
+      </AppShell>,
+    )
     const editorTab = screen.getByText('app.editor')
     fireEvent.click(editorTab)
     expect(editorTab.closest('button')).toHaveClass('bg-primary')
   })
 
   it('renders settings button', () => {
-    render(<AppShell><div>child</div></AppShell>)
+    render(
+      <AppShell>
+        <div>child</div>
+      </AppShell>,
+    )
     const settingsButton = screen.getByTestId('settings-dialog').closest('div')
     expect(settingsButton).toBeInTheDocument()
   })

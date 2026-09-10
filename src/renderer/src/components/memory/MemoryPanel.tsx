@@ -67,7 +67,8 @@ export function MemoryPanel() {
                     ))}
                     {item.score !== undefined && (
                       <span className='text-xs text-muted-foreground'>
-                        {t('memory.relevance')}{item.score.toFixed(2)}
+                        {t('memory.relevance')}
+                        {item.score.toFixed(2)}
                       </span>
                     )}
                   </div>

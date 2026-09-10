@@ -78,10 +78,7 @@ export function topologicalSort(nodes: WorkflowNode[], edges: WorkflowEdge[]): s
 /**
  * 按拓扑层次切分节点：同一层内的节点互不依赖，可以并行执行。
  */
-export function calculateExecutionLayers(
-  nodes: WorkflowNode[],
-  edges: WorkflowEdge[],
-): string[][] {
+export function calculateExecutionLayers(nodes: WorkflowNode[], edges: WorkflowEdge[]): string[][] {
   const { inDegree, adjacency } = buildGraph(nodes, edges)
   const layers: string[][] = []
   const visited = new Set<string>()

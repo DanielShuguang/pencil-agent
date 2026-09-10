@@ -37,7 +37,10 @@ describe('PermissionManager', () => {
     it('should update config', () => {
       manager.updateConfig({ mode: 'prompt' })
       expect(manager.getConfig().mode).toBe('prompt')
-      expect(mockAppStoreSet).toHaveBeenCalledWith('permission.config', expect.objectContaining({ mode: 'prompt' }))
+      expect(mockAppStoreSet).toHaveBeenCalledWith(
+        'permission.config',
+        expect.objectContaining({ mode: 'prompt' }),
+      )
     })
   })
 
@@ -74,9 +77,9 @@ describe('PermissionManager', () => {
   describe('checkToolPermission', () => {
     it('should throw for disabled tools', () => {
       manager.updateConfig({ disabledTools: ['bash'] })
-      expect(() => manager.checkToolPermission('bash', { command: 'ls' }, 'session-1', '/tmp')).toThrow(
-        '已被禁用',
-      )
+      expect(() =>
+        manager.checkToolPermission('bash', { command: 'ls' }, 'session-1', '/tmp'),
+      ).toThrow('已被禁用')
     })
 
     it('should not need confirm in auto mode', () => {
@@ -87,20 +90,35 @@ describe('PermissionManager', () => {
 
     it('should not need confirm for low-risk tools in smart mode', () => {
       manager.updateConfig({ mode: 'smart' })
-      const result = manager.checkToolPermission('read', { path: '/tmp/file.txt' }, 'session-1', '/tmp')
+      const result = manager.checkToolPermission(
+        'read',
+        { path: '/tmp/file.txt' },
+        'session-1',
+        '/tmp',
+      )
       expect(result.needsConfirm).toBe(false)
     })
 
     it('should need confirm for bash in smart mode', () => {
       manager.updateConfig({ mode: 'smart' })
-      const result = manager.checkToolPermission('bash', { command: 'echo hello' }, 'session-1', '/tmp')
+      const result = manager.checkToolPermission(
+        'bash',
+        { command: 'echo hello' },
+        'session-1',
+        '/tmp',
+      )
       expect(result.needsConfirm).toBe(true)
       expect(result.request?.riskLevel).toBe('medium')
     })
 
     it('should need confirm for all tools in prompt mode', () => {
       manager.updateConfig({ mode: 'prompt' })
-      const result = manager.checkToolPermission('read', { path: '/tmp/file.txt' }, 'session-1', '/tmp')
+      const result = manager.checkToolPermission(
+        'read',
+        { path: '/tmp/file.txt' },
+        'session-1',
+        '/tmp',
+      )
       expect(result.needsConfirm).toBe(true)
     })
 

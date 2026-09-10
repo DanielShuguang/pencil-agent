@@ -41,7 +41,9 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
     try {
       const rawConfig = await window.api.permission.getConfig()
       const config: PermissionConfig = {
-        mode: (['auto', 'prompt', 'smart'].includes(rawConfig.mode) ? rawConfig.mode : 'smart') as PermissionConfig['mode'],
+        mode: (['auto', 'prompt', 'smart'].includes(rawConfig.mode)
+          ? rawConfig.mode
+          : 'smart') as PermissionConfig['mode'],
         disabledTools: rawConfig.disabledTools || [],
         dangerousPatternOverrides: rawConfig.dangerousPatternOverrides || [],
       }

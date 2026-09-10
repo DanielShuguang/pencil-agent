@@ -10,7 +10,8 @@ interface EditorPanelProps {
 }
 
 export function EditorPanel({ className }: EditorPanelProps) {
-  const { files, activeFilePath, updateFileContent, acceptChanges, rejectChanges } = useEditorStore()
+  const { files, activeFilePath, updateFileContent, acceptChanges, rejectChanges } =
+    useEditorStore()
   const editorRef = useRef<any>(null)
   const { t } = useTranslation()
 

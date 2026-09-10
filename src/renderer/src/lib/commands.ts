@@ -175,6 +175,7 @@ export function filterCommands(query: string): CommandDef[] {
   if (!query || query === '/') return commands
   const lower = query.toLowerCase()
   return commands.filter(
-    (cmd) => cmd.name.toLowerCase().startsWith(lower) || cmd.description.toLowerCase().includes(lower),
+    (cmd) =>
+      cmd.name.toLowerCase().startsWith(lower) || cmd.description.toLowerCase().includes(lower),
   )
 }

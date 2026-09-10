@@ -6,7 +6,10 @@ export interface FontOption {
 }
 
 const FALLBACK_FONTS: FontOption[] = [
-  { label: 'System Default', value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" },
+  {
+    label: 'System Default',
+    value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  },
   { label: 'Consolas', value: "Consolas, 'Courier New', monospace" },
   { label: 'Fira Code', value: "'Fira Code', monospace" },
   { label: 'Maple Mono NF CN', value: "'Maple Mono NF CN', monospace" },

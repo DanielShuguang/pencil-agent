@@ -23,7 +23,8 @@ function createMockLocalStorage() {
   return new Proxy(mock, {
     get(target, prop) {
       if (prop === Symbol.toStringTag) return 'Storage'
-      if (typeof prop === 'string' && prop in target) return (target as Record<string, unknown>)[prop]
+      if (typeof prop === 'string' && prop in target)
+        return (target as Record<string, unknown>)[prop]
       return undefined
     },
     ownKeys() {

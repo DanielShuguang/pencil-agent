@@ -42,7 +42,11 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
         className='absolute top-2 right-2 p-1.5 rounded-md bg-muted/80 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted hover:text-foreground transition-all'
         title={t('chat.copyCode')}
       >
-        {copied ? <Check className='h-3.5 w-3.5 text-green-500' /> : <Copy className='h-3.5 w-3.5' />}
+        {copied ? (
+          <Check className='h-3.5 w-3.5 text-green-500' />
+        ) : (
+          <Copy className='h-3.5 w-3.5' />
+        )}
       </button>
     </div>
   )

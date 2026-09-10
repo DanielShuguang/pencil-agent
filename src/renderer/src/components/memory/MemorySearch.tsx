@@ -28,11 +28,7 @@ export function MemorySearch({ onResultSelect }: MemorySearchProps) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
-        <Button
-          size='sm'
-          onClick={handleSearch}
-          disabled={!query.trim() || isLoading}
-        >
+        <Button size='sm' onClick={handleSearch} disabled={!query.trim() || isLoading}>
           {isLoading ? t('memory.searching') : t('memory.search')}
         </Button>
       </div>

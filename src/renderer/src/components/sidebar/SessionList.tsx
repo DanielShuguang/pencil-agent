@@ -15,8 +15,8 @@ export function SessionList() {
   const sortedSessions = useMemo(
     () =>
       Array.from(sessionMetas.values())
-        .filter((meta) =>
-          !searchQuery || meta.title.toLowerCase().includes(searchQuery.toLowerCase()),
+        .filter(
+          (meta) => !searchQuery || meta.title.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .sort((a, b) => b.updatedAt - a.updatedAt),
     [sessionMetas, searchQuery],
@@ -55,7 +55,9 @@ export function SessionList() {
       </div>
       <div ref={listRef} className='flex-1 overflow-auto flex flex-col gap-1 p-2 pt-1'>
         {sortedSessions.length === 0 ? (
-          <div className='p-4 text-sm text-muted-foreground text-center'>{t('sidebar.noSessions')}</div>
+          <div className='p-4 text-sm text-muted-foreground text-center'>
+            {t('sidebar.noSessions')}
+          </div>
         ) : (
           sortedSessions.map((meta) => (
             <SessionItem

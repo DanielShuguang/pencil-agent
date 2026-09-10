@@ -3,9 +3,10 @@ import type { Message } from '../stores/agent-store'
 export function exportAsMarkdown(messages: Message[], title: string) {
   const lines = [`# ${title}\n`]
   for (const msg of messages) {
-    const role = msg.role === 'user' ? '👤 User' : msg.role === 'assistant' ? '🤖 Assistant' : msg.role
+    const role =
+      msg.role === 'user' ? '👤 User' : msg.role === 'assistant' ? '🤖 Assistant' : msg.role
     lines.push(`## ${role}\n`)
-    lines.push(`${msg.content  }\n`)
+    lines.push(`${msg.content}\n`)
   }
   downloadBlob(lines.join('\n'), `${title}.md`, 'text/markdown')
 }

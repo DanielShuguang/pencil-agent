@@ -150,15 +150,18 @@ describe('agent-store', () => {
       activeSessionId: 'session-1',
       sessions: new Map([['session-1', []]]),
       sessionMetas: new Map([
-        ['session-1', {
-          id: 'session-1',
-          title: 'New Chat',
-          model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-          currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          messageCount: 0,
-        }],
+        [
+          'session-1',
+          {
+            id: 'session-1',
+            title: 'New Chat',
+            model: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+            currentModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            messageCount: 0,
+          },
+        ],
       ]),
     })
     useAgentStore.getState().sendMessage('Hello')
@@ -213,9 +216,25 @@ describe('agent-store', () => {
   it('appendChunk opens file in editor on successful read tool result', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-1', toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: '',
+              toolCall: {
+                id: 'tc-1',
+                toolName: 'read',
+                parameters: { path: '/src/index.ts' },
+                status: 'running',
+              },
+              timestamp: Date.now(),
+            },
+          ],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
@@ -229,15 +248,36 @@ describe('agent-store', () => {
   it('appendChunk does not open file in editor on failed read tool result', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-2', toolName: 'read', parameters: { path: '/src/index.ts' }, status: 'running' }, timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: '',
+              toolCall: {
+                id: 'tc-2',
+                toolName: 'read',
+                parameters: { path: '/src/index.ts' },
+                status: 'running',
+              },
+              timestamp: Date.now(),
+            },
+          ],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: '',
-      metadata: { toolCallId: 'tc-2', toolName: 'read', parameters: { path: '/src/index.ts' }, error: 'File not found' },
+      metadata: {
+        toolCallId: 'tc-2',
+        toolName: 'read',
+        parameters: { path: '/src/index.ts' },
+        error: 'File not found',
+      },
     })
     expect(mockOpenFile).not.toHaveBeenCalled()
   })
@@ -246,15 +286,35 @@ describe('agent-store', () => {
     mockFiles.set('/src/index.ts', { content: 'old' })
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-3', toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' }, status: 'running' }, timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: '',
+              toolCall: {
+                id: 'tc-3',
+                toolName: 'write',
+                parameters: { path: '/src/index.ts', content: 'new content' },
+                status: 'running',
+              },
+              timestamp: Date.now(),
+            },
+          ],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: '',
-      metadata: { toolCallId: 'tc-3', toolName: 'write', parameters: { path: '/src/index.ts', content: 'new content' } },
+      metadata: {
+        toolCallId: 'tc-3',
+        toolName: 'write',
+        parameters: { path: '/src/index.ts', content: 'new content' },
+      },
     })
     expect(mockUpdateFileContent).toHaveBeenCalledWith('/src/index.ts', 'new content')
   })
@@ -280,9 +340,25 @@ describe('agent-store', () => {
   it('appendChunk syncs bash tool result to sandbox store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-4', toolName: 'bash', parameters: { command: 'echo hi' }, status: 'running' }, timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: '',
+              toolCall: {
+                id: 'tc-4',
+                toolName: 'bash',
+                parameters: { command: 'echo hi' },
+                status: 'running',
+              },
+              timestamp: Date.now(),
+            },
+          ],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
@@ -297,17 +373,41 @@ describe('agent-store', () => {
   it('appendChunk syncs bash tool error to sandbox store', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant', content: '', toolCall: { id: 'tc-5', toolName: 'bash', parameters: { command: 'bad' }, status: 'running' }, timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: '',
+              toolCall: {
+                id: 'tc-5',
+                toolName: 'bash',
+                parameters: { command: 'bad' },
+                status: 'running',
+              },
+              timestamp: Date.now(),
+            },
+          ],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({
       type: 'tool_result',
       content: '',
-      metadata: { toolCallId: 'tc-5', toolName: 'bash', parameters: { command: 'bad' }, error: 'command not found' },
+      metadata: {
+        toolCallId: 'tc-5',
+        toolName: 'bash',
+        parameters: { command: 'bad' },
+        error: 'command not found',
+      },
     })
-    expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'stderr', content: 'command not found' })
+    expect(mockSandboxAppendOutput).toHaveBeenCalledWith({
+      type: 'stderr',
+      content: 'command not found',
+    })
     expect(mockSandboxAppendOutput).toHaveBeenCalledWith({ type: 'exit', content: '', exitCode: 1 })
   })
 
@@ -327,7 +427,10 @@ describe('agent-store', () => {
     await useAgentStore.getState().createSession('/tmp')
     const sessionId = useAgentStore.getState().activeSessionId!
     useAgentStore.getState().switchSessionModel({ id: 'gpt-4o', provider: 'openai' })
-    expect(useAgentStore.getState().sessionMetas.get(sessionId)?.currentModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
+    expect(useAgentStore.getState().sessionMetas.get(sessionId)?.currentModel).toEqual({
+      id: 'gpt-4o',
+      provider: 'openai',
+    })
   })
 
   it('createSession inherits model from last session', async () => {
@@ -415,16 +518,23 @@ describe('agent-store', () => {
   })
 
   it('truncateMessages limits messages and preserves user/system messages', () => {
-    const messages: Array<{ id: string; role: 'user' | 'assistant' | 'system'; content: string; timestamp: number }> = Array.from(
-      { length: 350 },
-      (_, i) => ({
-        id: `msg-${i}`,
-        role: (i % 3 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
-        content: `Message ${i}`,
-        timestamp: Date.now(),
-      }),
-    )
-    messages.unshift({ id: 'msg-sys', role: 'system', content: 'System note', timestamp: Date.now() })
+    const messages: Array<{
+      id: string
+      role: 'user' | 'assistant' | 'system'
+      content: string
+      timestamp: number
+    }> = Array.from({ length: 350 }, (_, i) => ({
+      id: `msg-${i}`,
+      role: (i % 3 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: `Message ${i}`,
+      timestamp: Date.now(),
+    }))
+    messages.unshift({
+      id: 'msg-sys',
+      role: 'system',
+      content: 'System note',
+      timestamp: Date.now(),
+    })
 
     useAgentStore.setState({
       activeSessionId: 'session-1',
@@ -481,9 +591,12 @@ describe('agent-store', () => {
   it('appendChunk handles thinking chunks by appending to thinkingContent', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant' as const, content: 'Answer', timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [{ id: 'msg-1', role: 'assistant' as const, content: 'Answer', timestamp: Date.now() }],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({ type: 'thinking', content: 'Let me think...' })
@@ -496,9 +609,12 @@ describe('agent-store', () => {
   it('appendChunk accumulates thinking chunks', () => {
     useAgentStore.setState({
       activeSessionId: 'session-1',
-      sessions: new Map([['session-1', [
-        { id: 'msg-1', role: 'assistant' as const, content: '', timestamp: Date.now() },
-      ]]]),
+      sessions: new Map([
+        [
+          'session-1',
+          [{ id: 'msg-1', role: 'assistant' as const, content: '', timestamp: Date.now() }],
+        ],
+      ]),
       sessionMetas: new Map(),
     })
     useAgentStore.getState().appendChunk({ type: 'thinking', content: 'Part 1. ' })

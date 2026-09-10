@@ -9,7 +9,8 @@
     "correctness": "error"
   },
   "rules": {
-    "typescript/restrict-template-expressions": "warn"
+    "typescript/restrict-template-expressions": "warn",
+    "no-unused-vars": ["warn", { "ignoreRestSiblings": true }]
   },
   "env": {
     "builtin": true

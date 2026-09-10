@@ -15,15 +15,30 @@ export function StatusBar() {
   const activeCwd = activeSessionId ? sessionMetas.get(activeSessionId)?.cwd : undefined
 
   const connectionInfo = match(connectionStatus)
-    .with('connected', () => ({ icon: <Wifi className='h-3 w-3 text-green-500' />, text: t('status.connected') }))
-    .with('disconnected', () => ({ icon: <WifiOff className='h-3 w-3 text-red-500' />, text: t('status.disconnected') }))
-    .with('checking', () => ({ icon: <Loader2 className='h-3 w-3 text-yellow-500 animate-spin' />, text: t('status.checking') }))
+    .with('connected', () => ({
+      icon: <Wifi className='h-3 w-3 text-green-500' />,
+      text: t('status.connected'),
+    }))
+    .with('disconnected', () => ({
+      icon: <WifiOff className='h-3 w-3 text-red-500' />,
+      text: t('status.disconnected'),
+    }))
+    .with('checking', () => ({
+      icon: <Loader2 className='h-3 w-3 text-yellow-500 animate-spin' />,
+      text: t('status.checking'),
+    }))
     .exhaustive()
 
   const formatTokenCount = (count: number) =>
     match(count)
-      .when((c) => c >= 1000000, (c) => `${(c / 1000000).toFixed(1)}M`)
-      .when((c) => c >= 1000, (c) => `${(c / 1000).toFixed(1)}K`)
+      .when(
+        (c) => c >= 1000000,
+        (c) => `${(c / 1000000).toFixed(1)}M`,
+      )
+      .when(
+        (c) => c >= 1000,
+        (c) => `${(c / 1000).toFixed(1)}K`,
+      )
       .otherwise((c) => c.toString())
 
   return (

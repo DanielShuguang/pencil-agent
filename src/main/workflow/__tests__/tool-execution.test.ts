@@ -49,7 +49,7 @@ describe('WorkflowEngine - Tool Execution', () => {
     engine = new WorkflowEngine(agents, tools)
   })
 
-  it('should execute tool node with parameters', async () => {
+  it('should execute tool node with configured parameters', async () => {
     const toolExecutor = vi.fn().mockResolvedValue({ success: true, output: 'tool result' })
     const engineWithExecutor = new WorkflowEngine(agents, tools, undefined, toolExecutor)
 
@@ -78,11 +78,16 @@ describe('WorkflowEngine - Tool Execution', () => {
     const onProgress = vi.fn()
     const result = await engineWithExecutor.execute(workflow, { input: 'test' }, onProgress)
 
-    expect(toolExecutor).toHaveBeenCalledWith('test-tool', { path: '/test/file.txt' }, undefined)
+    // 参数未引用 $input 时，上游对象输入按字段展开（同名字段以配置值为准）
+    expect(toolExecutor).toHaveBeenCalledWith(
+      'test-tool',
+      { input: 'test', path: '/test/file.txt' },
+      undefined,
+    )
     expect(result).toEqual({ success: true, output: 'tool result' })
   })
 
-  it('should pass input to tool parameters', async () => {
+  it('should resolve $input references in tool parameters', async () => {
     const toolExecutor = vi.fn().mockResolvedValue({ result: 'processed' })
     const engineWithExecutor = new WorkflowEngine(agents, tools, undefined, toolExecutor)
 
@@ -113,9 +118,41 @@ describe('WorkflowEngine - Tool Execution', () => {
 
     expect(toolExecutor).toHaveBeenCalledWith(
       'test-tool',
-      { input: '$input' },
+      // `$input` 指向上游整体输出，因此这里解析为 { data: 'test data' }
+      { input: { data: 'test data' } },
       undefined,
     )
+  })
+
+  it('should resolve $input.<field> references in tool parameters', async () => {
+    const toolExecutor = vi.fn().mockResolvedValue({ result: 'processed' })
+    const engineWithExecutor = new WorkflowEngine(agents, tools, undefined, toolExecutor)
+
+    const workflow = createWorkflow(
+      [
+        { id: 's', type: 'start', data: {}, position: { x: 0, y: 0 } },
+        {
+          id: 't',
+          type: 'tool',
+          data: {
+            config: {
+              toolName: 'test-tool',
+              parameters: { path: '$input.file' },
+            },
+          },
+          position: { x: 0, y: 100 },
+        },
+        { id: 'e', type: 'end', data: {}, position: { x: 0, y: 200 } },
+      ],
+      [
+        { id: 'e1', source: 's', target: 't' },
+        { id: 'e2', source: 't', target: 'e' },
+      ],
+    )
+
+    await engineWithExecutor.execute(workflow, { file: '/tmp/a.txt' }, vi.fn())
+
+    expect(toolExecutor).toHaveBeenCalledWith('test-tool', { path: '/tmp/a.txt' }, undefined)
   })
 
   it('should throw error when tool executor not provided', async () => {

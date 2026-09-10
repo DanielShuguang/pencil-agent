@@ -87,6 +87,7 @@ interface WorkflowAPI {
   execute: (
     workflow: WorkflowDefinition,
     input: Record<string, unknown>,
+    cwd?: string,
   ) => Promise<Record<string, unknown>>
   onProgress: (cb: (progress: WorkflowProgress) => void) => () => void
 }

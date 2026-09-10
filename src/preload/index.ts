@@ -1,6 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { ThemeMode, ThemeState, AgentRole, UpdateProgress } from '@shared/ipc'
+import type {
+  ThemeMode,
+  ThemeState,
+  AgentRole,
+  UpdateProgress,
+  WorkflowDefinition,
+  WorkflowProgress,
+} from '@shared/ipc'
 
 interface AgentChunk {
   type: string
@@ -12,13 +19,6 @@ interface SandboxOutput {
   type: 'stdout' | 'stderr' | 'exit'
   content: string
   exitCode?: number
-}
-
-interface WorkflowProgress {
-  nodeId: string
-  status: string
-  result?: unknown
-  error?: string
 }
 
 const agentAPI = {
@@ -112,25 +112,11 @@ const sandboxAPI = {
 
 const workflowAPI = {
   execute: (
-    workflow: {
-      id: string
-      name: string
-      nodes: Array<{
-        id: string
-        type: string
-        data: Record<string, unknown>
-        position: { x: number; y: number }
-      }>
-      edges: Array<{
-        id: string
-        source: string
-        target: string
-        sourceHandle?: string
-        targetHandle?: string
-      }>
-    },
+    workflow: WorkflowDefinition,
     input: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> => ipcRenderer.invoke('workflow:execute', workflow, input),
+    cwd?: string,
+  ): Promise<Record<string, unknown>> =>
+    ipcRenderer.invoke('workflow:execute', workflow, input, cwd),
 
   onProgress: (cb: (progress: WorkflowProgress) => void) => {
     const handler = (_: unknown, progress: WorkflowProgress) => cb(progress)

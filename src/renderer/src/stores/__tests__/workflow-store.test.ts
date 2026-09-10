@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import type { Node, Edge } from '@xyflow/react'
 import { useWorkflowStore } from '../workflow-store'
 
@@ -114,5 +114,52 @@ describe('workflow-store', () => {
     expect(state.edges).toEqual([])
     expect(state.selectedNodeId).toBeNull()
     expect(state.isExecuting).toBe(false)
+  })
+
+  describe('persisted data validation', () => {
+    const STORAGE_KEY = 'pencil-agent:workflow'
+
+    /** 重新导入 store，触发一次基于 localStorage 的初始化 */
+    async function loadFreshStore() {
+      vi.resetModules()
+      const module = await import('../workflow-store')
+      return module.useWorkflowStore
+    }
+
+    it('drops entries that are not well-formed nodes or edges', async () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          nodes: [
+            { id: 'ok', type: 'agent', position: { x: 1, y: 2 }, data: {} },
+            { id: 'no-position', type: 'agent', data: {} },
+            null,
+            'nonsense',
+          ],
+          edges: [
+            { id: 'e-ok', source: 'ok', target: 'other' },
+            { id: 42, source: 'a', target: 'b' },
+          ],
+        }),
+      )
+
+      const store = await loadFreshStore()
+      const state = store.getState()
+
+      expect(state.nodes.map((n) => n.id)).toEqual(['ok'])
+      expect(state.edges.map((e) => e.id)).toEqual(['e-ok'])
+      localStorage.clear()
+    })
+
+    it('falls back to an empty workflow when stored JSON is malformed', async () => {
+      localStorage.setItem(STORAGE_KEY, '{ not json')
+
+      const store = await loadFreshStore()
+
+      expect(store.getState().nodes).toEqual([])
+      expect(store.getState().edges).toEqual([])
+      localStorage.clear()
+    })
   })
 })

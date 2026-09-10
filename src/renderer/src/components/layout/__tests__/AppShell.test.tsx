@@ -151,7 +151,10 @@ beforeEach(() => {
     nodes: [],
     edges: [],
   } as any)
-  vi.mocked(useWorkflowStore).getState.mockReturnValue({ nodes: [], edges: [] })
+  vi.mocked(useWorkflowStore).getState.mockReturnValue({
+    nodes: [],
+    edges: [],
+  } as unknown as ReturnType<typeof useWorkflowStore.getState>)
 
   vi.mocked(usePermissionStore).mockReturnValue({
     config: { mode: 'auto', disabledTools: [], dangerousPatternOverrides: [] },
@@ -163,7 +166,7 @@ beforeEach(() => {
   vi.mocked(usePermissionStore).getState.mockReturnValue({
     fetchConfig: vi.fn(),
     handleConfirmRequest: vi.fn(),
-  })
+  } as unknown as ReturnType<typeof usePermissionStore.getState>)
 
   vi.mocked(useUpdateStore).mockReturnValue({
     status: 'idle',
@@ -174,7 +177,7 @@ beforeEach(() => {
   } as any)
   vi.mocked(useUpdateStore).getState.mockReturnValue({
     initListeners: vi.fn(() => vi.fn()),
-  })
+  } as unknown as ReturnType<typeof useUpdateStore.getState>)
 })
 
 const { AppShell } = await import('../AppShell')

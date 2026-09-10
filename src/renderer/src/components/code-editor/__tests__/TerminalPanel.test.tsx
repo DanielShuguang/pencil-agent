@@ -32,7 +32,7 @@ beforeEach(() => {
   } as unknown as ReturnType<typeof useSandboxStore>)
   mockUseSandboxStore.getState.mockReturnValue({
     appendOutput: vi.fn(),
-  })
+  } as unknown as ReturnType<typeof useSandboxStore.getState>)
 })
 
 describe('TerminalPanel', () => {

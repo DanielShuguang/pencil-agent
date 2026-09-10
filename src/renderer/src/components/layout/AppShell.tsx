@@ -13,6 +13,7 @@ import { PermissionConfirmDialog } from '../permission/PermissionConfirmDialog'
 import { usePermissionStore } from '../../stores/permission-store'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useUpdateStore } from '../../stores/update-store'
+import { useAgentStore } from '../../stores/agent-store'
 import { useGlobalShortcuts } from '../../hooks/useGlobalShortcuts'
 import { useNewSession } from '../../hooks/useNewSession'
 import type { WorkflowNode } from '@shared/ipc'
@@ -80,6 +81,10 @@ export function AppShell({ children }: AppShellProps) {
     const { nodes: currentNodes, edges: currentEdges } = useWorkflowStore.getState()
     if (currentNodes.length === 0) return
 
+    // 工作流与当前会话共用工作目录，agent/tool 节点才能真正访问工作区
+    const { activeSessionId, sessionMetas } = useAgentStore.getState()
+    const cwd = activeSessionId ? sessionMetas.get(activeSessionId)?.cwd : undefined
+
     const workflow = {
       id: `workflow-${Date.now()}`,
       name: 'My Workflow',
@@ -102,17 +107,16 @@ export function AppShell({ children }: AppShellProps) {
 
     const unsubscribe = window.api.workflow.onProgress((progress) => {
       updateNodeStatus(progress)
-      if (progress.status === 'error') {
-        setExecuting(false)
-      }
     })
 
     try {
-      await window.api.workflow.execute(workflow, {})
-      setExecuting(false)
+      await window.api.workflow.execute(workflow, {}, cwd)
     } catch {
-      setExecuting(false)
+      // 失败细节已通过进度事件与主进程日志呈现，这里只需保证状态复位
     } finally {
+      // 只有整个执行 settle 之后才解除按钮禁用，
+      // 否则单个节点失败会让按钮提前可点并触发并发执行
+      setExecuting(false)
       unsubscribe()
     }
   }, [setExecuting, updateNodeStatus])

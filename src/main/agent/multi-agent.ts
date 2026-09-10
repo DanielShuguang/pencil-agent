@@ -23,22 +23,65 @@ export class MultiAgentOrchestrator {
       maxRounds?: number
       mergerRoleId?: string
       onProgress?: (agentId: string, output: string) => void
+      /** 上游取消信号：中止后不再开启新一轮编排。 */
+      signal?: AbortSignal
     } = {},
   ): Promise<OrchestrationResult> {
     const roles = roleIds.map((id) => this.roles.get(id)).filter(Boolean) as AgentRole[]
 
     switch (mode) {
       case 'sequential':
-        return this.executeSequential(roles, input, options.cwd, options.onProgress)
+        return this.executeSequential(roles, input, options.cwd, options.onProgress, options.signal)
       case 'parallel':
-        return this.executeParallel(roles, input, options.cwd, options.mergerRoleId, options.onProgress)
+        return this.executeParallel(
+          roles,
+          input,
+          options.cwd,
+          options.mergerRoleId,
+          options.onProgress,
+          options.signal,
+        )
       case 'debate':
-        return this.executeDebate(roles, input, options.cwd, options.maxRounds || 5, options.onProgress)
+        return this.executeDebate(
+          roles,
+          input,
+          options.cwd,
+          options.maxRounds || 5,
+          options.onProgress,
+          options.signal,
+        )
       case 'hierarchical':
-        return this.executeHierarchical(roles, input, options.cwd, options.onProgress)
+        return this.executeHierarchical(
+          roles,
+          input,
+          options.cwd,
+          options.onProgress,
+          options.signal,
+        )
       default:
         throw new Error(`Unknown orchestration mode: ${mode}`)
     }
+  }
+
+  /**
+   * 逐块累积输出，遇到取消请求立即停止迭代。
+   *
+   * `for await` 提前 `break` 会触发生成器的 `return()`，从而走完
+   * `AgentSessionManager.prompt` 的 `finally` 分支并解绑事件监听。
+   */
+  private async collectOutput(
+    sessionId: string,
+    input: string,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    let output = ''
+    for await (const chunk of this.agents.prompt(sessionId, input)) {
+      if (signal?.aborted) break
+      if (chunk.type === 'text') {
+        output += chunk.content
+      }
+    }
+    return output
   }
 
   private async executeSequential(
@@ -46,11 +89,13 @@ export class MultiAgentOrchestrator {
     input: string,
     cwd: string | undefined,
     onProgress?: (agentId: string, output: string) => void,
+    signal?: AbortSignal,
   ): Promise<OrchestrationResult> {
     const results: { roleId: string; output: string }[] = []
     let currentInput = input
 
     for (const role of roles) {
+      if (signal?.aborted) break
       const sessionId = `orch-${role.id}-${Date.now()}`
       await this.agents.create({
         sessionId,
@@ -60,12 +105,7 @@ export class MultiAgentOrchestrator {
         tools: role.tools,
       })
 
-      let output = ''
-      for await (const chunk of this.agents.prompt(sessionId, currentInput)) {
-        if (chunk.type === 'text') {
-          output += chunk.content
-        }
-      }
+      const output = await this.collectOutput(sessionId, currentInput, signal)
 
       results.push({ roleId: role.id, output })
       onProgress?.(role.id, output)
@@ -88,12 +128,14 @@ export class MultiAgentOrchestrator {
     cwd: string | undefined,
     mergerRoleId?: string,
     onProgress?: (agentId: string, output: string) => void,
+    signal?: AbortSignal,
   ): Promise<OrchestrationResult> {
     const MAX_PARALLEL = 3
     const results: { roleId: string; output: string }[] = []
 
     // Execute in batches
     for (let i = 0; i < roles.length; i += MAX_PARALLEL) {
+      if (signal?.aborted) break
       const batch = roles.slice(i, i + MAX_PARALLEL)
       const batchResults = await Promise.all(
         batch.map(async (role) => {
@@ -106,12 +148,7 @@ export class MultiAgentOrchestrator {
             tools: role.tools,
           })
 
-          let output = ''
-          for await (const chunk of this.agents.prompt(sessionId, input)) {
-            if (chunk.type === 'text') {
-              output += chunk.content
-            }
-          }
+          const output = await this.collectOutput(sessionId, input, signal)
 
           await this.agents.stop(sessionId)
           onProgress?.(role.id, output)
@@ -124,7 +161,7 @@ export class MultiAgentOrchestrator {
     // Merge results if merger role specified
     let finalOutput = results.map((r) => `## ${r.roleId}\n${r.output}`).join('\n\n')
 
-    if (mergerRoleId) {
+    if (mergerRoleId && !signal?.aborted) {
       const mergerRole = this.roles.get(mergerRoleId)
       if (mergerRole) {
         const sessionId = `orch-merger-${Date.now()}`
@@ -136,13 +173,8 @@ export class MultiAgentOrchestrator {
           tools: mergerRole.tools,
         })
 
-        let mergedOutput = ''
         const mergedInput = results.map((r) => `## ${r.roleId}\n${r.output}`).join('\n\n')
-        for await (const chunk of this.agents.prompt(sessionId, mergedInput)) {
-          if (chunk.type === 'text') {
-            mergedOutput += chunk.content
-          }
-        }
+        const mergedOutput = await this.collectOutput(sessionId, mergedInput, signal)
 
         await this.agents.stop(sessionId)
         finalOutput = mergedOutput
@@ -162,6 +194,7 @@ export class MultiAgentOrchestrator {
     cwd: string | undefined,
     maxRounds: number,
     onProgress?: (agentId: string, output: string) => void,
+    signal?: AbortSignal,
   ): Promise<OrchestrationResult> {
     if (roles.length < 3) {
       throw new Error('Debate mode requires at least 3 roles: proposer, opposer, judge')
@@ -182,17 +215,14 @@ export class MultiAgentOrchestrator {
       tools: proposer.tools,
     })
 
-    for await (const chunk of this.agents.prompt(proposerSession, input)) {
-      if (chunk.type === 'text') {
-        proposerOutput += chunk.content
-      }
-    }
+    proposerOutput = await this.collectOutput(proposerSession, input, signal)
     results.push({ roleId: proposer.id, output: proposerOutput })
     onProgress?.(proposer.id, proposerOutput)
     await this.agents.stop(proposerSession)
 
     // Debate rounds
     for (let round = 0; round < maxRounds; round++) {
+      if (signal?.aborted) break
       // Opposer responds
       const opposerSession = `orch-opposer-${Date.now()}-${round}`
       await this.agents.create({
@@ -205,11 +235,7 @@ export class MultiAgentOrchestrator {
 
       opposerOutput = ''
       const opposerInput = `Original question: ${input}\n\nProposer's argument:\n${proposerOutput}\n\nPlease provide your counter-argument.`
-      for await (const chunk of this.agents.prompt(opposerSession, opposerInput)) {
-        if (chunk.type === 'text') {
-          opposerOutput += chunk.content
-        }
-      }
+      opposerOutput = await this.collectOutput(opposerSession, opposerInput, signal)
       results.push({ roleId: opposer.id, output: opposerOutput })
       onProgress?.(opposer.id, opposerOutput)
       await this.agents.stop(opposerSession)
@@ -226,11 +252,7 @@ export class MultiAgentOrchestrator {
 
       proposerOutput = ''
       const proposerInput = `Original question: ${input}\n\nOpposer's argument:\n${opposerOutput}\n\nPlease provide your rebuttal.`
-      for await (const chunk of this.agents.prompt(proposerSession2, proposerInput)) {
-        if (chunk.type === 'text') {
-          proposerOutput += chunk.content
-        }
-      }
+      proposerOutput = await this.collectOutput(proposerSession2, proposerInput, signal)
       results.push({ roleId: proposer.id, output: proposerOutput })
       onProgress?.(proposer.id, proposerOutput)
       await this.agents.stop(proposerSession2)
@@ -248,11 +270,7 @@ export class MultiAgentOrchestrator {
 
     let judgeOutput = ''
     const judgeInput = `Original question: ${input}\n\nDebate history:\n${results.map((r) => `## ${r.roleId}\n${r.output}`).join('\n\n')}\n\nPlease make a final decision based on the debate.`
-    for await (const chunk of this.agents.prompt(judgeSession, judgeInput)) {
-      if (chunk.type === 'text') {
-        judgeOutput += chunk.content
-      }
-    }
+    judgeOutput = await this.collectOutput(judgeSession, judgeInput, signal)
     results.push({ roleId: judge.id, output: judgeOutput })
     onProgress?.(judge.id, judgeOutput)
     await this.agents.stop(judgeSession)
@@ -269,6 +287,7 @@ export class MultiAgentOrchestrator {
     input: string,
     cwd: string | undefined,
     onProgress?: (agentId: string, output: string) => void,
+    signal?: AbortSignal,
   ): Promise<OrchestrationResult> {
     if (roles.length < 2) {
       throw new Error('Hierarchical mode requires at least 2 roles: manager and workers')
@@ -287,13 +306,8 @@ export class MultiAgentOrchestrator {
       tools: manager.tools,
     })
 
-    let managerOutput = ''
     const managerInput = `You are a manager. Decompose the following task into subtasks for your workers. Each worker has specific capabilities.\n\nTask: ${input}\n\nWorkers: ${workers.map((w) => `- ${w.name}: ${w.description}`).join('\n')}\n\nPlease provide a JSON array of subtasks, each with "workerId" and "task" fields.`
-    for await (const chunk of this.agents.prompt(managerSession, managerInput)) {
-      if (chunk.type === 'text') {
-        managerOutput += chunk.content
-      }
-    }
+    const managerOutput = await this.collectOutput(managerSession, managerInput, signal)
     results.push({ roleId: manager.id, output: managerOutput })
     onProgress?.(manager.id, managerOutput)
     await this.agents.stop(managerSession)
@@ -323,12 +337,7 @@ export class MultiAgentOrchestrator {
           tools: worker.tools,
         })
 
-        let output = ''
-        for await (const chunk of this.agents.prompt(workerSession, subtask.task)) {
-          if (chunk.type === 'text') {
-            output += chunk.content
-          }
-        }
+        const output = await this.collectOutput(workerSession, subtask.task, signal)
         await this.agents.stop(workerSession)
         onProgress?.(worker.id, output)
         return { roleId: worker.id, output }
@@ -346,13 +355,8 @@ export class MultiAgentOrchestrator {
       tools: manager.tools,
     })
 
-    let finalOutput = ''
     const aggInput = `Original task: ${input}\n\nWorker results:\n${workerResults.map((r) => `## ${r.roleId}\n${r.output}`).join('\n\n')}\n\nPlease aggregate these results into a final coherent response.`
-    for await (const chunk of this.agents.prompt(aggregationSession, aggInput)) {
-      if (chunk.type === 'text') {
-        finalOutput += chunk.content
-      }
-    }
+    const finalOutput = await this.collectOutput(aggregationSession, aggInput, signal)
     results.push({ roleId: manager.id, output: finalOutput })
     onProgress?.(manager.id, finalOutput)
     await this.agents.stop(aggregationSession)

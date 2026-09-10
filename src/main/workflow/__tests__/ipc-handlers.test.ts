@@ -29,8 +29,16 @@ describe('registerWorkflowHandlers', () => {
     mockEngine.execute.mockResolvedValue({ status: 'completed', output: 'result' })
     const graph = { nodes: [], edges: [] }
     const result = await ipcHandlers.get('workflow:execute')!({}, graph, {})
-    expect(mockEngine.execute).toHaveBeenCalledWith(graph, {}, expect.any(Function))
+    expect(mockEngine.execute).toHaveBeenCalledWith(graph, {}, expect.any(Function), {})
     expect(result).toEqual({ status: 'completed', output: 'result' })
+  })
+
+  it('should forward the working directory to the engine', async () => {
+    mockEngine.execute.mockResolvedValue({})
+    await ipcHandlers.get('workflow:execute')!({}, { nodes: [], edges: [] }, {}, '/workspace/app')
+    expect(mockEngine.execute).toHaveBeenCalledWith(expect.anything(), {}, expect.any(Function), {
+      cwd: '/workspace/app',
+    })
   })
 
   it('should handle execute errors', async () => {

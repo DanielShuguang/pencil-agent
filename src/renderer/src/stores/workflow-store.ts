@@ -12,13 +12,47 @@ import {
 import type { WorkflowProgress } from '@shared/ipc'
 
 const STORAGE_KEY = 'pencil-agent:workflow'
+const STORAGE_VERSION = 1
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+function sanitizeNodes(value: unknown): Node[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is Node => {
+    if (!isRecord(entry)) return false
+    const position = entry.position
+    return (
+      typeof entry.id === 'string' &&
+      typeof entry.type === 'string' &&
+      isRecord(position) &&
+      typeof position.x === 'number' &&
+      typeof position.y === 'number'
+    )
+  })
+}
+
+function sanitizeEdges(value: unknown): Edge[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is Edge => {
+    if (!isRecord(entry)) return false
+    return (
+      typeof entry.id === 'string' &&
+      typeof entry.source === 'string' &&
+      typeof entry.target === 'string'
+    )
+  })
+}
 
 function loadSaved(): { nodes: Node[]; edges: Edge[] } {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const data = JSON.parse(raw)
-      return { nodes: data.nodes ?? [], edges: data.edges ?? [] }
+      const data: unknown = JSON.parse(raw)
+      if (!isRecord(data)) return { nodes: [], edges: [] }
+      // 数据来自 localStorage（可被外部写入），进入引擎前必须做结构校验，
+      // 否则损坏的节点会让引擎在读字段时抛错
+      return { nodes: sanitizeNodes(data.nodes), edges: sanitizeEdges(data.edges) }
     }
   } catch { /* ignore */ }
   return { nodes: [], edges: [] }
@@ -47,7 +81,7 @@ interface WorkflowState {
 
 function persist(nodes: Node[], edges: Edge[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges }))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: STORAGE_VERSION, nodes, edges }))
   } catch { /* ignore */ }
 }
 
@@ -82,7 +116,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   onConnect: (connection) => {
-    const edges = addEdge({ ...connection, id: `edge-${Date.now()}` }, get().edges)
+    const edgeId = `edge-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const edges = addEdge({ ...connection, id: edgeId }, get().edges)
     set({ edges })
     persist(get().nodes, edges)
   },

@@ -79,4 +79,42 @@ describe('registerMemoryHandlers', () => {
       expect(memoryMocks.mockClearAll).toHaveBeenCalled()
     })
   })
+
+  describe('memory:search', () => {
+    it('should forward query and filters', async () => {
+      memoryMocks.mockSearch.mockResolvedValue([{ id: 'mem-2', content: 'hit', metadata: {} }])
+
+      const result = await ipcHandlers.get('memory:search')!(
+        {},
+        { query: 'hello', filters: { sessionId: 's1', tags: ['a'] } },
+      )
+
+      expect(result).toEqual([{ id: 'mem-2', content: 'hit', metadata: {} }])
+      expect(memoryMocks.mockSearch).toHaveBeenCalledWith('hello', {
+        sessionId: 's1',
+        tags: ['a'],
+      })
+    })
+  })
+
+  describe('错误包装', () => {
+    it.each([
+      ['memory:store', { content: 'x', metadata: {} }, 'mockStore', 'Failed to store memory'],
+      ['memory:recall', { query: 'x' }, 'mockRecall', 'Failed to recall memory'],
+      ['memory:search', { query: 'x' }, 'mockSearch', 'Failed to search memory'],
+      ['memory:delete', 'mem-1', 'mockDeleteFn', 'Failed to delete memory'],
+    ])('%s 失败时抛出带前缀的错误', async (channel, payload, mockName, prefix) => {
+      ;(memoryMocks as any)[mockName].mockRejectedValue(new Error('boom'))
+
+      await expect(ipcHandlers.get(channel)!({}, payload)).rejects.toThrow(prefix)
+    })
+
+    it('memory:clear-all 失败时抛出带前缀的错误', async () => {
+      memoryMocks.mockClearAll.mockRejectedValue(new Error('boom'))
+
+      await expect(ipcHandlers.get('memory:clear-all')!({})).rejects.toThrow(
+        'Failed to clear memories',
+      )
+    })
+  })
 })

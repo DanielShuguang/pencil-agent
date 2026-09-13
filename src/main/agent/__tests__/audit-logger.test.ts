@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { existsSync, readFileSync, mkdirSync, rmSync } from 'fs'
+import { existsSync, readFileSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { randomUUID } from 'crypto'
@@ -108,6 +108,79 @@ describe('AuditLogger', () => {
 
       expect(existsSync(join(logsDir, 's1.jsonl'))).toBe(false)
       expect(existsSync(join(logsDir, 's2.jsonl'))).toBe(false)
+    })
+  })
+
+  describe('cleanup', () => {
+    const THIRTY_ONE_DAYS_MS = 31 * 24 * 60 * 60 * 1000
+
+    function writeLogFile(sessionId: string, timestamps: number[]): string {
+      const filePath = join(logsDir, `${sessionId}.jsonl`)
+      const content = timestamps
+        .map((timestamp, index) =>
+          JSON.stringify({
+            id: `log-${index}`,
+            timestamp,
+            sessionId,
+            toolName: 'bash',
+            parameters: {},
+            status: 'success',
+            duration: 1,
+          }),
+        )
+        .join('\n')
+      writeFileSync(filePath, `${content}\n`, 'utf-8')
+      return filePath
+    }
+
+    it('删除最后一条记录超过 30 天的日志文件', () => {
+      const staleFile = writeLogFile('stale', [Date.now() - THIRTY_ONE_DAYS_MS])
+
+      logger.cleanup()
+
+      expect(existsSync(staleFile)).toBe(false)
+    })
+
+    it('保留仍有近期记录的日志文件', () => {
+      const freshFile = writeLogFile('fresh', [
+        Date.now() - THIRTY_ONE_DAYS_MS,
+        Date.now() - 1000,
+      ])
+
+      logger.cleanup()
+
+      expect(existsSync(freshFile)).toBe(true)
+      expect(logger.getLogs('fresh')).toHaveLength(2)
+    })
+
+    it('保留内容为空的日志文件', () => {
+      const emptyFile = join(logsDir, 'empty.jsonl')
+      writeFileSync(emptyFile, '', 'utf-8')
+
+      logger.cleanup()
+
+      expect(existsSync(emptyFile)).toBe(true)
+    })
+
+    it('忽略非 jsonl 文件', () => {
+      const otherFile = join(logsDir, 'notes.txt')
+      writeFileSync(otherFile, 'keep me', 'utf-8')
+
+      logger.cleanup()
+
+      expect(existsSync(otherFile)).toBe(true)
+    })
+
+    it('损坏的 JSONL 不会抛出（当前实现会中断后续文件清理）', () => {
+      const brokenFile = join(logsDir, 'broken.jsonl')
+      writeFileSync(brokenFile, 'not-json\n', 'utf-8')
+      const staleFile = writeLogFile('stale', [Date.now() - THIRTY_ONE_DAYS_MS])
+
+      expect(() => logger.cleanup()).not.toThrow()
+      expect(existsSync(brokenFile)).toBe(true)
+      // 当前实现里 JSON.parse 失败会被外层 catch 吞掉，后续文件不再清理。
+      // 这里锁定现状；若将来改为逐文件容错，应把断言改为 expect(existsSync(staleFile)).toBe(false)。
+      expect(existsSync(staleFile)).toBe(true)
     })
   })
 })

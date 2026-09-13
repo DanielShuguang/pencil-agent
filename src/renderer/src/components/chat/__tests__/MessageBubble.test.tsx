@@ -109,4 +109,80 @@ describe('MessageBubble', () => {
     await user.click(screen.getByText('common.ok'))
     expect(onRewind).toHaveBeenCalledWith('1')
   })
+
+  describe('markdown 自定义渲染', () => {
+    function renderContent(content: string) {
+      const { container } = render(
+        <MessageBubble
+          message={{ ...baseMessage, role: 'assistant', content }}
+        />,
+      )
+      return container
+    }
+
+    it('行内代码使用等宽样式', () => {
+      const container = renderContent('使用 `npm test` 运行测试')
+
+      const code = container.querySelector('code')
+      expect(code).toHaveTextContent('npm test')
+      expect(code?.className).toContain('font-mono')
+    })
+
+    it('围栏代码块走 CodeBlock 渲染并带语言', () => {
+      const container = renderContent('```ts\nconst a = 1\n```')
+
+      expect(container.textContent).toContain('const a = 1')
+      expect(container.querySelector('code')).toBeTruthy()
+    })
+
+    it('无序列表与有序列表', () => {
+      const unordered = renderContent('- 第一项\n- 第二项')
+      expect(unordered.querySelector('ul')?.className).toContain('list-disc')
+
+      const ordered = renderContent('1. 第一项\n2. 第二项')
+      expect(ordered.querySelector('ol')?.className).toContain('list-decimal')
+      expect(ordered.querySelectorAll('li')).toHaveLength(2)
+    })
+
+    it('三级标题分别使用对应字号', () => {
+      const container = renderContent('# 一级\n\n## 二级\n\n### 三级')
+
+      expect(container.querySelector('h1')?.className).toContain('text-xl')
+      expect(container.querySelector('h2')?.className).toContain('text-lg')
+      expect(container.querySelector('h3')?.className).toContain('text-base')
+    })
+
+    it('引用块带左边框', () => {
+      const container = renderContent('> 引用内容')
+
+      const quote = container.querySelector('blockquote')
+      expect(quote).toHaveTextContent('引用内容')
+      expect(quote?.className).toContain('border-l-4')
+    })
+
+    it('链接在新标签页打开并带安全属性', () => {
+      const container = renderContent('[文档](https://example.com)')
+
+      const link = container.querySelector('a')
+      expect(link).toHaveAttribute('href', 'https://example.com')
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    })
+
+    it('GFM 表格渲染为 table 且带边框样式', () => {
+      const container = renderContent('| 列 A | 列 B |\n| --- | --- |\n| 1 | 2 |')
+
+      const table = container.querySelector('table')
+      expect(table).toBeTruthy()
+      expect(container.querySelectorAll('th')).toHaveLength(2)
+      expect(container.querySelectorAll('td')).toHaveLength(2)
+      expect(container.querySelector('table')?.className).toContain('border-collapse')
+    })
+
+    it('水平分割线渲染为 hr', () => {
+      const container = renderContent('上方\n\n---\n\n下方')
+
+      expect(container.querySelector('hr')).toBeTruthy()
+    })
+  })
 })

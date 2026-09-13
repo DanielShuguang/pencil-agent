@@ -1,98 +1,87 @@
-import { test, expect, _electron, type ElectronApplication, type Page } from '@playwright/test'
-import path from 'path'
-
-const APP_ROOT = path.resolve(__dirname, '../..')
-const MAIN_ENTRY = path.join(APP_ROOT, 'out/main/index.mjs')
-
-let electronApp: ElectronApplication
-let window: Page
-
-test.beforeAll(async () => {
-  electronApp = await _electron.launch({
-    args: [MAIN_ENTRY],
-    cwd: APP_ROOT,
-    timeout: 120000,
-  })
-  window = await electronApp.firstWindow()
-  await window.waitForLoadState('domcontentloaded', { timeout: 120000 })
-  await window.waitForTimeout(2000)
-})
-
-test.afterAll(async () => {
-  if (electronApp) {
-    await electronApp.close()
-  }
-})
-
-async function openSettings(): Promise<void> {
-  const header = window.locator('header')
-  const btns = header.locator('button')
-  const count = await btns.count()
-  const settingsBtn = btns.nth(3)
-  await settingsBtn.click()
-  await window.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 10000 })
-}
-
-async function switchToThemeTab(): Promise<void> {
-  await window.waitForTimeout(500) // 等待动画完成
-  const dialog = window.locator('[role="dialog"]')
-  const themeBtn = dialog.locator('button', { hasText: '主题' })
-  await themeBtn.click({ force: true })
-  await window.waitForTimeout(300)
-}
+import { _electron } from '@playwright/test'
+import {
+  test,
+  expect,
+  openSettings,
+  switchSettingsTab,
+  closeDialog,
+  APP_ENTRY,
+  APP_CWD,
+} from './fixtures'
 
 test.describe('Theme Switching', () => {
-  test('theme tab shows all theme options', async () => {
-    await openSettings()
-    await switchToThemeTab()
+  test('theme tab shows theme options and follow-system switch', async ({ page }) => {
+    await openSettings(page)
+    await switchSettingsTab(page, '主题')
+    const dialog = page.locator('[role="dialog"]')
 
-    const dialog = window.locator('[role="dialog"]')
-    await expect(dialog.locator('button', { hasText: '跟随系统' })).toBeVisible()
-    await expect(dialog.locator('button', { hasText: '亮色模式' })).toBeVisible()
-    await expect(dialog.locator('button', { hasText: '暗色模式' })).toBeVisible()
+    await expect(dialog.getByText('跟随系统')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: '暗色' })).toBeVisible()
+    await expect(dialog.getByRole('button', { name: '亮色' })).toBeVisible()
+    await expect(dialog.getByRole('checkbox')).toBeVisible()
 
-    const themeButtons = dialog.locator('[class*="grid"] button, [class*="grid-cols"] button')
-    const themeCount = await themeButtons.count()
-    expect(themeCount).toBeGreaterThanOrEqual(2)
-
-    await window.keyboard.press('Escape')
+    await closeDialog(page)
   })
 
-  test('switching to light theme changes appearance', async () => {
-    await openSettings()
-    await switchToThemeTab()
+  test('switching to light theme updates the root class', async ({ page }) => {
+    await openSettings(page)
+    await switchSettingsTab(page, '主题')
+    // 默认处于“跟随系统”，此时主题按钮被禁用；先关掉跟随系统
+    await page.locator('[role="dialog"]').getByRole('checkbox').click()
+    await page.waitForTimeout(300)
 
-    const dialog = window.locator('[role="dialog"]')
-    // Use exact match - "亮色模式" is the mode button, "亮色" is the theme button
-    const lightBtn = dialog.getByRole('button', { name: '亮色模式' })
-    await lightBtn.click()
-    await window.waitForTimeout(500)
+    await page.locator('[role="dialog"]').getByRole('button', { name: '亮色' }).click()
+    await page.waitForTimeout(500)
 
-    const root = window.locator('html')
-    const classList = await root.getAttribute('class')
-    expect(classList).toContain('light')
+    await expect(page.locator('html')).toHaveClass(/light/)
 
-    await window.keyboard.press('Escape')
+    await closeDialog(page)
   })
 
-  test('switching back to dark theme works', async () => {
-    await openSettings()
-    await switchToThemeTab()
+  test('switching to dark theme updates the root class', async ({ page }) => {
+    await openSettings(page)
+    await switchSettingsTab(page, '主题')
+    await page.locator('[role="dialog"]').getByRole('checkbox').click()
+    await page.waitForTimeout(300)
 
-    const dialog = window.locator('[role="dialog"]')
-    const darkBtn = dialog.getByRole('button', { name: '暗色模式' })
-    await darkBtn.click()
-    await window.waitForTimeout(500)
+    await page.locator('[role="dialog"]').getByRole('button', { name: '暗色' }).click()
+    await page.waitForTimeout(500)
 
-    const root = window.locator('html')
-    const classList = await root.getAttribute('class')
-    expect(classList).toContain('dark')
+    await expect(page.locator('html')).toHaveClass(/dark/)
 
-    await window.keyboard.press('Escape')
+    await closeDialog(page)
   })
 
-  test('status bar shows at bottom of window', async () => {
-    const statusBar = window.locator('footer')
-    await expect(statusBar).toBeVisible()
+  test('theme choice persists across app restart', async ({ page, app, userDataDir }) => {
+    await openSettings(page)
+    await switchSettingsTab(page, '主题')
+    await page.locator('[role="dialog"]').getByRole('checkbox').click()
+    await page.waitForTimeout(300)
+    await page.locator('[role="dialog"]').getByRole('button', { name: '亮色' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.locator('html')).toHaveClass(/light/)
+    await closeDialog(page)
+
+    // 沿用在同一个 userData 目录上重启应用，验证主题写入主进程存储后可恢复
+    await app.close()
+
+    const relaunched = await _electron.launch({
+      args: [APP_ENTRY, `--user-data-dir=${userDataDir}`],
+      cwd: APP_CWD,
+      timeout: 120_000,
+    })
+    try {
+      const newPage = await relaunched.firstWindow()
+      await newPage.waitForLoadState('domcontentloaded', { timeout: 120_000 })
+      await newPage.waitForTimeout(1500)
+
+      await expect(newPage.locator('html')).toHaveClass(/light/)
+    } finally {
+      await relaunched.close().catch(() => {})
+    }
+  })
+
+  test('status bar shows at bottom of window', async ({ page }) => {
+    await expect(page.locator('footer')).toBeVisible()
   })
 })

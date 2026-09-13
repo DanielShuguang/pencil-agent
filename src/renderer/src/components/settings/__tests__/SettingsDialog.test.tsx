@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { SettingsDialog } from '../SettingsDialog'
 import '../../../i18n'
 
@@ -46,6 +46,18 @@ vi.mock('../UpdateDialog', () => ({
     isOpen ? <div data-testid='update-dialog'>UpdateDialog</div> : null,
 }))
 
+vi.mock('../PermissionPanel', () => ({
+  PermissionPanel: () => <div data-testid='permission-panel'>PermissionPanel</div>,
+}))
+
+vi.mock('../../audit/AuditLogPanel', () => ({
+  AuditLogPanel: () => <div data-testid='audit-log-panel'>AuditLogPanel</div>,
+}))
+
+vi.mock('../../memory/MemoryPanel', () => ({
+  MemoryPanel: () => <div data-testid='memory-panel'>MemoryPanel</div>,
+}))
+
 const { useAgentStore } = await import('../../../stores/agent-store')
 const { useThemeStore } = await import('../../../stores/theme-store')
 const { useUpdateStore } = await import('../../../stores/update-store')
@@ -72,12 +84,7 @@ beforeEach(() => {
     checkForUpdates: vi.fn(),
   } as unknown as ReturnType<typeof useUpdateStore>)
 
-  vi.stubGlobal('window', {
-    ...window,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    api: { theme: {} },
-  })
+  ;(window as any).api = { theme: {}, system: { getFonts: vi.fn().mockResolvedValue([]) } }
 })
 
 describe('SettingsDialog', () => {
@@ -134,5 +141,156 @@ describe('SettingsDialog', () => {
     render(<SettingsDialog isOpen={true} onClose={onClose} />)
     fireEvent.keyDown(document.body, { key: 'Escape' })
     expect(onClose).toHaveBeenCalled()
+  })
+
+  it('switches to permission, audit and memory tabs', () => {
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+
+    fireEvent.click(screen.getByText('权限'))
+    expect(screen.getByTestId('permission-panel')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('日志'))
+    expect(screen.getByTestId('audit-log-panel')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('记忆'))
+    expect(screen.getByTestId('memory-panel')).toBeInTheDocument()
+  })
+
+  it('切换语言时调用 setLanguage', () => {
+    const setLanguage = vi.fn()
+    mockUseAgentStore.mockReturnValue({
+      language: 'zh',
+      setLanguage,
+    } as unknown as ReturnType<typeof useAgentStore>)
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText('语言'))
+    fireEvent.click(screen.getByText('English'))
+
+    expect(setLanguage).toHaveBeenCalledWith('en')
+  })
+
+  it('中英文按钮按当前语言高亮', () => {
+    mockUseAgentStore.mockReturnValue({
+      language: 'en',
+      setLanguage: vi.fn(),
+    } as unknown as ReturnType<typeof useAgentStore>)
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText('语言'))
+
+    expect(screen.getByText('English').className).toContain('bg-primary')
+  })
+
+  it('主题页勾选跟随系统时切换到 system 模式', () => {
+    const setThemeMode = vi.fn()
+    mockUseThemeStore.mockReturnValue({
+      mode: 'dark',
+      currentThemeId: 'dark',
+      setThemeMode,
+      setTheme: vi.fn(),
+    } as unknown as ReturnType<typeof useThemeStore>)
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText('主题'))
+    fireEvent.click(screen.getByRole('checkbox'))
+
+    expect(setThemeMode).toHaveBeenCalledWith('system')
+  })
+
+  it('选择具体主题时调用 setTheme', () => {
+    const setTheme = vi.fn()
+    mockUseThemeStore.mockReturnValue({
+      mode: 'dark',
+      currentThemeId: 'dark',
+      setThemeMode: vi.fn(),
+      setTheme,
+    } as unknown as ReturnType<typeof useThemeStore>)
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText('主题'))
+    fireEvent.click(screen.getByText('Light'))
+
+    expect(setTheme).toHaveBeenCalledWith('light')
+  })
+
+  it('system 模式下主题按钮禁用', () => {
+    mockUseThemeStore.mockReturnValue({
+      mode: 'system',
+      currentThemeId: 'dark',
+      setThemeMode: vi.fn(),
+      setTheme: vi.fn(),
+    } as unknown as ReturnType<typeof useThemeStore>)
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText('主题'))
+
+    expect(screen.getByText('Dark').closest('button')).toBeDisabled()
+    expect(screen.getByText('Light').closest('button')).toBeDisabled()
+  })
+
+  it('点击检查更新会触发检查并打开更新弹窗事件', async () => {
+    const checkForUpdates = vi.fn().mockResolvedValue(undefined)
+    mockUseUpdateStore.mockReturnValue({
+      status: 'idle',
+      checkForUpdates,
+    } as unknown as ReturnType<typeof useUpdateStore>)
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent')
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText('检查更新'))
+    await vi.waitFor(() => expect(checkForUpdates).toHaveBeenCalled())
+
+    const event = dispatchSpy.mock.calls
+      .map((call) => call[0])
+      .find((e) => (e as CustomEvent).type === 'open-update-dialog')
+    expect(event).toBeDefined()
+
+    dispatchSpy.mockRestore()
+  })
+
+  it('检查更新中禁用按钮', () => {
+    mockUseUpdateStore.mockReturnValue({
+      status: 'checking',
+      checkForUpdates: vi.fn(),
+    } as unknown as ReturnType<typeof useUpdateStore>)
+
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+
+    expect(screen.getByText('检查更新')).toBeDisabled()
+  })
+
+  it('监听 open-settings 事件并切换到指定标签', () => {
+    const addSpy = vi.spyOn(window, 'addEventListener')
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+
+    const registered = addSpy.mock.calls.find((call) => call[0] === 'open-settings')
+    expect(registered).toBeDefined()
+    const handler = registered![1] as EventListener
+
+    act(() => {
+      handler(new CustomEvent('open-settings', { detail: { tab: 'theme' } }))
+    })
+
+    expect(screen.getByText('Dark')).toBeInTheDocument()
+    addSpy.mockRestore()
+  })
+
+  it('open-settings 事件未携带 tab 时保持当前标签', () => {
+    render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+
+    window.dispatchEvent(new CustomEvent('open-settings', { detail: {} }))
+
+    expect(screen.getByTestId('api-key-form')).toBeInTheDocument()
+  })
+
+  it('卸载时移除 open-settings 监听', () => {
+    const removeSpy = vi.spyOn(window, 'removeEventListener')
+    const { unmount } = render(<SettingsDialog isOpen={true} onClose={vi.fn()} />)
+
+    unmount()
+
+    expect(removeSpy.mock.calls.some((call) => call[0] === 'open-settings')).toBe(true)
+    removeSpy.mockRestore()
   })
 })

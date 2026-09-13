@@ -87,6 +87,12 @@ export function registerAgentHandlers(
 
   // 目录选择
   ipcMain.handle('dialog:selectDirectory', async () => {
+    // E2E 环境变量注入：原生对话框无法在自动化里交互，直接返回指定目录
+    const presetDir = process.env['PENCIL_AGENT_E2E_WORKSPACE']
+    if (presetDir) {
+      return { canceled: false, filePaths: [presetDir] }
+    }
+
     const focusedWindow = BrowserWindow.getFocusedWindow()
     if (!focusedWindow) {
       return { canceled: true, filePaths: [] }

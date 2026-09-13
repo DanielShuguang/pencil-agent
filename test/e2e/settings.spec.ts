@@ -1,127 +1,84 @@
-import { test, expect, _electron, type ElectronApplication, type Page } from '@playwright/test'
-import path from 'path'
-
-const APP_ROOT = path.resolve(__dirname, '../..')
-const MAIN_ENTRY = path.join(APP_ROOT, 'out/main/index.mjs')
-
-let electronApp: ElectronApplication
-let window: Page
-
-test.beforeAll(async () => {
-  electronApp = await _electron.launch({
-    args: [MAIN_ENTRY],
-    cwd: APP_ROOT,
-    timeout: 120000,
-  })
-  window = await electronApp.firstWindow()
-  await window.waitForLoadState('domcontentloaded', { timeout: 120000 })
-  await window.waitForTimeout(2000)
-})
-
-test.afterAll(async () => {
-  if (electronApp) {
-    await electronApp.close()
-  }
-})
-
-async function openSettings(): Promise<void> {
-  // 先关闭所有可能打开的 modal
-  const overlays = await window.locator('[data-state="open"]').all()
-  for (const overlay of overlays) {
-    if (await overlay.isVisible().catch(() => false)) {
-      await window.keyboard.press('Escape')
-      await window.waitForTimeout(300)
-    }
-  }
-  
-  await window.waitForTimeout(500) // 额外等待动画完成
-  
-  const header = window.locator('header')
-  const btns = header.locator('button')
-  const count = await btns.count()
-  const settingsBtn = btns.nth(3)
-  await settingsBtn.click()
-  await window.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 10000 })
-  await window.waitForTimeout(800) // 等待动画完全完成
-}
+import { test, expect, openSettings, switchSettingsTab, closeDialog } from './fixtures'
 
 test.describe('Settings Dialog', () => {
-  test('settings dialog opens and shows title', async () => {
-    await openSettings()
-    const dialog = window.locator('[role="dialog"]')
+  test('opens and shows title', async ({ page }) => {
+    const dialog = await openSettings(page)
+
     await expect(dialog).toBeVisible()
-    const title = dialog.locator('[class*="DialogTitle"], h2')
-    await expect(title).toBeVisible()
-    await window.keyboard.press('Escape')
+    await expect(dialog.getByText('设置')).toBeVisible()
+
+    await closeDialog(page)
   })
 
-  test('settings dialog has tab buttons', async () => {
-    await openSettings()
-    const dialog = window.locator('[role="dialog"]')
-    const buttons = dialog.locator('button')
-    const count = await buttons.count()
-    expect(count).toBeGreaterThanOrEqual(4)
-    await window.keyboard.press('Escape')
+  test('has all tab buttons', async ({ page }) => {
+    const dialog = await openSettings(page)
+
+    for (const label of ['API 密钥', '模型', '权限', '日志', '记忆', '语言', '主题']) {
+      await expect(dialog.locator('button', { hasText: label }).first()).toBeVisible()
+    }
+    await expect(dialog.locator('button', { hasText: '检查更新' })).toBeVisible()
+
+    await closeDialog(page)
   })
 
-  test('settings dialog can switch to language tab', async () => {
-    await openSettings()
-    await window.waitForTimeout(300) // 额外等待
-    const dialog = window.locator('[role="dialog"]')
-    const langBtn = dialog.locator('button', { hasText: '语言' })
-    await langBtn.click({ timeout: 10000 })
-    await window.waitForTimeout(300) // 等待内容切换
+  test('can switch to language tab', async ({ page }) => {
+    const dialog = await openSettings(page)
+    await switchSettingsTab(page, '语言')
+
     await expect(dialog.locator('button', { hasText: '中文' })).toBeVisible()
     await expect(dialog.locator('button', { hasText: 'English' })).toBeVisible()
-    await window.keyboard.press('Escape')
+
+    await closeDialog(page)
   })
 
-  test('settings dialog can switch to theme tab', async () => {
-    await openSettings()
-    await window.waitForTimeout(300) // 额外等待
-    const dialog = window.locator('[role="dialog"]')
-    const themeBtn = dialog.locator('button', { hasText: '主题' })
-    await themeBtn.click({ timeout: 10000 })
-    await window.waitForTimeout(300) // 等待内容切换
-    await expect(dialog.locator('button', { hasText: '跟随系统' })).toBeVisible()
-    await expect(dialog.getByRole('button', { name: '亮色模式' })).toBeVisible()
-    await expect(dialog.getByRole('button', { name: '暗色模式' })).toBeVisible()
-    await window.keyboard.press('Escape')
+  test('can switch to theme tab', async ({ page }) => {
+    const dialog = await openSettings(page)
+    await switchSettingsTab(page, '主题')
+
+    await expect(dialog.getByText('跟随系统')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: '暗色' })).toBeVisible()
+    await expect(dialog.getByRole('button', { name: '亮色' })).toBeVisible()
+
+    await closeDialog(page)
   })
 
-  test('settings dialog can switch language to English', async () => {
-    await openSettings()
-    await window.waitForTimeout(300)
-    const dialog = window.locator('[role="dialog"]')
-    const langBtn = dialog.locator('button', { hasText: '语言' })
-    await langBtn.click({ timeout: 10000 })
-    await window.waitForTimeout(300)
+  test('can switch to permission, audit and memory tabs', async ({ page }) => {
+    const dialog = await openSettings(page)
 
-    const enBtn = dialog.locator('button', { hasText: 'English' })
-    await enBtn.click()
-    await window.waitForTimeout(500)
+    await switchSettingsTab(page, '权限')
+    await expect(dialog.getByText('权限').first()).toBeVisible()
 
-    await window.keyboard.press('Escape')
-    await window.waitForTimeout(300)
-    await openSettings()
+    await switchSettingsTab(page, '日志')
+    await expect(dialog.getByText('日志').first()).toBeVisible()
 
-    const newDialog = window.locator('[role="dialog"]')
-    const title = newDialog.locator('[class*="DialogTitle"], h2')
-    await expect(title).toHaveText(/settings/i)
+    await switchSettingsTab(page, '记忆')
+    await expect(dialog.getByText('记忆').first()).toBeVisible()
 
-    const newLangBtn = newDialog.locator('button', { hasText: 'Language' })
-    await newLangBtn.click({ timeout: 10000 })
-    await window.waitForTimeout(300)
-    const zhBtn = newDialog.locator('button', { hasText: '中文' })
-    await zhBtn.click()
-    await window.keyboard.press('Escape')
+    await closeDialog(page)
   })
 
-  test('check for updates button exists', async () => {
-    await openSettings()
-    const dialog = window.locator('[role="dialog"]')
-    const updateBtn = dialog.locator('button', { hasText: '检查更新' })
-    await expect(updateBtn).toBeVisible()
-    await window.keyboard.press('Escape')
+  test('switching language to English translates the dialog', async ({ page }) => {
+    const dialog = await openSettings(page)
+    await switchSettingsTab(page, '语言')
+    await dialog.locator('button', { hasText: 'English' }).click()
+    await page.waitForTimeout(500)
+
+    await closeDialog(page)
+    const reopened = await openSettings(page)
+    await expect(reopened.getByText('Settings')).toBeVisible()
+
+    // 还原为中文，避免影响同文件后续用例
+    await switchSettingsTab(page, 'Language')
+    await reopened.locator('button', { hasText: '中文' }).click()
+    await page.waitForTimeout(300)
+    await closeDialog(page)
+  })
+
+  test('check for updates button is available', async ({ page }) => {
+    const dialog = await openSettings(page)
+
+    await expect(dialog.locator('button', { hasText: '检查更新' })).toBeEnabled()
+
+    await closeDialog(page)
   })
 })

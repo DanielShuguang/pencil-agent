@@ -73,6 +73,9 @@ beforeEach(() => {
     },
   })
   localStorageMock.clear()
+  localStorageMock.getItem.mockClear()
+  localStorageMock.setItem.mockClear()
+  localStorageMock.removeItem.mockClear()
   mockOpenFile.mockClear()
   mockUpdateFileContent.mockClear()
   mockFiles.clear()
@@ -83,6 +86,7 @@ beforeEach(() => {
     sessionMetas: new Map(),
     activeSessionId: null,
     isGenerating: false,
+    defaultModel: { id: 'claude-sonnet-4-20250514', provider: 'anthropic' },
   })
 })
 
@@ -648,5 +652,329 @@ describe('agent-store', () => {
     expect(messages).toHaveLength(1)
     expect(messages[0].role).toBe('system')
     expect(messages[0].content).toBe('Something went wrong')
+  })
+
+  describe('上下文压缩提示', () => {
+    function setActiveSessionWith(messages: unknown[] = []) {
+      useAgentStore.setState({
+        activeSessionId: 'session-1',
+        sessions: new Map([['session-1', messages as never]]),
+        sessionMetas: new Map(),
+      })
+    }
+
+    it('溢出时插入带摘要的系统消息', () => {
+      setActiveSessionWith()
+
+      useAgentStore.getState().appendChunk({
+        type: 'compaction',
+        content: '早前对话的摘要',
+        metadata: { reason: 'overflow' },
+      })
+
+      const messages = useAgentStore.getState().sessions.get('session-1')!
+      expect(messages).toHaveLength(1)
+      expect(messages[0].role).toBe('system')
+      expect(messages[0].content).toContain('上下文溢出')
+      expect(messages[0].content).toContain('早前对话的摘要')
+    })
+
+    it('接近上限且无摘要时只提示压缩原因', () => {
+      setActiveSessionWith()
+
+      useAgentStore.getState().appendChunk({
+        type: 'compaction',
+        content: '',
+        metadata: { reason: 'threshold' },
+      })
+
+      const messages = useAgentStore.getState().sessions.get('session-1')!
+      expect(messages[0].content).toBe('上下文已压缩（上下文接近上限）')
+    })
+
+    it('超长摘要被截断到 200 字并追加省略号', () => {
+      setActiveSessionWith()
+      const longSummary = 'x'.repeat(250)
+
+      useAgentStore.getState().appendChunk({
+        type: 'compaction',
+        content: longSummary,
+        metadata: { reason: 'overflow' },
+      })
+
+      const content = useAgentStore.getState().sessions.get('session-1')![0].content
+      expect(content).toContain('...')
+      expect(content.length).toBeLessThan(longSummary.length)
+    })
+  })
+
+  describe('模型同步与选择', () => {
+    it('当前 provider 已配置时保持默认模型', async () => {
+      ;(window.api.modelConfig.list as any).mockResolvedValue([
+        { id: 'anthropic', models: [{ id: 'claude-sonnet-4-20250514' }] },
+      ])
+
+      await useAgentStore.getState().syncModelWithProviders()
+
+      expect(useAgentStore.getState().defaultModel.provider).toBe('anthropic')
+    })
+
+    it('当前 provider 缺失时切到第一个可用 provider 的模型', async () => {
+      ;(window.api.modelConfig.list as any).mockResolvedValue([
+        { id: 'custom', models: [{ id: 'custom-model' }] },
+      ])
+
+      await useAgentStore.getState().syncModelWithProviders()
+
+      expect(useAgentStore.getState().defaultModel).toEqual({
+        id: 'custom-model',
+        provider: 'custom',
+      })
+      expect(localStorageMock.setItem).toHaveBeenCalled()
+    })
+
+    it('没有 provider 时保持默认模型', async () => {
+      ;(window.api.modelConfig.list as any).mockResolvedValue([])
+
+      await useAgentStore.getState().syncModelWithProviders()
+
+      expect(useAgentStore.getState().defaultModel.provider).toBe('anthropic')
+    })
+
+    it('provider 存在但没有模型时保持默认模型', async () => {
+      ;(window.api.modelConfig.list as any).mockResolvedValue([{ id: 'custom', models: [] }])
+
+      await useAgentStore.getState().syncModelWithProviders()
+
+      expect(useAgentStore.getState().defaultModel.provider).toBe('anthropic')
+    })
+
+    it('list 抛错时静默忽略', async () => {
+      ;(window.api.modelConfig.list as any).mockRejectedValue(new Error('ipc down'))
+
+      await expect(useAgentStore.getState().syncModelWithProviders()).resolves.toBeUndefined()
+      expect(useAgentStore.getState().defaultModel.provider).toBe('anthropic')
+    })
+
+    it('switchDefaultModel 更新并持久化默认模型', () => {
+      useAgentStore.getState().switchDefaultModel({ id: 'gpt-4o', provider: 'openai' })
+
+      expect(useAgentStore.getState().defaultModel).toEqual({ id: 'gpt-4o', provider: 'openai' })
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'pencil-agent:defaultModel',
+        JSON.stringify({ id: 'gpt-4o', provider: 'openai' }),
+      )
+    })
+  })
+
+  describe('会话切换校验', () => {
+    it('会话缺少 cwd 时返回 false', async () => {
+      useAgentStore.setState({
+        sessionMetas: new Map([['s1', { id: 's1', title: 't' } as never]]),
+      })
+
+      await expect(useAgentStore.getState().validateAndSwitchSession('s1')).resolves.toBe(false)
+    })
+
+    it('未知会话返回 false', async () => {
+      await expect(useAgentStore.getState().validateAndSwitchSession('missing')).resolves.toBe(
+        false,
+      )
+    })
+
+    it('cwd 有效时切换并返回 true', async () => {
+      useAgentStore.setState({
+        sessionMetas: new Map([
+          [
+            's1',
+            {
+              id: 's1',
+              title: 't',
+              cwd: '/workspace/app',
+              model: { id: 'm1', provider: 'p1' },
+            } as never,
+          ],
+        ]),
+      })
+
+      await expect(useAgentStore.getState().validateAndSwitchSession('s1')).resolves.toBe(true)
+      expect(useAgentStore.getState().activeSessionId).toBe('s1')
+    })
+
+    it('agent.create 抛错时返回 false 且不切换', async () => {
+      ;(window.api.agent.create as any).mockRejectedValue(new Error('工作空间不存在'))
+      useAgentStore.setState({
+        activeSessionId: 'other',
+        sessionMetas: new Map([
+          [
+            's1',
+            {
+              id: 's1',
+              title: 't',
+              cwd: '/missing',
+              model: { id: 'm1', provider: 'p1' },
+            } as never,
+          ],
+        ]),
+      })
+
+      await expect(useAgentStore.getState().validateAndSwitchSession('s1')).resolves.toBe(false)
+      expect(useAgentStore.getState().activeSessionId).toBe('other')
+    })
+  })
+
+  describe('其他守卫分支', () => {
+    it('没有活跃会话时 sendMessage 是空操作', () => {
+      useAgentStore.setState({ activeSessionId: null })
+
+      useAgentStore.getState().sendMessage('hello')
+
+      expect(window.api.agent.prompt).not.toHaveBeenCalled()
+    })
+
+    it('会话元数据缺失时 sendMessage 不发送', () => {
+      useAgentStore.setState({
+        activeSessionId: 's1',
+        sessions: new Map([['s1', []]]),
+        sessionMetas: new Map(),
+      })
+
+      useAgentStore.getState().sendMessage('hello')
+
+      expect(window.api.agent.prompt).not.toHaveBeenCalled()
+      expect(useAgentStore.getState().sessions.get('s1')).toEqual([])
+    })
+
+    it('没有活跃会话时 createBranch 返回 null', async () => {
+      useAgentStore.setState({ activeSessionId: null })
+
+      await expect(useAgentStore.getState().createBranch('m1')).resolves.toBeNull()
+    })
+
+    it('消息 id 不存在时 createBranch 返回 null', async () => {
+      useAgentStore.setState({
+        activeSessionId: 's1',
+        sessions: new Map([['s1', [{ id: 'm1' } as never]]]),
+        sessionMetas: new Map([['s1', { id: 's1' } as never]]),
+      })
+
+      await expect(useAgentStore.getState().createBranch('missing')).resolves.toBeNull()
+    })
+
+    it('父会话缺少 cwd 时 createBranch 返回 null', async () => {
+      useAgentStore.setState({
+        activeSessionId: 's1',
+        sessions: new Map([['s1', [{ id: 'm1' } as never]]]),
+        sessionMetas: new Map([['s1', { id: 's1', title: 't' } as never]]),
+      })
+
+      await expect(useAgentStore.getState().createBranch('m1')).resolves.toBeNull()
+    })
+
+    it('getBranches 过滤出当前会话的子分支', () => {
+      useAgentStore.setState({
+        activeSessionId: 'parent',
+        sessionMetas: new Map([
+          ['parent', { id: 'parent' } as never],
+          ['child-1', { id: 'child-1', parentSessionId: 'parent' } as never],
+          ['child-2', { id: 'child-2', parentSessionId: 'other' } as never],
+        ]),
+      })
+
+      const branches = useAgentStore.getState().getBranches()
+
+      expect(branches.map((b) => b.id)).toEqual(['child-1'])
+    })
+
+    it('没有活跃会话时 getBranches 返回空数组', () => {
+      useAgentStore.setState({ activeSessionId: null })
+
+      expect(useAgentStore.getState().getBranches()).toEqual([])
+    })
+
+    it('tool_result 找不到对应工具调用时消息保持不变', () => {
+      useAgentStore.setState({
+        activeSessionId: 's1',
+        sessions: new Map([['s1', []]]),
+        sessionMetas: new Map(),
+      })
+
+      useAgentStore.getState().appendChunk({
+        type: 'tool_result',
+        content: 'result',
+        metadata: { toolCallId: 'missing' },
+      })
+
+      expect(useAgentStore.getState().sessions.get('s1')).toEqual([])
+    })
+
+    it('未知 chunk 类型不改变消息', () => {
+      useAgentStore.setState({
+        activeSessionId: 's1',
+        sessions: new Map([['s1', [{ id: 'm1', role: 'user', content: 'hi', timestamp: 1 } as never]]]),
+        sessionMetas: new Map(),
+      })
+
+      useAgentStore
+        .getState()
+        .appendChunk({ type: 'unknown' as never, content: 'x' })
+
+      expect(useAgentStore.getState().sessions.get('s1')).toHaveLength(1)
+    })
+  })
+
+  describe('从存储恢复的容错', () => {
+    it('单个会话数据损坏时跳过该会话', () => {
+      localStorageMock.setItem('pencil-agent:sessionIds', JSON.stringify(['bad', 'good']))
+      localStorageMock.setItem('pencil-agent:session:bad', '{not json')
+      localStorageMock.setItem(
+        'pencil-agent:session:good',
+        JSON.stringify({
+          meta: { id: 'good', title: 'Good' },
+          messages: [{ id: 'm1', role: 'user', content: 'hi', timestamp: 1 }],
+        }),
+      )
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      useAgentStore.getState().initFromStorage()
+
+      const state = useAgentStore.getState()
+      expect(state.sessions.has('bad')).toBe(false)
+      expect(state.sessions.get('good')).toHaveLength(1)
+      warn.mockRestore()
+    })
+
+    it('过滤掉结构不完整的消息', () => {
+      localStorageMock.setItem('pencil-agent:sessionIds', JSON.stringify(['s1']))
+      localStorageMock.setItem(
+        'pencil-agent:session:s1',
+        JSON.stringify({
+          meta: { id: 's1', title: 'S1' },
+          messages: [
+            { id: 'm1', role: 'user', content: 'ok', timestamp: 1 },
+            { id: 'm2', role: 'user' },
+            null,
+          ],
+        }),
+      )
+
+      useAgentStore.getState().initFromStorage()
+
+      expect(useAgentStore.getState().sessions.get('s1')).toHaveLength(1)
+    })
+
+    it('存储整体损坏时回退到空状态', () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      localStorageMock.getItem.mockImplementationOnce(() => {
+        throw new Error('storage unavailable')
+      })
+
+      useAgentStore.getState().initFromStorage()
+
+      const state = useAgentStore.getState()
+      expect(state.sessions.size).toBe(0)
+      expect(state.activeSessionId).toBeNull()
+      error.mockRestore()
+    })
   })
 })

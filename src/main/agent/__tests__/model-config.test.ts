@@ -31,6 +31,14 @@ describe('ModelConfigManager', () => {
   beforeEach(() => {
     mockStore.clear()
     vi.clearAllMocks()
+    // 恢复默认的 safeStorage 行为（clearAllMocks 会清掉 mock 实现）
+    vi.mocked(safeStorage.isEncryptionAvailable).mockReturnValue(true)
+    vi.mocked(safeStorage.encryptString).mockImplementation((str: string) =>
+      Buffer.from(`encrypted:${str}`),
+    )
+    vi.mocked(safeStorage.decryptString).mockImplementation((buf: Buffer) =>
+      buf.toString().replace('encrypted:', ''),
+    )
     manager = new ModelConfigManager()
   })
 
@@ -361,6 +369,316 @@ describe('ModelConfigManager', () => {
 
       expect(providers).toHaveLength(1)
       expect(providers[0].id).toBe('stored')
+    })
+  })
+
+  describe('getApiKey', () => {
+    it('returns the decrypted key for an existing provider', () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-secret',
+        apiFormat: 'openai',
+        models: [],
+      })
+
+      expect(manager.getApiKey('openai')).toBe('sk-secret')
+    })
+
+    it('returns null for an unknown provider', () => {
+      expect(manager.getApiKey('missing')).toBeNull()
+    })
+  })
+
+  describe('reload', () => {
+    it('reloads providers written by another manager instance', () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+
+      const fresh = new ModelConfigManager()
+      // 构造时即完成加载；reload 用于 safeStorage 可用后重新读取
+      expect(fresh.list()).toHaveLength(1)
+      fresh.reload()
+      expect(fresh.list()).toHaveLength(1)
+      expect(fresh.getApiKey('openai')).toBe('sk-test')
+    })
+
+    it('reload 会用存储中的最新内容替换内存状态', () => {
+      manager.save({
+        id: 'first',
+        name: 'First',
+        baseUrl: 'https://api.first.com/v1',
+        apiKey: 'sk-first',
+        apiFormat: 'openai',
+        models: [],
+      })
+
+      mockStore.set('modelProviders', [
+        {
+          id: 'second',
+          name: 'Second',
+          baseUrl: 'https://api.second.com/v1',
+          encryptedApiKey: Buffer.from('encrypted:sk-second').toString('base64'),
+          apiFormat: 'openai',
+          models: [],
+          createdAt: 1,
+          updatedAt: 2,
+        },
+      ])
+
+      manager.reload()
+
+      expect(manager.list().map((p) => p.id)).toEqual(['second'])
+      expect(manager.getApiKey('second')).toBe('sk-second')
+    })
+
+    it('does not load providers when encryption is unavailable', () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+
+      vi.mocked(safeStorage.isEncryptionAvailable).mockReturnValue(false)
+      const fresh = new ModelConfigManager()
+
+      expect(fresh.list()).toEqual([])
+    })
+
+    it('throws when saving without encryption support', () => {
+      vi.mocked(safeStorage.isEncryptionAvailable).mockReturnValue(false)
+
+      expect(() =>
+        manager.save({
+          id: 'openai',
+          name: 'OpenAI',
+          baseUrl: 'https://api.openai.com/v1',
+          apiKey: 'sk-test',
+          apiFormat: 'openai',
+          models: [],
+        }),
+      ).toThrow('System encryption is not available')
+    })
+  })
+
+  describe('toggleModelVisibility', () => {
+    beforeEach(() => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [{ id: 'gpt-4o', name: 'GPT-4o', providerId: 'openai' }],
+      })
+    })
+
+    it('hides a visible model', () => {
+      manager.toggleModelVisibility('openai', 'gpt-4o')
+
+      expect(manager.list()[0].models[0].visible).toBe(false)
+    })
+
+    it('shows a hidden model again', () => {
+      manager.toggleModelVisibility('openai', 'gpt-4o')
+      manager.toggleModelVisibility('openai', 'gpt-4o')
+
+      expect(manager.list()[0].models[0].visible).toBe(true)
+    })
+
+    it('throws for an unknown provider', () => {
+      expect(() => manager.toggleModelVisibility('missing', 'gpt-4o')).toThrow(
+        "Provider 'missing' not found",
+      )
+    })
+
+    it('throws for an unknown model', () => {
+      expect(() => manager.toggleModelVisibility('openai', 'missing')).toThrow(
+        "Model 'missing' not found",
+      )
+    })
+  })
+
+  describe('fetchModels', () => {
+    it('parses the OpenAI data.data response shape', async () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ data: [{ id: 'gpt-4o' }, { name: 'gpt-4o-mini' }] }),
+      })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const result = await manager.fetchModels('openai')
+
+      expect(result.error).toBeUndefined()
+      expect(result.models).toEqual([
+        { id: 'gpt-4o', name: 'gpt-4o', providerId: 'openai' },
+        { id: 'gpt-4o-mini', name: 'gpt-4o-mini', providerId: 'openai' },
+      ])
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.openai.com/v1/models',
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+
+    it('parses the Anthropic data.models response shape with version header', async () => {
+      manager.save({
+        id: 'anthropic',
+        name: 'Anthropic',
+        baseUrl: 'https://api.anthropic.com',
+        apiKey: 'sk-ant',
+        apiFormat: 'anthropic',
+        models: [],
+      })
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ models: [{ model: 'claude-sonnet' }] }),
+      })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const result = await manager.fetchModels('anthropic')
+
+      expect(result.models).toEqual([
+        { id: 'claude-sonnet', name: 'claude-sonnet', providerId: 'anthropic' },
+      ])
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.anthropic.com/v1/models',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'x-api-key': 'sk-ant',
+            'anthropic-version': '2023-06-01',
+          }),
+        }),
+      )
+    })
+
+    it('filters out entries without id/name/model', async () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: vi.fn().mockResolvedValue({ data: [{ id: 'gpt-4o' }, {}] }),
+        }),
+      )
+
+      const result = await manager.fetchModels('openai')
+
+      expect(result.models).toHaveLength(1)
+    })
+
+    it('returns the API error message for non-2xx responses', async () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 401,
+          json: vi.fn().mockResolvedValue({ error: { message: 'Invalid API key' } }),
+        }),
+      )
+
+      await expect(manager.fetchModels('openai')).resolves.toEqual({
+        models: [],
+        error: 'Invalid API key',
+      })
+    })
+
+    it('falls back to the HTTP status when the error body is unparseable', async () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 500,
+          json: vi.fn().mockRejectedValue(new Error('invalid json')),
+        }),
+      )
+
+      await expect(manager.fetchModels('openai')).resolves.toEqual({
+        models: [],
+        error: 'HTTP 500',
+      })
+    })
+
+    it('maps AbortError to a timeout message', async () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+      const abortError = Object.assign(new Error('aborted'), { name: 'AbortError' })
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(abortError))
+
+      await expect(manager.fetchModels('openai')).resolves.toEqual({
+        models: [],
+        error: 'Connection timeout',
+      })
+    })
+
+    it('returns unknown errors as-is', async () => {
+      manager.save({
+        id: 'openai',
+        name: 'OpenAI',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'sk-test',
+        apiFormat: 'openai',
+        models: [],
+      })
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('socket hang up')))
+
+      await expect(manager.fetchModels('openai')).resolves.toEqual({
+        models: [],
+        error: 'socket hang up',
+      })
+    })
+
+    it('returns Provider not found for an unknown provider', async () => {
+      await expect(manager.fetchModels('missing')).resolves.toEqual({
+        models: [],
+        error: 'Provider not found',
+      })
     })
   })
 })

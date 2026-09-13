@@ -18,6 +18,7 @@
   ],
   "scripts": {
     "lint": "oxlint --fix src",
+    "lint:ci": "oxlint src",
     "fmt": "oxfmt src",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",

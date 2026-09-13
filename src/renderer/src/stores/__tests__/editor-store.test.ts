@@ -92,6 +92,78 @@ describe('editor-store', () => {
       expect(state.activeFilePath).toBe('/test/file1.js')
     })
   })
+
+  describe('acceptChanges', () => {
+    it('清除 originalContent 并取消 modified 标记', () => {
+      const { openFile, updateFileContent, acceptChanges } = useEditorStore.getState()
+      openFile('/test/file.js', 'original', 'javascript')
+      updateFileContent('/test/file.js', 'edited')
+
+      acceptChanges('/test/file.js')
+
+      const file = useEditorStore.getState().files.get('/test/file.js')
+      expect(file?.content).toBe('edited')
+      expect(file?.originalContent).toBeUndefined()
+      expect(file?.isModified).toBe(false)
+    })
+
+    it('未修改的文件调用后保持不变', () => {
+      const { openFile, acceptChanges } = useEditorStore.getState()
+      openFile('/test/file.js', 'content', 'javascript')
+
+      acceptChanges('/test/file.js')
+
+      const file = useEditorStore.getState().files.get('/test/file.js')
+      expect(file?.content).toBe('content')
+      expect(file?.isModified).toBe(false)
+    })
+
+    it('对不存在的路径是安全的空操作', () => {
+      const { acceptChanges } = useEditorStore.getState()
+
+      expect(() => acceptChanges('/missing.js')).not.toThrow()
+      expect(useEditorStore.getState().files.size).toBe(0)
+    })
+  })
+
+  describe('rejectChanges', () => {
+    it('回滚到 originalContent 并取消 modified 标记', () => {
+      const { openFile, updateFileContent, rejectChanges } = useEditorStore.getState()
+      openFile('/test/file.js', 'original', 'javascript')
+      updateFileContent('/test/file.js', 'edited')
+
+      rejectChanges('/test/file.js')
+
+      const file = useEditorStore.getState().files.get('/test/file.js')
+      expect(file?.content).toBe('original')
+      expect(file?.originalContent).toBeUndefined()
+      expect(file?.isModified).toBe(false)
+    })
+
+    it('没有 originalContent 时保持内容不变', () => {
+      const { openFile, rejectChanges } = useEditorStore.getState()
+      openFile('/test/file.js', 'content', 'javascript')
+
+      rejectChanges('/test/file.js')
+
+      const file = useEditorStore.getState().files.get('/test/file.js')
+      expect(file?.content).toBe('content')
+      expect(file?.isModified).toBe(false)
+    })
+  })
+
+  describe('getFile', () => {
+    it('返回已打开文件的内容', () => {
+      const { openFile, getFile } = useEditorStore.getState()
+      openFile('/test/file.js', 'content', 'javascript')
+
+      expect(getFile('/test/file.js')?.content).toBe('content')
+    })
+
+    it('路径不存在时返回 undefined', () => {
+      expect(useEditorStore.getState().getFile('/missing.js')).toBeUndefined()
+    })
+  })
 })
 
 describe('getLanguageFromPath', () => {

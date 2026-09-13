@@ -85,4 +85,52 @@ describe('ToolCallCard', () => {
     fireEvent.click(button)
     expect(screen.getByText('参数')).toBeInTheDocument()
   })
+
+  it('字符串结果直接展示原文', () => {
+    render(
+      <ToolCallCard
+        toolCall={{
+          toolName: 'bash',
+          parameters: {},
+          status: 'success',
+          result: 'plain text result',
+        }}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button'))
+
+    expect(screen.getByText('plain text result')).toBeInTheDocument()
+  })
+
+  it('对象结果以 JSON 形式展示', () => {
+    const { container } = render(
+      <ToolCallCard
+        toolCall={{
+          toolName: 'read',
+          parameters: {},
+          status: 'success',
+          result: { path: '/tmp/file.txt', lines: 12 },
+        }}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button'))
+
+    expect(container.textContent).toContain('/tmp/file.txt')
+    expect(container.textContent).toContain('lines')
+  })
+
+  it('展开后可再次收起', () => {
+    render(
+      <ToolCallCard
+        toolCall={{ toolName: 'bash', parameters: {}, status: 'success' }}
+      />,
+    )
+    const button = screen.getByRole('button')
+
+    fireEvent.click(button)
+    expect(screen.getByText('参数')).toBeInTheDocument()
+
+    fireEvent.click(button)
+    expect(screen.queryByText('参数')).not.toBeInTheDocument()
+  })
 })
